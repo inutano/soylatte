@@ -3,6 +3,7 @@
 require "open-uri"
 require "json"
 require "nokogiri"
+require "sqlite3"
 require "pp"
 
 def megumidono(specify_namamono)
@@ -195,26 +196,39 @@ def parsexmldono(submission_id)
 		
 	rescue
 	
-		return "unknown error occurred. please inform this to @iNut"
+		return "Oops! unknown error occurred!"
 	end
 end
 
+def marge_array(meg)
 
+	matomedono = []
+	meg.each do |m|
+		sub_id = m[4]
+		metadata = parsexmldono(sub_id)
+		m.delete_at(4)
+		matome = metadata + m
+		matomedono.push(matome)
+	end
+	
+	return matomedono
+end
 
 
 if __FILE__ == $0
+	# update SRAs publication data
+	namamono = {"H_sapiens"=>"9606", "M_musculus"=>"10090", "A_thaliana"=>"3702", "All_species"=>"" }
 
-	yagdono = megumidono("http://sra.dbcls.jp/cgi-bin/publication2.php?type=Transcriptome+Analysis&platform=&taxon_id=9606")
-	
-	yagdono.each do |yag|
-	sub_id = yag[4]
-	pp parsexmldono(sub_id)
-	
+	namamono.each_pair do |nama,id|
+		sra_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?"
+		namajson = "#{sra_url}type=Transcriptome+Analysis&taxon_id=#{id}"
+		open("SRAs_json/#{nama}.json","w") { |f| JSON.dump(namajson, f) }
 	end
+	
+	namamono.each_key do |nama|
+		srasdono = open("srasdono/#{nama}.json") { |f| JSON.load(f)
+		result = marge_array(srasdono)
+		open("ksrnk_json/#{nama}.json","w") { |f| JSON.dump(result,f) }
+	end
+
 end
-
-
-
-
-
-
