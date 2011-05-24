@@ -84,6 +84,6 @@ end
 if __FILE__ == $0
 
 # for test
-#	pp nokosearch("ksrnk_json/H_sapiens.json","HeLa")
+	pp nokosearch("ksrnk_json/H_sapiens.json","HeLa")
 
 end

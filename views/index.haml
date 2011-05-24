@@ -1,0 +1,22 @@
+!!!
+%html
+	%head
+		%title kusarinoko
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/kusarinoko_stylesheet.css", :type => "text/css" }
+		
+	%body
+		.hako
+			.neko
+				%form{ :action => "./result", :method => "POST" }
+					%filedset
+						%legend cut the branch - get what you really want 
+						.funya
+							%p
+								%label{ :for => "query" }
+								%input{ :type => "text", :id => "query", :name => "query", :size => "30", :maxlength => "36" }
+								%input{ :type => "submit", :value => "search!", :margin => "5px" }
+							
+				.nya{ :align => "right" }
+					%h2 kusarinoko: Search SRA Entries with PubMed Article
+				.mya{ :align => "right"} paper never tells all: and you know SRA never do, too. 

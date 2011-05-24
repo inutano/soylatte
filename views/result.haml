@@ -1,0 +1,80 @@
+!!!
+%html
+	%head
+		%title kusarinoko - result
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/kusarinoko_stylesheet.css", :type => "text/css" }
+		
+	%body
+		.hako
+			- @result.each do |nakami|
+				%table
+					%tr
+						- sub_id = nakami[0][0]
+						%h1= sub_id
+						- article_title = nakami[6]
+						- date = nakami[8]
+						- journal = nakami[7]
+						- article_abstract = nakami[9]
+						- author = nakami[10]
+						.mya
+							%h2= article_title
+							%h3= date + "\t/\t" + journal
+						.mya
+							%p= article_abstract
+							%p= author 
+					
+					%tr
+						.result_study{ :align => "right" }
+							%h3 Study
+						%li
+							%b= "study id: "
+							#{nakami[1][0]}
+						%li
+							%b= "study abstract: "
+							#{nakami[1][1]}
+						%li
+							%b= "study description: "
+							#{nakami[1][2]}
+						
+					%hr
+						
+					%tr
+						.result_exps{ :align => "right" }
+							- expnum = nakami[2].length
+							%h3 Experiments
+							.henya total #{expnum}
+						
+					- nakami[2].each do |exp|
+						%li
+							%b= "experiment id: "
+							#{exp[0]}
+						%li
+							%b= "experiment design: "
+							#{exp[1]}
+						%li
+							%b= "experiment library constraction: "
+							#{exp[2]}
+						%li
+							%b= "sample: "
+							#{exp[3]}
+					
+					%hr
+					
+					%tr
+						.result_samples{ :align => "right" }
+							- samplenum = nakami[3].length
+							%h3 Samples
+							total #{samplenum}
+					- nakami[3].each do |sample|
+						%li
+							%b= "sampled id: "
+							#{sample[0]}
+						%li
+							%b= "sample description: "
+							#{sample[1]}
+					%hr
+		.nya
+			%p{ :align => "right" }= "search query: " + @query
+			%h2 you got something good?
+			%a{ :href => "/" } one more time
