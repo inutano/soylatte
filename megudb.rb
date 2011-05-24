@@ -201,6 +201,7 @@ def parsexmldono(submission_id)
 end
 
 def marge_array(meg)
+# argument: json format pubmed metadata fixed by megumidono
 
 	matomedono = []
 	meg.each do |m|
@@ -210,25 +211,28 @@ def marge_array(meg)
 		matome = metadata + m
 		matomedono.push(matome)
 	end
-	
+
 	return matomedono
+	
 end
 
 
 if __FILE__ == $0
 	# update SRAs publication data
 	namamono = {"H_sapiens"=>"9606", "M_musculus"=>"10090", "A_thaliana"=>"3702", "All_species"=>"" }
-
+#=begin
 	namamono.each_pair do |nama,id|
 		sra_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?"
-		namajson = "#{sra_url}type=Transcriptome+Analysis&taxon_id=#{id}"
-		open("SRAs_json/#{nama}.json","w") { |f| JSON.dump(namajson, f) }
+		namaurl = "#{sra_url}type=Transcriptome+Analysis&taxon_id=#{id}"
+		pubmedono = megumidono(namaurl)
+		open("SRAs_json/#{nama}.json","w") { |f| JSON.dump(pubmedono, f) }
 	end
-	
+#=end
+	# result_set: [[sraid],[study],[[exp],[exp]..],[[sample],[sample]..],[[run],[run]..],pmid,article_title,journal,date,abstract,author]
 	namamono.each_key do |nama|
-		srasdono = open("srasdono/#{nama}.json") { |f| JSON.load(f)
-		result = marge_array(srasdono)
-		open("ksrnk_json/#{nama}.json","w") { |f| JSON.dump(result,f) }
+		namadono = open("SRAs_json/#{nama}.json") { |f| JSON.load(f) }
+		result = marge_array(namadono)
+		open("ksrnk_json/#{nama}.json","w") { |f| JSON.dump(result, f) }
 	end
 
 end
