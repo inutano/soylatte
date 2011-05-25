@@ -12,21 +12,24 @@
 					%tr
 						- sub_id = nakami[0][0]
 						%h1= sub_id
+						- pmid = nakami[5]
 						- article_title = nakami[6]
 						- date = nakami[8]
 						- journal = nakami[7]
 						- article_abstract = nakami[9]
 						- author = nakami[10]
 						.mya
-							%h2= article_title
-							%h3= date + "\t/\t" + journal
-						.mya
+							%h2
+								%a{ :href => "http://www.ncbi.nlm.nih.gov/pubmed/#{pmid}", :target => "_blank" }= article_title
+							%h3{ :align => "right" }= date + " / " + journal
+						.abstract
 							%p= article_abstract
 							%p= author 
 					
 					%tr
 						.result_study{ :align => "right" }
-							%h3 Study
+							%h3
+								%strong Study
 						%li
 							%b= "study id: "
 							#{nakami[1][0]}
@@ -42,7 +45,8 @@
 					%tr
 						.result_exps{ :align => "right" }
 							- expnum = nakami[2].length
-							%h3 Experiments
+							%h3
+								%strong Experiments
 							.henya total #{expnum}
 						
 					- nakami[2].each do |exp|
@@ -58,13 +62,14 @@
 						%li
 							%b= "sample: "
 							#{exp[3]}
+						%hr
 					
-					%hr
 					
 					%tr
 						.result_samples{ :align => "right" }
 							- samplenum = nakami[3].length
-							%h3 Samples
+							%h3
+								%strong Samples
 							total #{samplenum}
 					- nakami[3].each do |sample|
 						%li
@@ -73,8 +78,9 @@
 						%li
 							%b= "sample description: "
 							#{sample[1]}
-					%hr
+						%hr
 		.nya
 			%p{ :align => "right" }= "search query: " + @query
-			%h2 you got something good?
-			%a{ :href => "/" } one more time
+			%h2 got something good?
+			.return
+				%a{ :href => "/" } one more time
