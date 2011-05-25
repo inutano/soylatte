@@ -8,8 +8,10 @@
 	%body
 		.hako
 			.neko
-				%h1 No dataset found.
-				.mya try again. your search query: #{@query}
-				.nya{ :align => "right" }
-					%h2 kusarinoko: Search SRA Entries with PubMed Article
-				.mya{ :align => "right"} ...or, who has to do it might be yourself.
+				.message
+					%h1 No dataset found
+				.caption try again. your search query: #{@query}
+				.title{ :align => "right" }
+					%h2
+						%a{ :href => "/" } kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} ...or, who has to make that data is you.

@@ -8,8 +8,11 @@
 	%body
 		.hako
 			.neko
-				%h1 something wrong happened.
-				.mya sorry, try another word. your search query: #{@query}
-				.nya{ :align => "right" }
-					%h2 kusarinoko: Search SRA Entries with PubMed Article
-				.mya{ :align => "right"} tell me again, baby.
+				.message
+					%h1 
+						%b something wrong happened
+				.caption sorry, try another word. your search query: #{@query}
+				.title{ :align => "right" }
+					%h2
+						%a{ :href => "/" } kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} give me one more chance.

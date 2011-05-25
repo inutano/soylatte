@@ -8,9 +8,12 @@
 	%body
 		.hako
 			.neko
-				%h1 illegal query.
-				.mya
+				.message
+					%h1
+						%strong illegal query
+				.caption
 					!= "mingya! your search query: " + @query
-				.nya{ :align => "right" }
-					%h2 kusarinoko: Search SRA Entries with PubMed Article
-				.mya{ :align => "right"} we've got used to be attacked, sorry.
+				.title{ :align => "right" }
+					%h2
+						%a{ :href => "/" } kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} we've got used to be attacked, sorry.
