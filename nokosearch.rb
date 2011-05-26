@@ -3,6 +3,27 @@
 require "json"
 require "pp"
 
+def querychecker(query)
+	fault = []
+	deadballs = [";", "(", ")", "<", ">", "script", "alert", "xml"]
+	deadballs.each do |bad|
+		if query.include?(bad)
+			fault.push(":(")
+		end
+	end
+	if query.length > 40 or query.length < 3
+		fault.push(":(")
+	end
+
+	if fault.length > 2
+		return "enemy"
+	elsif fault.length == 2
+		return "mistake"
+	else
+		return "ok"
+	end
+end
+
 def nokosearch(dbdono,query)
 # argument: json format file path, search query
 

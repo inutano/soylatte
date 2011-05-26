@@ -8,30 +8,21 @@ require "./nokosearch.rb"
 set :haml, :format => :html5
 
 before do
-	@searchdb = "./ksrnk_json/H_sapiens.json" # future: select with radio button or something
-end
-
-helpers do	
-	def querychecker(query)
-		watashiwoamariokorasenaihougaii = []
-		badletters = [";", "(", ")", "<", ">", "script", "alert", "xml"]
-		badletters.each do |bad|
-			if query.include?(bad)
-				watashiwoamariokorasenaihougaii.push(":(")
-			end
-		end
-		if query.length > 40 or query.length < 3
-			watashiwoamariokorasenaihougaii.push(":(")
-		end
-		if watashiwoamariokorasenaihougaii.length > 2
-			return "enemy"
-		elsif watashiwoamariokorasenaihougaii.length == 2
-			return "mistake"
-		else
-			return "ok"
-		end
-		open("query.log","a") { |f| f.puts(query) }	
+	species = params[:species]
+	if species == "all"
+		@searchdb = "./ksrnk_json/All_species.json"
+	elsif species == "human"
+		@searchdb = "./ksrnk_json/H_sapiens.json"
+	elsif species == "mouse"
+		@searchdb = "./ksrnk_json/M_musculus.json"
+	else
+		@searchdb = "./ksrnk_json/A_thaliana.json"
 	end
+
+	open("query.log","a") { |f|
+		f.puts(params[:species])
+		f.puts(params[:query])
+	}
 end
 
 get "/" do
@@ -39,28 +30,22 @@ get "/" do
 end
 
 post "/result" do
-	
-	@query = params[:query]
-	pass unless querychecker(@query) == "enemy"
-	haml :bullshit
-end
-
-post "/result" do
-	
-	@query = params[:query]
-	pass unless querychecker(@query) == "mistake"
-	haml :tryagain
-end
-
-post "/result" do
-	
-	@query = params[:query]	
+	@query = params[:query].force_encoding("UTF-8")
 	@result = nokosearch(@searchdb, @query)
-	pass if @result == "no dataset found."
 	
-	haml :result
+	if querychecker(@query) == "enemy"
+		haml :bullshit
+	elsif querychecker(@query) == "mistake"
+		haml :tryagain
+	else
+		unless @result == "no dataset found."
+			haml :result
+		else
+			haml :not_found
+		end
+	end
 end
 
 not_found do
-	haml :not_found
+	haml :quattrocentoquattro
 end

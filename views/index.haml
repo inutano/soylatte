@@ -11,12 +11,24 @@
 				%form{ :action => "./result", :method => "POST" }
 					%filedset
 						%legend
-							.caption cut the branch - get what you really want 
-						.wordbox
+							.caption find the dataset from SRA, which exactly you can use. 
 							%p
-								%label{ :for => "query" }
-								%input{ :type => "text", :id => "query", :name => "query", :size => "30", :maxlength => "36" }
+								%input{ :type => "radio", :name => "species", :value => "all", :checked => "true" }
+								%label{ :for => "all" } all
+
+								%input{ :type => "radio", :name => "species", :value => "human" }
+								%label{ :for => "human" } human
+
+								%input{ :type => "radio", :name => "species", :value => "mouse" }
+								%label{ :for => "mouse" } mouse
+
+								%input{ :type => "radio", :name => "species", :value => "arabidopsis" }
+								%label{ :for => "arabidopsis" } arabidopsis
+
+							%p
+								%input{ :type => "text", :id => "query", :name => "query", :size => "38", :maxlength => "86" }
 								%input{ :type => "submit", :value => "search!", :margin => "10px" }
+
 							
 				.title{ :align => "right" }
 					%h2 kusarinoko: Search SRA Entries with PubMed Article
