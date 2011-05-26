@@ -5,7 +5,7 @@ require "pp"
 
 def querychecker(query)
 	fault = []
-	deadballs = [";", "(", ")", "<", ">", "script", "alert", "xml"]
+	deadballs = [";", "(", ")", "<", ">", "script", "alert", "drop", "table" ]
 	deadballs.each do |bad|
 		if query.include?(bad)
 			fault.push(":(")
@@ -27,17 +27,13 @@ end
 def nokosearch(dbdono,query)
 # argument: json format file path, search query
 
-	# reject bad query
-	sagashimono = query
-	if sagashimono.length > 35 or sagashimono.length < 3
-		return "error: length error. try another word"
-	elsif sagashimono.include?(";") or sagashimono.include?(")")
-		return "cazzo!"
-	elsif
-		# start searching
-		tree = open(dbdono) { |f| JSON.load(f) }
-		search_result = []
+	search_result = []
+	multiquery = query.split(/\s/)
+	tree = open(dbdono) { |f| JSON.load(f) }
 		
+	multiquery.each do |sagashimono|
+
+		# start searching
 		tree.each do |content|
 			desuzo = []
 			
@@ -77,8 +73,7 @@ def nokosearch(dbdono,query)
 					end
 				end
 			end
-			
-			
+						
 			# search in pubmed abstract
 			if desuzo.length == 0
 				pm_title = content[6]
@@ -89,11 +84,32 @@ def nokosearch(dbdono,query)
 				end
 			end
 			
-			if desuzo.length > 0
+			if desuzo.length > 0			
+				
+				colored = '<font color="#FF8C00"><strong>' + sagashimono + '</strong></font>'
+				
+				content[1][1].gsub!(sagashimono,colored)
+				content[1][2].gsub!(sagashimono,colored)
+				
+				content[2].each do |exp|
+					exp[1].gsub!(sagashimono,colored)
+					exp[2].gsub!(sagashimono,colored)
+				end
+				
+				content[3].each do |sample|
+					sample[1].gsub!(sagashimono,colored)
+					if sample[2][1]
+						sample[2][1].gsub!(sagashimono,colored)
+					end
+				end
+				
+				content[6].gsub!(sagashimono,colored)
+				content[9].gsub!(sagashimono,colored)
+				
 				search_result.push(content)
 			end
 		end # end of itelator
-		
+
 		if search_result.length == 0
 			return "no dataset found."
 		else
@@ -101,7 +117,7 @@ def nokosearch(dbdono,query)
 		end
 	end
 end
-			
+
 if __FILE__ == $0
 
 # for test
