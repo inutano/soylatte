@@ -70,9 +70,12 @@
 							%li
 								%strong= "sample: "
 								#{exp[3]}
+							%li
+							- run_id = nakami[4].each {|r| r[1]}
+								%strong= "run: "
+								#{}
 							- unless nakami[2][exp_total][0] == exp[0] 
 								%hr
-					
 					
 					%tr
 						.result_samples{ :align => "right" }
