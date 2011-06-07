@@ -23,7 +23,6 @@ def sega_ricerca(insieme_di_dati,query_di_ricerca)
 		scatola = []
 		proiettili = Preparare.new(query_di_ricerca).query_dividere
 		obiettivi = open(insieme_di_dati) { |f| JSON.load(f) }
-		pp proiettili		
 		proiettili.each do |pallottola|
 			obiettivi.each do |obiettivo|
 				if ricerca(obiettivo, pallottola) == true	# ricerca definito in ./motore_di_ricerca.rb
