@@ -1,7 +1,7 @@
 !!!
 %html
 	%head
-		%title 404 not found - kusarinoko
+		%title try again - kusarinoko
 		%meta{ :charset => "utf-8" }
 		%link{ :rel => :stylesheet, :href => "stylesheet.css", :type => "text/css" }
 		
@@ -9,9 +9,10 @@
 		.hako
 			.neko
 				.message
-					%h1 404
-				.caption hey, what are you looking for?
+					%h1 
+						%b something wrong happened
+				.caption sorry, try another word. your search query: #{@query}
 				.title{ :align => "right" }
 					%h2
 						%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article
-				.subtitle{ :align => "right"} think different - unless it is the way to use a computer.
+				.subtitle{ :align => "right"} give me one more chance.

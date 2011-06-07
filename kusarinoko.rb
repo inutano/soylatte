@@ -3,46 +3,40 @@
 require "json"
 require "sinatra"
 require "haml"
-require "./nokosearch.rb"
+require "sass"
+require "./lib/motosega.rb"
 
 set :haml, :format => :html5
 
 before do
-	species = params[:species]
-	if species == "all"
-		@searchdb = "./ksrnk_json/All_species.json"
-	elsif species == "human"
-		@searchdb = "./ksrnk_json/H_sapiens.json"
-	elsif species == "mouse"
-		@searchdb = "./ksrnk_json/M_musculus.json"
-	else
-		@searchdb = "./ksrnk_json/A_thaliana.json"
-	end
-
-	open("query.log","a") { |f|
-		f.puts(params[:species])
-		f.puts(params[:query])
+	open("./log/query.log","a") { |f|
+		if params[:query]
+			f.puts(Time.now)
+			f.puts(params[:species])
+			f.puts(params[:query])
+		end
 	}
 end
 
-get "/" do
-	haml :index
+get "/stylesheet.css" do
+	sass :stylesheet
+end
+
+get "/?" do
+	haml :indice
 end
 
 post "/result" do
-	@query = params[:query].force_encoding("UTF-8")
-	@result = nokosearch(@searchdb, @query)
+	@specie_ricerca = selezionate_specie(params[:species]) # selezionate_specie difinito in ./lib/motosega.rb
+	@query = params[:query]
+	@risultati = sega_ricerca(@specie_ricerca, @query) # sega_ricerca definito in ./lib/motosega.rb
 	
-	if querychecker(@query) == "enemy"
-		haml :bullshit
-	elsif querychecker(@query) == "mistake"
-		haml :tryagain
+	if  @risultati == false
+		haml :riprovare
+	elsif @risultati == "nessun risultato"
+		haml :nessun_risultato
 	else
-		unless @result == "no dataset found."
-			haml :result
-		else
-			haml :not_found
-		end
+		haml :risultati
 	end
 end
 
