@@ -11,7 +11,9 @@
 				%form{ :action => "/kusarinoko/result", :method => "POST" }
 					%filedset
 						%legend
-							.caption find the dataset from SRA, which exactly you want. 
+							.caption find the dataset from SRA, which exactly you want. *now TranscriptomeAnalysis only*
+							.tutorial
+								%a{ :href => "/kusarinoko/about" } how to use 
 							%p
 								%input{ :type => "radio", :name => "species", :value => "all", :checked => "true" }
 								%label{ :for => "all" } all

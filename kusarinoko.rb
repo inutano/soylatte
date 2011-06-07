@@ -22,8 +22,21 @@ get "/stylesheet.css" do
 	sass :stylesheet
 end
 
+get "/qq_stylesheet.css" do
+	sass :qq_stylesheet
+end
+
+
+get "/?", :agent => /MSIE (6|7|8)/ do
+	haml :iemustdie
+end
+
 get "/?" do
 	haml :indice
+end
+
+get "/about" do
+	haml :lezione
 end
 
 post "/result" do

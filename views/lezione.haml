@@ -1,0 +1,27 @@
+!!!
+%html
+	%head
+		%title kusarinoko
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/stylesheet.css", :type => "text/css" }
+		
+	%body
+		.hako
+			.neko
+				%p
+					鎖鋸は、NCBI, EBI, DDBJによって運営され次世代シーケンスデータをアーカイヴするSRA: Sequence Read Archiveでのデータ検索を補助するサービスです。「そのデータが元となった論文が発表されている」データのみを対象としており、データをダウンロードして利用する際に必要な情報を一度に見ることに特化しています。通常の検索は
+					%a{ :href => "http://sra.dbcls.jp/", :target => "_blank" } SRAs
+					をご利用下さい。諸事情により検索に漏れがある場合があります。複数のクエリはスペース区切りで入力して下さい。バグレポートは
+					%a{ :href => "http://twitter.com/iNut", :target => "_blank" } Twitter@iNut
+					までお願いします。
+				%p
+					kusarinoko (means a chainsaw in Japanese) helps to search datasets on SRA: Sequence Read Archive, which is powered by NCBI, EBI, and DDBJ to archive data from Next-generation sequencer. kusarinoko looks for only datasets which has pubmed article, just to reduce the cost to check profile and quality of the dataset. To search in all the datasets, we recommend you to use
+					%a{ :href => "http://sra.dbcls.jp/", :target => "_blnak" } SRAs
+					instead of this. multiple queries should be space-separated. please let me know on 
+					%a{ :href => "http://twitter.com/iNut", :target => "_blank" } Twitter@iNut
+					if you have some trouble or suggestion.
+				
+				
+				.title{ :align => "right" }
+					%h2
+						%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article
