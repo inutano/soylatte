@@ -39,20 +39,20 @@ end
 class MotorediRicerca
 	def initialize(db,query)
 		@db = db
-		@query = query
+		@query = query.downcase
 	end
 	
 	def ricerca_acc
-		acc_id = @db[0][0]
+		acc_id = @db[0][0].downcase
 		if acc_id.include?(@query)
 			return true
 		end
 	end
 	
 	def ricerca_study
-		study_id = @db[1][0]
-		study_abst = @db[1][1]
-		study_desc = @db[1][2]
+		study_id = @db[1][0].downcase
+		study_abst = @db[1][1].downcase
+		study_desc = @db[1][2].downcase
 		if study_id.include?(@query) or study_abst.include?(@query) or study_desc.include?(@query)
 			return true
 		end
@@ -61,9 +61,9 @@ class MotorediRicerca
 	def ricerca_exp
 		exp_result = []
 		@db[2].each do |exp|
-			exp_id = exp[0]
-			exp_design = exp[1]
-			exp_lib = exp[2]
+			exp_id = exp[0].downcase
+			exp_design = exp[1].downcase
+			exp_lib = exp[2].downcase
 			if exp_id.include?(@query) or exp_design.include?(@query) or exp_lib.include?(@query)
 				exp_result.push("yey!")
 			end
@@ -76,13 +76,13 @@ class MotorediRicerca
 	def ricerca_sample
 		sample_result = []
 		@db[3].each do |sample|
-			sample_id = sample[0]
-			sample_desc = sample[1]
+			sample_id = sample[0].downcase
+			sample_desc = sample[1].downcase
 			if sample_id.include?(@query) or sample_desc.include?(@query)
 				sample_result.push("yeey!")
 			end
 			if sample[2][1]
-				sample_attr = sample[2][1]
+				sample_attr = sample[2][1].downcase
 				if sample_attr.include?(@query)
 					sample_result.push("yeey!!")
 				end
@@ -96,7 +96,7 @@ class MotorediRicerca
 	def ricerca_run
 		run_result = []
 		@db[4].each do |run|
-			run_id = run[0]
+			run_id = run[0].downcase
 			if run_id.include?(@query)
 				run_result.push("yeeey!")
 			end
@@ -107,11 +107,11 @@ class MotorediRicerca
 	end
 	
 	def ricerca_pubmed
-		pm_id = @db[5]
-		pm_title = @db[6]
-		pm_jrnl = @db[7]
-		pm_abst = @db[9]
-		pm_auth = @db[10]
+		pm_id = @db[5].downcase
+		pm_title = @db[6].downcase
+		pm_jrnl = @db[7].downcase
+		pm_abst = @db[9].downcase
+		pm_auth = @db[10].downcase
 		if pm_id.include?(@query) or pm_title.include?(@query) or pm_jrnl.include?(@query) or pm_abst.include?(@query) or pm_auth.include?(@query)
 			return true
 		end
