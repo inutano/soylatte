@@ -11,7 +11,9 @@
 				.message
 					%h1 
 						%b something wrong happened
-				.caption sorry, try another word. your search query: #{@query}
+				- converted = @query.gsub!("<","&lt;").gsub!(">","&gt;")
+				- tagged = '<pre>' + converted + '</pre>'
+				.caption sorry, try another word. your search query: #{tagged}
 				.title{ :align => "right" }
 					%h2
 						%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article

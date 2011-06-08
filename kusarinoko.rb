@@ -27,7 +27,7 @@ get "/qq_stylesheet.css" do
 end
 
 
-get "/?", :agent => /MSIE (6|7|8)/ do
+get "/*", :agent => /MSIE (6|7|8)/ do
 	haml :iemustdie
 end
 

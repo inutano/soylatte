@@ -16,9 +16,10 @@
 								%a{ :href => "/kusarinoko/about" } how to use 
 							%p
 								%input{ :type => "radio", :name => "species", :value => "all", :checked => "true" }
-								%label{ :for => "all" } all
+								%label{ :for => "all" }
+									%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_all.png", :width => "40" }
 
-								%input{ :type => "radio", :name => "species", :value => "human" }
+								%input{ :type => "radio", :name => "species", :value => "human", :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_human.png", :alt => "human" }
 								%label{ :for => "human" } human
 
 								%input{ :type => "radio", :name => "species", :value => "mouse" }
