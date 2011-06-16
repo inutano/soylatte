@@ -3,17 +3,43 @@
 	/* A font by Jos Buivenga (exljbris) -> www.exljbris.com */
 	src: url('http://g86.dbcls.jp/~iNut/font/Fontin_Sans_R_45b.otf') format("opentype")
 
-html,body
-	width: 100%
-	height: 100%
-	margin: 0
-	padding: 0
+html
 	background-color: #fafafa
+
+body
+	width: 80%
 	background-image: url('http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/kusarinoko.png')
 	background-repeat: no-repeat
-	background-position: 95% 7%
+	background-position: 95% 0%
 	background-size: 274px 248px
+	margin: 46px auto
+	padding: 86px
+	background-color: #fafafa
+	display: -webkit-box
+	display: -moz-box
+	font-family: WebFont
+
+.sinistra,
+.destra
+	-webkit-box-sizing: border-box
+	-moz-box-sizing: border-box
+	box-sizing: border-box
 	
+.sinistra
+	-webkit-box-flex: 1
+	-moz-box-flex: 1
+	-webkit-box-shadow: 3px 3px 3px #cccccc
+	-webkit-border-radius: 7px
+	-moz-border-radius: 7px
+	border-radius: 7px
+	padding: 50px
+	margin-right: 55px
+	background-color: #ffffff
+
+.destra
+	padding-top: 240px
+	width: 250px
+
 a
 	color: #000
 	text-decoration: none
@@ -30,8 +56,8 @@ hr
 	margin-bottom: 38px
 
 .section_end hr
-	color: #FF69B4
-	background-color: #FF69B4
+	color: #000
+	background-color: #000
 	height: 2px
 	margin: 1px
 
@@ -39,15 +65,8 @@ hr
 	margin-top: 86px
 	margin-bottom: 86px
 
-body
-	display: -moz-box
-	display: -webkit-box
-	-moz-box-align: center
-	-webkit-box-align: center
-	-moz-box-pack: center
-	-webkit-box-pack: center
-	background-color: #fafafa
-	font-family: WebFont
+.result_index
+	margin-top: 86px
 
 h1
 	margin-bottom: 3px
@@ -60,31 +79,6 @@ h3
 
 .abstract
 	margin-top: 25px
-
-.hako
-	-webkit-box-shadow: 3px 3px 3px #cccccc
-	-webkit-border-radius: 7px
-	-moz-border-radius: 7px
-	border-radius: 7px
-	width: 750px
-	margin: 50px
-	padding: 50px
-	background-color: #ffffff
-
-.message
-	width: 200px
-	margin-bottom: 5px
-
-.caption
-	margin-top: 0px
-
-.title
-	margin-top: 186px
-	margin-bottom: 3px
-
-.subtitle
-	margin-top: 0px
-	margin-bottom: 7px
 
 .study_id
 	margin-bottom: 17px

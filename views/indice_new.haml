@@ -1,0 +1,41 @@
+!!!
+%html
+	%head
+		%title kusarinoko
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/stylesheet.css", :type => "text/css" }
+		%script{ :type => "text/javascript", :src => "http://g86.dbcls.jp/~iNut/js/formStyle.js" }
+		
+	%body
+		%div
+			%img{ :id => "formStyleTestImage", :src => "http://g86.dbcls.jp/~iNut/js/formStyle.gif", :alt => "" }
+		.hako
+			.neko
+				%form{ :action => "/kusarinoko/result", :method => "POST" }
+					%filedset
+						%legend
+							.caption find the dataset from SRA, which exactly you want. *now TranscriptomeAnalysis only*
+							.tutorial
+								%a{ :href => "/kusarinoko/about" } how to use 
+							%p
+								%input{ :type => "radio", :name => "species", :value => "all", :checked => "true" }
+								%label{ :for => "all" }
+									%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_all.png", :width => "40" }
+
+								%input{ :type => "radio", :name => "species", :value => "human", :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_human.png", :alt => "human" }
+								%label{ :for => "human" } human
+
+							%span{ :class => "rbStyled Mouse"}
+								%input{ :type => "radio", :name => "species", :value => "mouse" }
+								
+							%span{ :class => "rbStyled Arabi"}
+								%input{ :type => "radio", :name => "species", :value => "arabidopsis" }
+
+							%p
+								%input{ :type => "text", :id => "query", :name => "query", :size => "38", :maxlength => "86" }
+								%input{ :type => "submit", :value => "search!", :margin => "10px" }
+
+							
+				.title{ :align => "right" }
+					%h2 kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} paper never tells all: and you know SRA entries never do, too. 

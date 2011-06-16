@@ -11,7 +11,7 @@
 				.message
 					%h1 
 						%b something wrong happened
-				- converted = @query.gsub!("<","&lt;").gsub!(">","&gt;")
+				- converted = @query.gsub("<","&lt;").gsub(">","&gt;")
 				- tagged = '<pre>' + converted + '</pre>'
 				.caption sorry, try another word. your search query: #{tagged}
 				.title{ :align => "right" }

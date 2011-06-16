@@ -26,8 +26,11 @@ get "/qq_stylesheet.css" do
 	sass :qq_stylesheet
 end
 
+get "/risultati.css" do
+	sass :risultati
+end
 
-get "/*", :agent => /MSIE (6|7|8)/ do
+get "/*", :agent => /MSIE (4|5|6|7|8)/ do
 	haml :iemustdie
 end
 
@@ -41,9 +44,9 @@ end
 
 post "/result" do
 	@specie_ricerca = selezionate_specie(params[:species]) # selezionate_specie difinito in ./lib/motosega.rb
-	@query = params[:query]
+	@query = params[:query] #.force_encoding("utf-8")
 	@risultati = sega_ricerca(@specie_ricerca, @query) # sega_ricerca definito in ./lib/motosega.rb
-	
+
 	if  @risultati == false
 		haml :riprovare
 	elsif @risultati == "nessun risultato"

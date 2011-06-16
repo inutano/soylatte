@@ -234,5 +234,4 @@ if __FILE__ == $0
 		result = marge_array(namadono)
 		open("ksrnk_json/#{nama}.json","w") { |f| JSON.dump(result, f) }
 	end
-
 end

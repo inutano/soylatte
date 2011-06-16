@@ -3,17 +3,17 @@
 	%head
 		%title kusarinoko - result
 		%meta{ :charset => "utf-8" }
-		%link{ :rel => :stylesheet, :href => "/kusarinoko/stylesheet.css", :type => "text/css" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/risultati.css", :type => "text/css" }
 		
 	%body
-		.hako
+		.sinistra
 			- total_result = @risultati.length - 1
 			- @risultati.each do |nakami|
 				%table
 					%tr
 						.submission_id
 							- sub_id = nakami[0][0]
-							%h1
+							%h1{ :id => "#{sub_id}"}
 								%a{ :href => "http://www.ncbi.nlm.nih.gov/sra/?term=#{sub_id}", :target => "_blank" }= sub_id
 						- pmid = nakami[5]
 						- article_title = nakami[6]
@@ -42,7 +42,7 @@
 						%li
 							%strong= "study description: "
 							#{nakami[1][2]}
-	
+						
 					%tr
 						.result_exps{ :align => "right" }
 							- expnum = nakami[2].length
@@ -99,7 +99,7 @@
 							%hr
 					
 					
-		.caption
+		.destra
 			.search_query{ :align => "right" }
 				search query: #{@query}
 			.result_number{ :align => "right" }	
@@ -108,3 +108,10 @@
 			%h2 got what you want?
 			.return
 				%a{ :href => "/kusarinoko" } one more time
+			.result_index
+				- @risultati.each do |nakami|
+					- sub_id = nakami[0][0]
+					- article_title = nakami[6]
+					%li
+						%a{ :href => "\##{sub_id}" }= sub_id + ": " + article_title
+			
