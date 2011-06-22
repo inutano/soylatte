@@ -1,0 +1,23 @@
+!!!
+%html
+	%head
+		%title try again - kusarinoko
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/failed.css", :type => "text/css" }
+		%link{ :rel => "shortcut icon", :href => "http://g86.dbcls.jp/~iNut/images/kusarinoko_favicon.ico", :type => "image/x-icon" }
+		
+	%body
+		.hako
+			.neko
+				.message
+					%h1
+						%b something wrong happened
+				- converted = @query.gsub("<","&lt;").gsub(">","&gt;")
+				- tagged = '<pre>' + converted + '</pre>'
+				.caption sorry, try again with another word. your search query: #{tagged}
+				.kusako{ :align => "center" }
+					%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/kusarinoko_404.png", :width => "300px"}
+				.title{ :align => "right" }
+					%h2
+						%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} Ask my colleague if you wanna crash this. 

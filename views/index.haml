@@ -1,0 +1,44 @@
+!!!
+%html
+	%head
+		%title kusarinoko
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/stylesheet.css", :type => "text/css" }
+		%link{ :rel => "shortcut icon", :href => "http://g86.dbcls.jp/~iNut/images/kusarinoko_favicon.ico", :type => "image/x-icon" }
+		/ fonts by Jos Buivenga (exljbris). Thank You! -> www.exljbris.com
+		 
+	%body
+		.hako
+			.neko
+				%form{ :action => "/kusarinoko/result", :method => "POST" }
+					%filedset
+						%legend
+							.caption find the dataset from SRA, which exactly you want.
+							%font{ :color => "red" } *now TranscriptomeAnalysis only*
+							.tutorial
+								%a{ :href => "/kusarinoko/about" } How to use 
+							%p
+								%label{ :for => "all" }
+									%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_all.png", :title => "All species", :width => "50px" }
+								%input{ :type => "radio", :name => "species", :value => "all", :checked => "true" }
+
+								%label{ :for => "human" }
+									%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_human.png", :title => "Homo sapiens", :width => "50px" }
+								%input{ :type => "radio", :name => "species", :value => "human" }
+
+								%label{ :for => "mouse" }								
+									%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_mouse.png", :title => "Mus musculus", :width => "50px" }
+								%input{ :type => "radio", :name => "species", :value => "mouse" }
+								
+								%label{ :for => "arabidopsis" }
+									%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/icon_arabidopsis.png", :title => "Arabidopsis thaliana", :width => "50px" }
+								%input{ :type => "radio", :name => "species", :value => "arabidopsis" }
+
+							%p
+								%input{ :type => "text", :id => "query", :name => "query", :size => "38", :maxlength => "86" }
+								%input{ :type => "submit", :value => "search!", :margin => "10px" }
+
+							
+				.title{ :align => "right" }
+					%h2 kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} paper never tells all: and you know SRA entries never do, too. 

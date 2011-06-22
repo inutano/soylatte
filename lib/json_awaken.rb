@@ -5,7 +5,6 @@ require "json"
 require "nokogiri"
 require "pp"
 
-=begin	
 def fix_json(taxon_id, study_type)
 	sras_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?"
 	url_json = "#{sras_url}type=#{study_type}&taxon_id=#{taxon_id}"
@@ -45,11 +44,11 @@ def refresh_json # refresh json data from sra.dbcls.jp after fix data with fix_j
 			pubmed_metadata = fix_json(id, type) # method defined above
 			
 			type_unplus = type.gsub("+","")
-			open("./SRAs_json_test/#{type_unplus}_#{name}.json","w") { |f| JSON.dump(pubmed_metadata, f) }
+			open("./SRAs_json/#{type_unplus}_#{name}.json","w") { |f| JSON.dump(pubmed_metadata, f) }
 		end
 	end
 end
-=end
+
 
 class GetMetadata
 	def initialize(sub_id)
@@ -65,13 +64,9 @@ class GetMetadata
 			if @sub_id == set[4]
 				result.push(set)
 			end
-		end
-		
-		if result.length == 1 # normally length == 1 but sometimes single SRA entry has multiple publication, like 1000genomes project
-			return result.flatten
-		else
+		end		
+		# normally result.length == 1 but sometimes single SRA entry has multiple publication, like 1000genomes project
 			return result
-		end
 	end
 	
 	def study_info
@@ -126,7 +121,7 @@ class GetMetadata
 							spotnum = dra_run.scan(/spots<\/td><td><span id=\"number_of_spot\">(.*)<\/span><\/td>/).flatten.join("")
 							basenum = dra_run.scan(/Number of bases<\/td><td>(.*)<\/td><\/tr>/).flatten.join("")
 							read_length = basenum.gsub(",","").to_i / spotnum.gsub(",","").to_i
-							run_seq_run.push([run_id, spotnum, basenum, read_length])
+							run_seq_run.push([run_id, spotnum, basenum, read_length.to_s])
 						end
 					end
 				end
@@ -176,7 +171,7 @@ class GetMetadata
 					sample_desc = "no sample description"
 				end
 				if sample_attr.empty?
-					sample_attr = ["no attribution tag", "no attribution value"]
+					sample_attr = [["no attribution tag", "no attribution value"]]
 				end
 				
 				sample_box.push([sample_id, sample_desc, sample_attr])
@@ -191,7 +186,7 @@ end #end of class BuildDB
 if __FILE__ == $0
 
 #	to refresh json database on local server, uncomment the line below
-#	refresh_json
+	refresh_json
 
 	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
 	study_type = ["Transcriptome+Analysis"]
@@ -200,7 +195,7 @@ if __FILE__ == $0
 		study_type.each do |type|
 			content_db = []
 			type_unplus = type.gsub("+","")
-			path_db_json = "./SRAs_json_test/#{type_unplus}_#{name}.json"
+			path_db_json = "./SRAs_json/#{type_unplus}_#{name}.json"
 			db = open(path_db_json){ |f| JSON.load(f) }
 			db.each do |set|
 				acc_id = set[4]
@@ -215,8 +210,7 @@ if __FILE__ == $0
 				
 				content_db.push([acc_id, section_pubmed, section_study, section_exp, section_sample])
 			end
-			pp content_db
-			open("./ksrnk_json_test/#{type_unplus}_#{name}.json","w") { |f| JSON.dump(content_db, f) }
+			open("./ksrnk_json/#{type_unplus}_#{name}.json","w") { |f| JSON.dump(content_db, f) }
 		end
 	end
 end
