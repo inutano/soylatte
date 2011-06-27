@@ -6,13 +6,13 @@ require "pp"
 def select_species(organism)
 	currentdir = "#{File::expand_path(File::dirname(__FILE__))}"
 	if organism == "all"
-		return "#{currentdir}/ksrnk_json/TranscriptomeAnalysis_Allspecies.json"
+		return "#{currentdir}/ksrnk_json/Allspecies.json"
 	elsif organism == "human"
-		return "#{currentdir}/ksrnk_json/TranscriptomeAnalysis_Hsapiens.json"
+		return "#{currentdir}/ksrnk_json/Hsapiens.json"
 	elsif organism == "mouse"
-		return "#{currentdir}/ksrnk_json/TranscriptomeAnalysis_Mmusculus.json"
+		return "#{currentdir}/ksrnk_json/Mmusculus.json"
 	elsif organism == "arabidopsis"
-		return "#{currentdir}/ksrnk_json/TranscriptomeAnalysis_Athaliana.json"
+		return "#{currentdir}/ksrnk_json/Athaliana.json"
 	end
 end
 
@@ -81,61 +81,69 @@ class SearchEngine
 	end
 	
 	def search_study
-		study_id = @set[2][0]
-		study_abst = @set[2][1]
-		study_desc = @set[2][2]
-		if study_id.index(/#{@query}/i) or study_abst.index(/#{@query}/i) or study_desc.index(/#{@query}/i)
-			return true
+		if @set[2].class == Array # if metadata doesn't exist, set[2] is String.
+			study_id = @set[2][0]
+			study_abst = @set[2][1]
+			study_desc = @set[2][2]
+			if study_id.index(/#{@query}/i) or study_abst.index(/#{@query}/i) or study_desc.index(/#{@query}/i)
+				return true
+			end
 		end
 	end
 	
 	def search_exp
-		count = 0
-		@set[3].each do |exp|
-			exp_id = exp[0]
-			design = exp[1]
-			lib = exp[2]
-			platform = exp[3]
-			space = exp[4]
-			sample_id = exp[5]
-			
-			exp_field = [exp_id, design, lib, platform, space, sample_id]
-			exp_field.each do |exf|
-				if exf.index(/#{@query}/i)
-					count += 1
+		if @set[3].class == Array
+			count = 0
+			@set[3].each do |exp|
+				exp_id = exp[0]
+				design = exp[1]
+				lib = exp[2]
+				platform = exp[3]
+				space = exp[4]
+				sample_id = exp[5]
+				
+				exp_field = [exp_id, design, lib, platform, space, sample_id]
+				exp_field.each do |exf|
+					if exf.index(/#{@query}/i)
+						count += 1
+					end
+				end
+				
+				if exp[6].class == Array
+					exp[6].each do |run|
+						run_id = run[0]
+						if run_id.index(/#{@query}/i)
+							count += 1
+						end
+					end
 				end
 			end
-			
-			exp[6].each do |run|
-				run_id = run[0]
-				if run_id.index(/#{@query}/i)
-					count += 1
-				end
+			if count != 0
+				return true
 			end
-		end
-		if count != 0
-			return true
 		end
 	end
 	
 	def search_sample
-		count = 0 
-		@set[4].each do |sample|
-			sample_id = sample[0]
-			sample_desc = sample[1]
-			if sample_id.index(/#{@query}/i) or sample_desc.index(/#{@query}/i)
-				count += 1
-			end
-			sample[2].each do |attr|
-				attr_tag = attr[0]
-				attr_val = attr[1]
-				if attr_tag.index(/#{@query}/i) or attr_val.index(/#{@query}/i)
+		if @set[4].class == Array
+			count = 0 
+			@set[4].each do |sample|
+				sample_id = sample[0]
+				sample_desc = sample[1]
+				if sample_id.index(/#{@query}/i) or sample_desc.index(/#{@query}/i)
 					count += 1
 				end
-			end	
-		end
-		if count != 0
-			return true
+				sample[2].each do |attr|
+					attr_tag = attr[0]
+					attr_val = attr[1]
+					if attr_tag.index(/#{@query}/i) or attr_val.index(/#{@query}/i)
+						count += 1
+					end
+				end	
+			end
+			if count != 0
+				return true
+			end
 		end
 	end
 end # end of class SearchEngine

@@ -11,15 +11,20 @@ set :haml, :format => :html5
 before do
 	open("./log/query.log","a") { |f|
 		if params[:query]
-			f.puts(Time.now)
-			f.puts(params[:species])
-			f.puts(params[:query])
+			time = Time.now
+			species = params[:species]
+			query = params[:query]
+			f.puts("#{time}\t#{species}\t#{query}")
 		end
 	}
 end
 
 get "/stylesheet.css" do
 	sass :stylesheet
+end
+
+get "/tutorial.css" do
+	sass :tutorial
 end
 
 get "/failed.css" do

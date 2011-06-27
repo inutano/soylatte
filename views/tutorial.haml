@@ -8,25 +8,71 @@
 		
 	%body
 		.hako
-			.neko
-				%p
-					鎖鋸は、NCBI, EBI, DDBJによって運営され次世代シーケンスデータをアーカイヴするSRA: Sequence Read Archiveでのデータ検索を補助するサービスです。「そのデータが元となった論文が発表されている」データのみを対象としており、データをダウンロードして利用する際に必要な情報を一度に見ることに特化しています。通常の検索は
-					%a{ :href => "http://sra.dbcls.jp/", :target => "_blank" } SRAs
-					をご利用下さい。諸事情により検索に漏れがある場合があります。複数のクエリはスペース区切りで入力して下さい。バグレポートは
-					%a{ :href => "http://twitter.com/iNut", :target => "_blank" } Twitter@iNut
-					までお願いします。詳しくは
-					%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?p=286", :target => "_blank" } Chataeau Togo
-					をご覧下さい。 
-				%p
-					Kusarinoko (means a chainsaw in Japanese) helps to search datasets on SRA: Sequence Read Archive, which is powered by NCBI, EBI, and DDBJ to archive data from Next-generation sequencer. Kusarinoko looks for only datasets which has a pubmed article to reduce your cost to check profile and quality of the dataset. To search in all the datasets, we recommend you to use
-					%a{ :href => "http://sra.dbcls.jp/", :target => "_blnak" } SRAs
-					instead of Kusarinoko. Multiple queries should be space-separated. Please let me know on 
-					%a{ :href => "http://twitter.com/iNut", :target => "_blank" } Twitter@iNut
-					if you have some trouble or suggestion. See more details about Kusarinoko on 
-					%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?p=286", :target => "_blank" } Chateau Togo
-					\.
-				
-				
-				.title{ :align => "right" }
-					%h2
-						%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article
+			%h2{ :align => "right" }
+				%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article
+			
+			%p{ :class => "wtf_jp" }
+				鎖鋸は、NCBI, EBI, DDBJによって運営されシーケンスデータをアーカイヴするSRA: Sequence Read Archiveでのデータ検索及びその利用を補助します。「そのデータが元となった論文が発表されている」データのみを対象としており、公共のシーケンスデータをダウンロードし利用する際に必要な情報を一度に見ることに特化しています。SRAでの通常のデータ検索は
+				%a{ :href => "http://sra.dbcls.jp/", :target => "_blank" } DBCLS SRAs
+				をご利用下さい。諸事情により検索に漏れがある場合がありますのでご了承下さい。複数のクエリはスペース区切りで入力して下さい。バグレポートは
+				%a{ :href => "http://twitter.com/iNut", :target => "_blank" } Twitter@iNut
+				までお願いします。詳しくは
+				%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?tag=kusarinoko", :target => "_blank" } kusarinoko | Chataeau Togo
+				をご覧下さい。 
+			%p{ :class => "wtf_en" }
+				Kusarinoko (means a chainsaw in Japanese) helps to search datasets on SRA: Sequence Read Archive, which is powered by NCBI, EBI, and DDBJ to archive data from Massively Parallel Sequencer (as known as Next Generation Sequencer). Kusarinoko looks for only datasets which has a pubmed article, to reduce your cost to check profile and quality of the dataset only from SRA metadata. To search in all the datasets, we recommend you to use
+				%a{ :href => "http://sra.dbcls.jp/", :target => "_blnak" } DBCLS SRAs
+				instead of Kusarinoko. Multiple queries should be space-separated. Please let me know on 
+				%a{ :href => "http://twitter.com/iNut", :target => "_blank" } Twitter@iNut
+				if you have some trouble or suggestion. See more details about Kusarinoko on 
+				%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?tag=kusarinoko", :target => "_blank" } kusarinoko | Chataeau Togo
+				\.
+			
+			%h3{ :class => "feature" } feature
+			%ul
+				%li 
+					Find datasets which has article(s) in PubMed, from SRA.
+					%br
+					PubMedに論文情報があるSRAデータセットを検索します。
+				%li
+					SRA-PubMed relation is based on the database 
+					%a{ :href => "http://sra.dbcls.jp/cgi-bin/publication.cgi", :target => "_blank" } Publications referring to NGS data
+					from
+					%a{ :href => "http://sra.dbcls.jp/", :target => "_blank" } DBCLS SRAs.
+					%br
+					SRAとPubMedの紐付けは
+					%a{ :href => "http://sra.dbcls.jp/", :target => "_blank" } DBCLS SRAs
+					の
+					%a{ :href => "http://sra.dbcls.jp/cgi-bin/publication.cgi", :target => "_blank" } Publication referring to NGS data
+					を使用しています。
+				%li
+					Because of the lack of information in SRA metadata, not all the dataset which has publication is found.
+					%br
+					SRAのメタデータに漏れがあるので全てのデータが検索出来るわけではありません。ご了承下さい。
+				%li
+					Now only searching "study type=Transcriptome Analysis" is available (future: Resequencing, Epigenetics, etc.).
+					%br
+					現在はTranscriptome Analysisのみの検索に対応しています(拡充予定です)。
+				%li
+					All result from submission, study, experiment, run, sample from SRA is shown in one page.
+					%br
+					SRAにおける該当データのsubmission, study, experiment, sampleの情報を一度に見ることができます。
+				%li
+					Only the information which seems to be needed when the data is used for research is shown.
+					%br
+					データをダウンロードして使用する際に必要とされる情報だけを表示することに特化しています。
+				%li
+					Link for downloading data from DDBJ ftp is available.
+					%br
+					データをDDBJからftpダウンロードするためのリンクを貼っています。
+					
+			%h3{ :class => "log" } update log
+			%p
+				22. June 2011 - updated to 鎖鋸2.0. add feature and fixed interface. 
+				%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?p=347", :target => "_blank" } blog
+			%p
+				9. June 2011 - updated to 鎖鋸1.0. bug fixed, searching for Transciptome Analysis only. 
+				%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?p=286", :target => "_blank" } blog
+			%p
+				2. June 2011 - launched 鎖鋸 beta. 
+				%a{ :href => "http://g86.dbcls.jp/~iNut/chateautogo/?p=280", :target => "_blank" } blog

@@ -21,7 +21,7 @@ def fix_json(taxon_id, study_type)
 			end
 		end
 		
-		pmid = irumono[0]
+	 	pmid = irumono[0]
 		url_pubmed = "http://www.ncbi.nlm.nih.gov/pubmed/#{pmid}"
 		pp url_pubmed
 		pubmed_html = Nokogiri::HTML(open(url_pubmed))
@@ -37,15 +37,17 @@ end
 
 def refresh_json # refresh json data from sra.dbcls.jp after fix data with fix_json
 	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
-	study_type = ["Transcriptome+Analysis"]
+	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
 	
 	organism.each do |name, id|
+		wholeset = []
 		study_type.each do |type|
 			pubmed_metadata = fix_json(id, type) # method defined above
-			
-			type_unplus = type.gsub("+","")
-			open("./SRAs_json/#{type_unplus}_#{name}.json","w") { |f| JSON.dump(pubmed_metadata, f) }
+			pubmed_metadata.each do |set|
+				wholeset.push(set)
+			end
 		end
+		open("./SRAs_json_test/#{name}.json","w") { |f| JSON.dump(wholeset, f) }
 	end
 end
 
@@ -120,7 +122,11 @@ class GetMetadata
 							dra_run = open("http://trace.ddbj.nig.ac.jp/DRASearch/run?acc=#{run_id}").read
 							spotnum = dra_run.scan(/spots<\/td><td><span id=\"number_of_spot\">(.*)<\/span><\/td>/).flatten.join("")
 							basenum = dra_run.scan(/Number of bases<\/td><td>(.*)<\/td><\/tr>/).flatten.join("")
-							read_length = basenum.gsub(",","").to_i / spotnum.gsub(",","").to_i
+							if spotnum.gsub(",","").to_i != 0
+								read_length = basenum.gsub(",","").to_i / spotnum.gsub(",","").to_i
+							else
+								puts run_id, "\n", spotnum, "\n", basenum
+							end
 							run_seq_run.push([run_id, spotnum, basenum, read_length.to_s])
 						end
 					end
@@ -186,16 +192,16 @@ end #end of class BuildDB
 if __FILE__ == $0
 
 #	to refresh json database on local server, uncomment the line below
-	refresh_json
+#	refresh_json
 
 	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
-	study_type = ["Transcriptome+Analysis"]
+#	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
 	
 	organism.each_key do |name|
-		study_type.each do |type|
+#		study_type.each do |type|
 			content_db = []
-			type_unplus = type.gsub("+","")
-			path_db_json = "./SRAs_json/#{type_unplus}_#{name}.json"
+			#type_unplus = type.gsub("+","")
+			path_db_json = "./SRAs_json_test/#{name}.json"
 			db = open(path_db_json){ |f| JSON.load(f) }
 			db.each do |set|
 				acc_id = set[4]
@@ -208,9 +214,19 @@ if __FILE__ == $0
 				section_exp = meta.exp_info
 				section_sample = meta.sample_info
 				
+				if !section_study
+					section_study = "no study metadata"
+				end
+				if !section_exp
+					section_exp = "no experiment metadata"
+				end
+				if !section_sample
+					section_sample = "no sample metadata"
+				end
+				
 				content_db.push([acc_id, section_pubmed, section_study, section_exp, section_sample])
 			end
-			open("./ksrnk_json/#{type_unplus}_#{name}.json","w") { |f| JSON.dump(content_db, f) }
+			open("./ksrnk_json_test/#{name}.json","w") { |f| JSON.dump(content_db, f) }
 		end
-	end
+#	end
 end

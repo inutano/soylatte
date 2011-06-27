@@ -15,6 +15,7 @@
 						- ncbi = "http://www.ncbi.nlm.nih.gov/sra/?term=" + sub_id
 						%h1{ :id => sub_id }
 							%a{ :href => ncbi, :target => "_blank" }= sub_id	
+					
 					%section{ :class => "pubmed" }
 						- set[1].each do |pmset|
 							- pmid = pmset[0]
@@ -29,18 +30,24 @@
 							%p{ :class => "article_abstract" }= article_abstract
 							%p{ :class => "article_author" }= author
 							%p{ :class => "pmid" }= "pmid: " + pmid
+					
 					%section{ :class => "study"}
+						%h2{ :class => "study_top", :align => "right" }= "Study"
+							
+					- if set[2].class == Array
 						- study_id = set[2][0]
 						- study_abstract = set[2][1]
 						- study_description = set[2][2]
-						
-						%h2{ :class => "study_top", :align => "right" }= "Study"
 						%h3{ :class => "study_id" }= "study id: " + study_id
-						
 						%li{ :class => "study_abstract" }= "study abstract: " + study_abstract
 						%li{ :class => "study_description" }= "study description: " + study_description
 						
+					- else
+						%h2{ :class => "study_top", :align => "right" }= "Study"
+						%h3= "no study metadata."
+						
 					%section{ :class => "experiment" }
+					- if set[3].class == Array	
 						- expnum = set[3].length.to_s
 						%h2{ :class => "experiment_top", :align => "right" }= "Experiment"
 						.expnum{ :align => "right" }= "total " + expnum
@@ -66,54 +73,65 @@
 							%li{ :class => "sample_id_for_experiment" }
 								%a{ :href => "\##{sample_id}" }= "sample: " + sample_id
 							
-							- exp[6].each do |run|
-								- run_id = run[0]
-								- ncbi_run = "http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&m=data&s=viewer&run=#{run_id}"
-								- ftp_url_run = "#{ftp_url}/#{run_id}/#{run_id}.lite.sra"
-								- spotnum = run[1]
-								- basenum = run[2]
-								- read_length = run[3]
-								
-								%h3{ :class => "run_id" }
-									%a{ :href => ncbi_run }= "run id: " + run_id
-								%p{ :class => "download_link" }
-									%a{ :href => "ftp_url_run" }= "ftp download from DDBJ"
-								%li{ :class => "number_of_spot" }= "number of spots: " + spotnum
-								%li{ :class => "number_of_bases" }= "number of bases: " + basenum
-								%li{ :class => "read_length" }= "average read length: " + read_length
+							- if exp[6].class == Array
+								- exp[6].each do |run|
+									- run_id = run[0]
+									- ncbi_run = "http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&m=data&s=viewer&run=#{run_id}"
+									- ftp_url_run = "#{ftp_url}/#{run_id}/#{run_id}.lite.sra"
+									- spotnum = run[1]
+									- basenum = run[2]
+									- read_length = run[3]
+									
+									%h3{ :class => "run_id" }
+										%a{ :href => ncbi_run }= "run id: " + run_id
+									%p{ :class => "download_link" }
+										%a{ :href => ftp_url_run }= "ftp download from DDBJ"
+									%li{ :class => "number_of_spot" }= "number of spots: " + spotnum
+									%li{ :class => "number_of_bases" }= "number of bases: " + basenum
+									%li{ :class => "read_length" }= "average read length: " + read_length
+							- else
+								%h3= "no sequence run metadata."
 						
 							- index_lastexp = set[3].length - 1
 							- expid_last = set[3][index_lastexp][0]
 							- if exp_id != expid_last
 								%hr
+					- else
+						%h2{ :class => "experiment_top", :align => "right" }= "Experiment"
+						%h3= "no experiment metadata."
+					
 						
 					%section{ :class => "sample" }
+					- if set[4].class == Array
 						- samplenum = set[4].length.to_s
 						%h2{ :class => "sample_top", :align => "right" }= "Sample"
 						.samplenum{ :align => "right" }= "total" + samplenum
 					
-					- set[4].each do |sample|
-						- sample_id = sample[0]
-						- sample_desc = sample[1]
-						%h3{ :class => "sample_id", :id => "#{sample_id}" }= "sampled id: " + sample_id
-						%li{ :class => "sample_description" }= "sample description: " + sample_desc
-						%h4{ :class => "sample_attribution" }
+						- set[4].each do |sample|
+							- sample_id = sample[0]
+							- sample_desc = sample[1]
+							%h3{ :class => "sample_id", :id => "#{sample_id}" }= "sampled id: " + sample_id
+							%li{ :class => "sample_description" }= "sample description: " + sample_desc
+							%h4{ :class => "sample_attribution" }
 					
-						- sample[2].each do |attr|
-							- attr_tag = attr[0]
-							- attr_val = attr[1]
-							%span{ :id => attr_tag }= attr_tag + ": " + attr_val
+							- sample[2].each do |attr|
+								- attr_tag = attr[0]
+								- attr_val = attr[1]
+								%span{ :id => attr_tag }= attr_tag + ": " + attr_val
+					
+							- index_lastsample = set[4].length - 1
+							- sampleid_last = set[4][index_lastsample][0]
+							- if sample_id != sampleid_last
+								%hr
+					- else
+						%h2{ :class => "sample_top", :align => "right" }= "Sample"
+						%h3= "no sample metadata."
+					
+					- index_lastset = @result.length - 1
+					- subid_last = @result[index_lastset][0]
+					- if sub_id != subid_last
+						%hr{ :class => "section_end" }
 						
-						- index_lastsample = set[4].length - 1
-						- sampleid_last = set[4][index_lastsample][0]
-						- if sample_id != sampleid_last
-							%hr
-				
-				- index_lastset = @result.length - 1
-				- subid_last = @result[index_lastset][0]
-				- if sub_id != subid_last
-					%hr{ :class => "section_end" }
-					
 		.right_box
 			.search_query{ :align => "right" }= "search query: " + @query
 			- resultnum = @result.length.to_s
