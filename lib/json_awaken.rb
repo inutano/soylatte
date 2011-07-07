@@ -47,7 +47,7 @@ def refresh_json # refresh json data from sra.dbcls.jp after fix data with fix_j
 				wholeset.push(set)
 			end
 		end
-		open("./SRAs_json_test/#{name}.json","w") { |f| JSON.dump(wholeset, f) }
+		open("./SRAs_json/#{name}.json","w") { |f| JSON.dump(wholeset, f) }
 	end
 end
 
@@ -192,7 +192,7 @@ end #end of class BuildDB
 if __FILE__ == $0
 
 #	to refresh json database on local server, uncomment the line below
-#	refresh_json
+	refresh_json
 
 	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
 #	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
@@ -201,7 +201,7 @@ if __FILE__ == $0
 #		study_type.each do |type|
 			content_db = []
 			#type_unplus = type.gsub("+","")
-			path_db_json = "./SRAs_json_test/#{name}.json"
+			path_db_json = "./SRAs_json/#{name}.json"
 			db = open(path_db_json){ |f| JSON.load(f) }
 			db.each do |set|
 				acc_id = set[4]
@@ -226,7 +226,7 @@ if __FILE__ == $0
 				
 				content_db.push([acc_id, section_pubmed, section_study, section_exp, section_sample])
 			end
-			open("./ksrnk_json_test/#{name}.json","w") { |f| JSON.dump(content_db, f) }
+			open("./ksrnk_json/#{name}.json","w") { |f| JSON.dump(content_db, f) }
 		end
 #	end
 end
