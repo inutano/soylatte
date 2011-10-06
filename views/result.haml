@@ -11,14 +11,15 @@
 			- @result.each do |set|
 				%article
 					%section{ :class => "submission"  }
-						- sub_id = set[0]
+						- sub_id = set[0].gsub('<font color="#E597B2">','').gsub('</font>','')
 						- ncbi = "http://www.ncbi.nlm.nih.gov/sra/?term=" + sub_id
 						%h1{ :id => sub_id }
 							%a{ :href => ncbi, :target => "_blank" }= sub_id	
+						%a{ :href => "http://g86.dbcls.jp/kusarinoko/show/#{sub_id}", :target => "_blank", :class => "indvlink" } link to this entry
 					
 					%section{ :class => "pubmed" }
 						- set[1].each do |pmset|
-							- pmid = pmset[0]
+							- pmid = pmset[0].gsub('<font color="#E597B2">','').gsub('</font>','')
 							- article_title = pmset[1]
 							- journal = pmset[2]
 							- date = pmset[3]
@@ -53,7 +54,7 @@
 						.expnum{ :align => "right" }= "total " + expnum
 						
 						- set[3].each do |exp|
-							- exp_id = exp[0]
+							- exp_id = exp[0].gsub('<font color="#E597B2">','').gsub('</font>','')
 							- dbcenter_head = exp_id.slice(0,3)
 							- expid_head = exp_id.slice(0,6)
 							- ftp_url = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/#{dbcenter_head}/#{expid_head}/#{exp_id}"
@@ -75,7 +76,7 @@
 							
 							- if exp[6].class == Array
 								- exp[6].each do |run|
-									- run_id = run[0]
+									- run_id = run[0].gsub('<font color="#E597B2">','').gsub('</font>','')
 									- ncbi_run = "http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&m=data&s=viewer&run=#{run_id}"
 									- ftp_url_run = "#{ftp_url}/#{run_id}/#{run_id}.lite.sra"
 									- spotnum = run[1]

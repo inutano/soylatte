@@ -61,6 +61,22 @@ post "/result" do
 	end
 end
 
+get "/show/:id" do |id|
+	if id && id =~ /^(S|E|D)R(A|P|S|R|X)\d{6}$/
+		@organism = select_species("all")
+		@query = id
+		@result = nokosearch(@organism, @query)
+		
+		if @result == "no result"
+			haml :no_result
+		else
+			haml :result
+		end
+	else
+		haml :retry
+	end
+end
+
 not_found do
 	haml :not_found
 end

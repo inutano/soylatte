@@ -162,7 +162,7 @@ def db_search(dataset,query)
 	elsif noko.search_sample
 		return true
 	else
-		return false
+ 		return false
 	end
 end
 
@@ -170,10 +170,10 @@ def query_highlight(dataset, queryset)
 	result = []
 	dataset.each do |set|
 		queryset.each do |query|
-			tag_inserted = '<font color="#E597B2"><strong>' + query + '</strong></font>'			
+			tag_inserted = '<font color="#E597B2">' + query + '</font>'
 			set.reflexive_map! do |s|
 				if s.class == String
-					s.gsub(/#{query}/i, tag_inserted)
+					s.gsub(/#{query}/i,tag_inserted)
 				end
 			end
 		end

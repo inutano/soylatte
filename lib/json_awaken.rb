@@ -6,8 +6,10 @@ require "nokogiri"
 require "pp"
 
 def fix_json(taxon_id, study_type)
-	sras_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?"
-	url_json = "#{sras_url}type=#{study_type}&taxon_id=#{taxon_id}"
+	#sras_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?" # previous method
+	#url_json = "#{sras_url}type=#{study_type}&taxon_id=#{taxon_id}"
+	
+	url_json = "./raw_json/#{study_type}+#{taxon_id}.json"
 	
 	sotogawa = open(url_json) { |n| JSON.load(n) }
 	nakamidono = sotogawa["ResultSet"]["Result"]
@@ -36,7 +38,7 @@ def fix_json(taxon_id, study_type)
 end
 
 def refresh_json # refresh json data from sra.dbcls.jp after fix data with fix_json
-	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
+	organism = { "Allspecies" => "", "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702" }
 	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
 	
 	organism.each do |name, id|
@@ -47,7 +49,7 @@ def refresh_json # refresh json data from sra.dbcls.jp after fix data with fix_j
 				wholeset.push(set)
 			end
 		end
-		open("./SRAs_json/#{name}.json","w") { |f| JSON.dump(wholeset, f) }
+		open("./SRAs_json_test/#{name}.json","w") { |f| JSON.dump(wholeset, f) }
 	end
 end
 
@@ -192,7 +194,7 @@ end #end of class BuildDB
 if __FILE__ == $0
 
 #	to refresh json database on local server, uncomment the line below
-	refresh_json
+#	refresh_json
 
 	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
 #	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
@@ -226,7 +228,7 @@ if __FILE__ == $0
 				
 				content_db.push([acc_id, section_pubmed, section_study, section_exp, section_sample])
 			end
-			open("./ksrnk_json/#{name}.json","w") { |f| JSON.dump(content_db, f) }
+			open("./ksrnk_json_test/#{name}.json","w") { |f| JSON.dump(content_db, f) }
 		end
 #	end
 end
