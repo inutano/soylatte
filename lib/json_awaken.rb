@@ -5,11 +5,13 @@ require "json"
 require "nokogiri"
 require "pp"
 
-def fix_json(taxon_id, study_type)
-	#sras_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?" # previous method
-	#url_json = "#{sras_url}type=#{study_type}&taxon_id=#{taxon_id}"
+def fix_json(taxon_id)
+#def fix_json(taxon_id, study_type)
+	sras_url = "http://sra.dbcls.jp/cgi-bin/publication2.php?" # previous method
+#	url_json = "#{sras_url}type=#{study_type}&taxon_id=#{taxon_id}"
+	url_json = "#{sras_url}taxon_id=#{taxon_id}"
 	
-	url_json = "./raw_json/#{study_type}+#{taxon_id}.json"
+	#url_json = "./raw_json/#{study_type}+#{taxon_id}.json"
 	
 	sotogawa = open(url_json) { |n| JSON.load(n) }
 	nakamidono = sotogawa["ResultSet"]["Result"]
@@ -39,16 +41,16 @@ end
 
 def refresh_json # refresh json data from sra.dbcls.jp after fix data with fix_json
 	organism = { "Allspecies" => "", "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702" }
-	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
+#	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study", "Metagenomics"]
 	
 	organism.each do |name, id|
 		wholeset = []
-		study_type.each do |type|
-			pubmed_metadata = fix_json(id, type) # method defined above
+#		study_type.each do |type|
+			pubmed_metadata = fix_json(id) # method defined above
 			pubmed_metadata.each do |set|
 				wholeset.push(set)
 			end
-		end
+#		end
 		open("./SRAs_json_test/#{name}.json","w") { |f| JSON.dump(wholeset, f) }
 	end
 end
@@ -194,7 +196,7 @@ end #end of class BuildDB
 if __FILE__ == $0
 
 #	to refresh json database on local server, uncomment the line below
-#	refresh_json
+	refresh_json
 
 	organism = { "Hsapiens" => "9606", "Mmusculus" => "10090", "Athaliana" => "3702", "Allspecies" => "" }
 #	study_type = ["Transcriptome+Analysis", "Resequencing", "Epigenetics", "Whole+Genome+Sequencing", "Gene+Regulation+Study"]
@@ -203,7 +205,7 @@ if __FILE__ == $0
 #		study_type.each do |type|
 			content_db = []
 			#type_unplus = type.gsub("+","")
-			path_db_json = "./SRAs_json/#{name}.json"
+			path_db_json = "./SRAs_json_test/#{name}.json"
 			db = open(path_db_json){ |f| JSON.load(f) }
 			db.each do |set|
 				acc_id = set[4]
