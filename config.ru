@@ -1,2 +1,2 @@
-require File.expand_path(File.dirname(__FILE__)) + "/neo_kusarinoko"
+require File.expand_path(File.dirname(__FILE__)) + "/gkusarinoko"
 run Sinatra::Application
