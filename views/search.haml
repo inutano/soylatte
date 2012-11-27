@@ -1,0 +1,27 @@
+!!! XML
+!!!
+%html
+  %head
+    %title
+    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+  
+  %body
+    %header
+      %h1 op. soylatte
+      %p :)
+    
+    %section
+      %h2 search result
+      %hr
+      
+      %h4 search query
+      %p= "species: " + @sp
+      %p= "study_type: " + @st
+      %p= "platform: " + @pl
+      %p= "search_query: " + @qu
+      
+    %footer
+      powered by
+      %a{ :href => "http://dbcls.rois.ac.jp/en" }
+        DBCLS
+      , project licensed under CC-BY 2.1 JP
