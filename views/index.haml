@@ -1,0 +1,27 @@
+!!! XML
+!!!
+%html
+  %head
+    %title
+    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+  
+  %body
+    %header
+      %h1 op. soylatte
+      %p :)
+    
+    %section
+      %h2 search public high throughput sequencing data
+      %hr
+      
+      %h4 select search target by following filters;
+      %form{ :action => "", :method => "POST" }
+        %fieldset{ :id => "species" }
+          %input{ :type => "checkbox", :name => "species", :value => "9606"} human
+          %br
+    
+    %footer
+      powered by
+      %a{ :href => "http://dbcls.rois.ac.jp/en" }
+        DBCLS
+      , project licensed under CC-BY 2.1 JP
