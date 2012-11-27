@@ -38,6 +38,11 @@ get "/" do
 end
 
 post "/search" do
+  @sp = params[:species]
+  @st = params[:study_type]
+  @pl = params[:platform]
+  @qu = params[:search_query]
+
   query_raw = params[:query]
   query = query_filter(query_raw)
   @result = soy_search(query)
