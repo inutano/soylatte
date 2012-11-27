@@ -16,9 +16,29 @@
       
       %h4 select search target by following filters;
       %form{ :action => "", :method => "POST" }
-        %fieldset{ :id => "species" }
-          %input{ :type => "checkbox", :name => "species", :value => "9606"} human
-          %br
+        %fieldset
+          %select{ :id => "species", :name => "species" }
+            %option{ :value => "9606" }
+              human
+            %option{ :value => "10090" }
+              mouse
+            %option{ :value => "10116" }
+              rat
+          %select{ :id => "study_type", :name => "study_type" }
+            %option{ :value => "D" }
+              Genomic Sequence
+            %option{ :value => "R" }
+              Transcriptomic Sequence
+            %option{ :value => "M" }
+              Metagenomic Sequence
+          %select{ :id => "platform", :name => "platform" }
+            %option{ :value => "MiSeq" }
+              Illumina MiSeq
+            %option{ :value => "IonProton" }
+              Ion Proton
+            %option{ :value => "GridION" }
+              GridION
+          %input{ :type => "submit", :value => "submit" }
     
     %footer
       powered by
