@@ -3,6 +3,21 @@
 require "sinatra"
 require "haml"
 require "sass"
+require "yaml"
+
+Configuration = YAML.load_file("./lib/config.yaml")
+Logfile = Configuration["logfile"]
+
+def logging(query)
+  log = #{query} + "\t" + Time.now.to_s
+  open(Logfile,"a"){|f| f.puts}
+end
+
+set :haml, :format => :html5
+
+before do
+   logging(query) if params[:query]
+end
 
 get "/" do
   haml :index
@@ -17,4 +32,8 @@ post "/search" do
   else
     haml :search_failed
   end
+end
+
+not_found do
+  haml :not_found
 end
