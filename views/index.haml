@@ -14,9 +14,11 @@
       %h2 search public high throughput sequencing data
       %hr
       
-      %h4 select search target by following filters;
-      %form{ :action => "", :method => "POST" }
+      %form{ :name => "filters", :action => "/search", :method => "POST" }
+        %h4 select filters to reduce search target
         %fieldset
+          %legend
+            Filtering Option
           %select{ :id => "species", :name => "species" }
             %option{ :value => "9606" }
               human
@@ -38,8 +40,14 @@
               Ion Proton
             %option{ :value => "GridION" }
               GridION
-          %input{ :type => "submit", :value => "submit" }
-    
+        %button{ :type => "button" }
+          check
+        
+        %h4 keyword search with fileters selected above
+        %input{ :type => "text", :name => "keyword", :width => 86 }
+        %input{ :type => "submit", :value => "search" }
+        
+      
     %footer
       powered by
       %a{ :href => "http://dbcls.rois.ac.jp/en" }
