@@ -61,5 +61,11 @@ if __FILE__ == $0
   when "--connect"
     Groonga::Database.open(db)
   
+  when "--insert"
+    accessions = ARGV[1]
+    runids = `grep '^RR' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
+    runids.each do |runid|
+      `/usr/local/gridengine/bin/lx24-amd64/qsub -N #{runid} ./db_facet_insert.rb #{runid}`
+    end
   end
 end
