@@ -14,6 +14,7 @@ def create_facet_db(db_path)
     table.uint16("study_type")
     table.shorttext("instrument")
     table.text("fulltext")
+    table.bool("paper")
   end
   
   Groonga::Schema.create_table("Idx_int", :type => :hash)
@@ -22,6 +23,7 @@ def create_facet_db(db_path)
     table.index("Facets.taxonid")
     table.index("Facets.study_type")
     table.index("Facets.instrument")
+    table.index("Facets.paper")
   end
   
   Groonga::Schema.create_table("Idx_text",
@@ -35,18 +37,16 @@ def create_facet_db(db_path)
 end
 
 def add_record(insert)
-  facets = Groonga["Facets"]
+  db = Groonga["Facets"]
   runid = insert[:runid]
-  facets.add(runid)
+  db.add(runid)
   
-  record = facets[runid]
+  record = db[runid]
   record.studyid = insert[:studyid]
   record.taxonid = insert[:taxonid]
   record.study_type = insert[:study_type]
   record.instrument = insert[:instrument]
   record.fulltext = insert[:full_text]
-rescue
-  retry   
 end
 
 if __FILE__ == $0
@@ -59,13 +59,17 @@ if __FILE__ == $0
     create_facet_db(db_path)
   
   when "--connect"
-    Groonga::Database.open(db)
-  
-  when "--insert"
     accessions = ARGV[1]
     runids = `grep '^RR' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
-    runids.each do |runid|
-      `/usr/local/gridengine/bin/lx24-amd64/qsub -N #{runid} ./db_facet_insert.rb #{runid}`
+    
+    inserts = Parallel.map(runids) do |runid|
+      f = FacetParser.new(runid)
+      f.facets
+    end
+    
+    Groonga::Database.open(db_path)
+    Parallel.each(inserts) do |insert|
+      add_record(insert)
     end
   end
 end
