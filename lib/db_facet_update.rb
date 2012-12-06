@@ -46,7 +46,8 @@ def add_record(insert)
   record.taxonid = insert[:taxonid]
   record.study_type = insert[:study_type]
   record.instrument = insert[:instrument]
-  record.fulltext = insert[:full_text]
+  record.fulltext = insert[:fulltext]
+  record.paper = insert[:paper]  
 end
 
 if __FILE__ == $0
