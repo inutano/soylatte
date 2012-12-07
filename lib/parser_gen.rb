@@ -3,7 +3,9 @@
 require "yaml"
 require "open-uri"
 require "json"
-require "sra_metadata_parser"
+require "./sra_metadata_parser"
+require "./pubmed_metadata_parser"
+require "./pmc_metadata_parser"
 
 class SRAParserGen
   def self.load_files(config_path)
@@ -109,14 +111,45 @@ class SRAParserGen
   end
   
   def pubmed_parser
-    pmid = @@publication[@subid.intern]
-    
+    pmid_arr = @@publication[@subid.intern]
+    if pmid
+      pmid_arr.map do |pmid|
+        eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
+        arg = "db=pubmed&id=#{pmid}&retmode=xml"
+        xml = open(eutil_base + arg).read
+        PubMedMetadataParser.new(xml)
+      end
+    end
   end
   
   def pmc_parser
-    pmcid = @@publication[@subid.intern].map do |pmid|
-      `grep #{pmid} #{@@pmc_ids}`.split(",")[8]
+    pmid_arr = @@publication[@subid.intern]
+    if pmid_arr
+      pmid_arr.map do |pmid|
+        pmcid = `grep #{pmid} #{@@pmc_ids}`.split(",")[8]
+        if pmcid
+          eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
+          arg = "db=pmc&id=#{pmcid}&retmode=xml"
+          xml = open(eutil_base + arg).read
+          PMCMetadataParser.new(xml)
+        end
+      end
     end
   end
 end
 
+if __FILE__ == $0
+  require "ap"
+  SRAParserGen.load_files("../lib/config.yaml")
+  
+  id = "DRR000001"
+  p = SRAParserGen.new(id)
+  
+  ap p.submission_parser
+  ap p.study_parser
+  ap p.experiment_parser
+  ap p.sample_parser
+  ap p.run_parser
+  ap p.pubmed_parser
+  ap p.pmc_parser
+end
