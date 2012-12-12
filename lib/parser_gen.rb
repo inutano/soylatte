@@ -56,7 +56,7 @@ class SRAParserGen
                 `grep #{@id} #{@@accessions} | cut -f 13 | sort -u`.split("\n")
               end
     xml = File.join(@xml_head, "#{@subid}.study.xml")
-    studyid_arr.map do |studyid|
+    studyid_arr.select{|id| id =~ /^(S|E|D)RP\d{6}$/ }.map do |studyid|
       SRAMetadataParser::Study.new(studyid, xml)
     end
   end
@@ -73,7 +73,7 @@ class SRAParserGen
                 `grep #{@id} #{@@accessions} | cut -f 11 | sort -u`.split("\n")
               end
     xml = File.join(@xml_head, "#{@subid}.experiment.xml")
-    expid_arr.map do |expid|
+    expid_arr.select{|id| id =~ /^(S|E|D)RX\d{6}$/ }.map do |expid|
       SRAMetadataParser::Experiment.new(expid, xml)
     end
   end
@@ -90,7 +90,7 @@ class SRAParserGen
                 `grep #{@id} #{@@accessions} | cut -f 12 | sort -u`.split("\n")
               end
     xml = File.join(@xml_head, "#{@subid}.sample.xml")
-    sampleid_arr.map do |sampleid|
+    sampleid_arr.select{|id| id =~ /^(S|E|D)RS\d{6}$/ }.map do |sampleid|
       SRAMetadataParser::Sample.new(sampleid, xml)
     end
   end
@@ -105,7 +105,7 @@ class SRAParserGen
                 `grep #{@id} #{@@run_members} | cut -f 1 | sort -u`.split("\n")
               end
     xml = File.join(@xml_head, "#{@subid}.run.xml")
-    runid_arr.map do |runid|
+    runid_arr.select{|id| id =~ /^(S|E|D)RR\d{6}$/ }.map do |runid|
       SRAMetadataParser::Run.new(runid, xml)
     end
   end
