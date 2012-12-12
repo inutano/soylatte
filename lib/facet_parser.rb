@@ -27,6 +27,8 @@ class FacetParser
   
   def taxonid
     @sample_parser.first.taxon_id
+  rescue
+    nil
   end
   
   def study_type
@@ -46,10 +48,14 @@ class FacetParser
                 "Synthetic Genomics" => 0 }
     described_study_type = @study_parser.first.study_type
     app_ref[described_study_type]
+  rescue
+    nil
   end
   
   def instrument
     @exp_parser.first.instrument_model
+  rescue
+    nil
   end
   
   def full_text
