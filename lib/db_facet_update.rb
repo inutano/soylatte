@@ -3,6 +3,7 @@
 require "yaml"
 require "groonga"
 require "parallel"
+require "./facet_parser"
 
 def create_facet_db(db_path)
   Groonga::Database.create(:path => db_path)
@@ -12,7 +13,7 @@ def create_facet_db(db_path)
     table.uint16("runid")
     table.uint16("taxonid")
     table.uint16("study_type")
-    table.shorttext("instrument")
+    table.short_text("instrument")
     table.text("fulltext")
     table.bool("paper")
   end
@@ -55,20 +56,20 @@ if __FILE__ == $0
   config = YAML.load_file(config_path)
   db_path = config["db_path"]
 
-  Groonga::Context.default_option = { encoding: :utf8 }
+  Groonga::Context.default_options = { encoding: :utf8 }
   case ARGV.first
   when "--up"
     create_facet_db(db_path)
   
-  when "--connect"
+  when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
+    studyids = `grep '^DRP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
     
-    FacetParser.load_file(config_path)
+    FacetParser.load_files(config_path)
     
     inserts = Parallel.map(studyids) do |studyid|
       f = FacetParser.new(studyid)
-      f.facets
+      f.insert
     end
     
     Groonga::Database.open(db_path)
