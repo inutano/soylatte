@@ -9,7 +9,7 @@ def create_facet_db(db_path)
 
   Groonga::Schema.create_table("Facets", :type => :hash)
   Groonga::Schema.change_table("Facets") do |table|
-    table.shorttext("studyid")
+    table.uint16("runid")
     table.uint16("taxonid")
     table.uint16("study_type")
     table.shorttext("instrument")
@@ -19,7 +19,7 @@ def create_facet_db(db_path)
   
   Groonga::Schema.create_table("Idx_int", :type => :hash)
   Groonga::Schema.change_table("Idx_int") do |table|
-    table.index("Facets.studyid")
+    table.index("Facets.runid")
     table.index("Facets.taxonid")
     table.index("Facets.study_type")
     table.index("Facets.instrument")
@@ -38,11 +38,11 @@ end
 
 def add_record(insert)
   db = Groonga["Facets"]
-  runid = insert[:runid]
-  db.add(runid)
+  studyid = insert[:studyid]
+  db.add(studyid)
   
-  record = db[runid]
-  record.studyid = insert[:studyid]
+  record = db[studyid]
+  record.runid = insert[:runid]
   record.taxonid = insert[:taxonid]
   record.study_type = insert[:study_type]
   record.instrument = insert[:instrument]
@@ -53,7 +53,7 @@ end
 if __FILE__ == $0
   config_path = "./config.yaml"
   config = YAML.load_file(config_path)
-  db_path = config["facet"]["db_path"]
+  db_path = config["db_path"]
 
   Groonga::Context.default_option = { encoding: :utf8 }
   case ARGV.first
@@ -61,13 +61,13 @@ if __FILE__ == $0
     create_facet_db(db_path)
   
   when "--connect"
-    accessions = ARGV[1]
-    runids = `grep '^RR' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
+    accessions = config["file_path"]["sra_accessions"]
+    studyids = `grep '^RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
     
     FacetParser.load_file(config_path)
     
-    inserts = Parallel.map(runids) do |runid|
-      f = FacetParser.new(runid)
+    inserts = Parallel.map(studyids) do |studyid|
+      f = FacetParser.new(studyid)
       f.facets
     end
     

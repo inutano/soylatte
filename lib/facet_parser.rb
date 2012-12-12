@@ -9,9 +9,9 @@ class FacetParser
     @@run_members = YAML.load_file(config_path)["file_path"]["sra_run_members"]
   end
   
-  def initialize(runid)
-    @runid = runid
-    pgen = SRAParserGen.new(runid)
+  def initialize(studyid)
+    @studyid = studyid
+    pgen = SRAParserGen.new(studyid)
     @sub_parser = pgen.submission_parser
     @study_parser = pgen.study_parser
     @exp_parser = pgen.experiment_parser
@@ -21,8 +21,8 @@ class FacetParser
     @pmc_parser = pgen.pmc_parser
   end
   
-  def studyid
-    `grep #{@runid} #{@@run_members} | cut -f 5`.chomp
+  def runid
+    `grep #{@studyid} #{@@run_members} | cut -f 1`.split("\n")
   end
   
   def taxonid
@@ -121,8 +121,8 @@ class FacetParser
   end
   
   def insert
-    { runid: @runid,
-      studyid: self.studyid,
+    { studyid: @studyid,
+      runid: self.runid.length,
       taxonid: self.taxonid,
       study_type: self.study_type,
       instrument: self.instrument,
@@ -134,7 +134,7 @@ end
 if __FILE__ == $0
   require "ap"
   FacetParser.load_files("./config.yaml")
-  fp = FacetParser.new("DRR000001")
+  fp = FacetParser.new("DRP000001")
   
   puts fp.insert
 end
