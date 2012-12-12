@@ -14,14 +14,13 @@ class SRAParserGen
     @@accessions = file_path["sra_accessions"]
     @@run_members = file_path["sra_run_members"]
     @@pmc_ids = file_path["PMC-ids"]
-    @@pmc_file_list = file_path["PMC_File_list"]
     @@xmlbase = file_path["xmlbase"]
 
     publication_url = file_path["publication"]
     publication_raw = open(publication_url).read
     publication_json = JSON.parse(publication_raw, :symbolize_names => true)
     @@publication = {}    
-    publication_json[:ResultSet][:Result].each |node|
+    publication_json[:ResultSet][:Result].each do |node|
       @@publication[node[:sra_id].intern] ||= []
       @@publication[node[:sra_id].intern] << node[:pmid]
     end
@@ -36,12 +35,13 @@ class SRAParserGen
              else
                `grep #{id} #{@@accessions} | cut -f 2 | sort -u`.chomp
              end
-    @xml_head = File.join(@@xmlbase, @subid(0,6), @subid)
+    @xml_head = File.join(@@xmlbase, @subid.slice(0,6), @subid)
   end
+  attr_accessor :subid
   
   def submission_parser
-    xml = File.join(xml_head, "#{@subid}.submission.xml")
-    SRAMetadataParser::Submission.new(@subid, xml)
+    xml = File.join(@xml_head, "#{@subid}.submission.xml")
+    [SRAMetadataParser::Submission.new(@subid, xml)]
   end
   
   def study_parser
@@ -55,9 +55,9 @@ class SRAParserGen
               else
                 `grep #{@id} #{@@accessions} | cut -f 13 | sort -u`.split("\n")
               end
-    xml = File.join(xml_head, "#{@subid}.study.xml")
+    xml = File.join(@xml_head, "#{@subid}.study.xml")
     studyid_arr.map do |studyid|
-      SRAMetadataParser::Study.new(@studyid, xml)
+      SRAMetadataParser::Study.new(studyid, xml)
     end
   end
   
@@ -72,9 +72,9 @@ class SRAParserGen
               else
                 `grep #{@id} #{@@accessions} | cut -f 11 | sort -u`.split("\n")
               end
-    xml = File.join(xml_head, "#{@subid}.experiment.xml")
+    xml = File.join(@xml_head, "#{@subid}.experiment.xml")
     expid_arr.map do |expid|
-      SRAMetadataParser::Experiment.new(@expid, xml)
+      SRAMetadataParser::Experiment.new(expid, xml)
     end
   end
   
@@ -89,9 +89,9 @@ class SRAParserGen
               else
                 `grep #{@id} #{@@accessions} | cut -f 12 | sort -u`.split("\n")
               end
-    xml = File.join(xml_head, "#{@subid}.sample.xml")
+    xml = File.join(@xml_head, "#{@subid}.sample.xml")
     sampleid_arr.map do |sampleid|
-      SRAMetadataParser::Sample.new(@sampleid, xml)
+      SRAMetadataParser::Sample.new(sampleid, xml)
     end
   end
   
@@ -104,15 +104,15 @@ class SRAParserGen
               else
                 `grep #{@id} #{@@run_members} | cut -f 1 | sort -u`.split("\n")
               end
-    xml = File.join(xml_head, "#{@subid}.run.xml")
+    xml = File.join(@xml_head, "#{@subid}.run.xml")
     runid_arr.map do |runid|
-      SRAMetadataParser::Run.new(@runid, xml)
+      SRAMetadataParser::Run.new(runid, xml)
     end
   end
   
   def pubmed_parser
     pmid_arr = @@publication[@subid.intern]
-    if pmid
+    if pmid_arr
       pmid_arr.map do |pmid|
         eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
         arg = "db=pubmed&id=#{pmid}&retmode=xml"
@@ -142,14 +142,16 @@ if __FILE__ == $0
   require "ap"
   SRAParserGen.load_files("../lib/config.yaml")
   
-  id = "DRR000001"
-  p = SRAParserGen.new(id)
-  
-  ap p.submission_parser
-  ap p.study_parser
-  ap p.experiment_parser
-  ap p.sample_parser
-  ap p.run_parser
-  ap p.pubmed_parser
-  ap p.pmc_parser
+  ids = ["DRR000001","DRR000010","DRR000020"]
+  ids.each do |id|
+    p = SRAParserGen.new(id)
+
+    ap p.submission_parser
+    ap p.study_parser
+    ap p.experiment_parser
+    ap p.sample_parser
+    ap p.run_parser
+    ap p.pubmed_parser
+    ap p.pmc_parser
+  end
 end
