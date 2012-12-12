@@ -51,7 +51,8 @@ def add_record(insert)
 end
 
 if __FILE__ == $0
-  config = YAML.load_file("./config.yaml")
+  config_path = "./config.yaml"
+  config = YAML.load_file(config_path)
   db_path = config["facet"]["db_path"]
 
   Groonga::Context.default_option = { encoding: :utf8 }
@@ -62,6 +63,8 @@ if __FILE__ == $0
   when "--connect"
     accessions = ARGV[1]
     runids = `grep '^RR' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
+    
+    FacetParser.load_file(config_path)
     
     inserts = Parallel.map(runids) do |runid|
       f = FacetParser.new(runid)
