@@ -4,6 +4,7 @@ require "sinatra"
 require "haml"
 require "sass"
 require "yaml"
+require "./lib/facet_controller"
 
 Configuration = YAML.load_file("./lib/config.yaml")
 Logfile = Configuration["logfile"]
@@ -14,11 +15,27 @@ def logging(query)
 end
 
 def query_filter(query_raw)
-  "cleaned query"
+  query_raw
+end
+
+def soy_filter(condition)
+  db = FacetController.new
+  
+  tax = condition[:taxonid]
+  stu = condition[:study_type]
+  ins = condition[:instrument])
+
+  { taxonid: db.count_taxon_id(tax),
+    study_id: db.count_study_type(stu),
+    instrument: db.count_instrument(ins),
+    on_demand: db.count_on_demand(tax, stu, ins) }
 end
 
 def soy_search(query)
-  [{ id: "SRP000001", paper: "11111111" }, { id: "ERP000001", paper: "22222222" }] if query
+  if query
+    db = FacetController.new
+    db.search_fulltext(query)
+  end
 end
 
 def get_material
@@ -37,12 +54,20 @@ get "/" do
   haml :index
 end
 
-post "/search" do
+post "/filter" do
   @sp = params[:species]
   @st = params[:study_type]
   @pl = params[:platform]
-  @qu = params[:search_query]
+  
+  taxonid = sp
+  study_type = st
+  instrument = pl
+  condition = { taxonid: taxonid, study_type: study_type, instrument: instrument }
+  @number_of_records = soy_filter(condition)
+  haml :filter
+end
 
+post "/search" do
   query_raw = params[:query]
   query = query_filter(query_raw)
   @result = soy_search(query)
