@@ -131,7 +131,7 @@ class FacetParser
   end
   
   def paper?
-    !@pub_parser.select{|p| p }.empty?
+    true if @pub_parser
   end
   
   def insert
