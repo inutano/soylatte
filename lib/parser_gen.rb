@@ -42,6 +42,8 @@ class SRAParserGen
   def submission_parser
     xml = File.join(@xml_head, "#{@subid}.submission.xml")
     [SRAMetadataParser::Submission.new(@subid, xml)]
+  rescue Errno::ENOENT
+    nil
   end
   
   def study_parser
@@ -59,6 +61,8 @@ class SRAParserGen
     studyid_arr.select{|id| id =~ /^(S|E|D)RP\d{6}$/ }.map do |studyid|
       SRAMetadataParser::Study.new(studyid, xml)
     end
+  rescue Errno::ENOENT
+    nil
   end
   
   def experiment_parser
@@ -76,6 +80,8 @@ class SRAParserGen
     expid_arr.select{|id| id =~ /^(S|E|D)RX\d{6}$/ }.map do |expid|
       SRAMetadataParser::Experiment.new(expid, xml)
     end
+  rescue Errno::ENOENT
+    nil
   end
   
   def sample_parser
@@ -93,6 +99,8 @@ class SRAParserGen
     sampleid_arr.select{|id| id =~ /^(S|E|D)RS\d{6}$/ }.map do |sampleid|
       SRAMetadataParser::Sample.new(sampleid, xml)
     end
+  rescue Errno::ENOENT
+    nil
   end
   
   def run_parser
@@ -108,6 +116,8 @@ class SRAParserGen
     runid_arr.select{|id| id =~ /^(S|E|D)RR\d{6}$/ }.map do |runid|
       SRAMetadataParser::Run.new(runid, xml)
     end
+  rescue Errno::ENOENT
+    nil
   end
   
   def pubmed_parser
