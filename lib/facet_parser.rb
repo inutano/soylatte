@@ -54,64 +54,78 @@ class FacetParser
   
   def full_text
     f_arr = []
-    @sub_parser.select{|p| p }.each do |p|
-      f_arr << [ p.submission_comment,
-                 p.center_name,
-                 p.lab_name ]
-    end
-    @study_parser.select{|p| p }.each do |p|
-      f_arr << [ p.center_name,
-                 p.center_project_name,
-                 p.study_title,
-                 p.study_type,
-                 p.study_abstract,
-                 p.study_description ]
-    end
-    @exp_parser.select{|p| p }.each do |p|
-      f_arr << [ p.center_name,
-                 p.title,
-                 p.design_description,
-                 p.library_name,
-                 p.platform,
-                 p.instrument_model ]
-    end
-    @run_parser.select{|p| p }.each do |p|
-      f_arr << [ p.center_name,
-                 p.instrument_name,
-                 p.run_center,
-                 p.pipeline.map{|node| node[:program]} ]
-    end
-    @sample_parser.select{|p| p }.each do |p|
-      f_arr << [ p.title,
-                 p.sample_description,
-                 p.sample_detail.values,
-                 p.taxon_id,
-                 p.common_name,
-                 p.scientific_name,
-                 p.anonymized_name,
-                 p.individual_name ]
-    end
-    @pub_parser.select{|p| p }.each do |p|
-      authors = p.authors.map{|a| a[:lastname] + " " + a[:forename] }
-      mesh = p.mesh_terms.map{|a| a[:descriptor_name] }
-      f_arr << [ authors,
-                 mesh,
-                 p.journal_title,
-                 p.article_title,
-                 p.abstract,
-                 p.affiliation ]
-    end
-    @pmc_parser.select{|p| p }.each do |p|
-      pmc_text = p.body.select{|n| n }.map do |section|
-        if section.has_key?(:subsec)
-          section[:subsec].map do |subsec|
-            subsec[:subsec_text]
-          end
-        else
-          section[:sec_text]
-        end
+    if @sub_parser
+      @sub_parser.select{|p| p }.each do |p|
+        f_arr << [ p.submission_comment,
+                   p.center_name,
+                   p.lab_name ]
       end
-      f_arr << [ pmc_text, p.keywords ]
+    end
+    if @study_parser
+      @study_parser.select{|p| p }.each do |p|
+        f_arr << [ p.center_name,
+                   p.center_project_name,
+                   p.study_title,
+                   p.study_type,
+                   p.study_abstract,
+                   p.study_description ]
+      end
+    end
+    if @exp_parser
+      @exp_parser.select{|p| p }.each do |p|
+        f_arr << [ p.center_name,
+                   p.title,
+                   p.design_description,
+                   p.library_name,
+                   p.platform,
+                   p.instrument_model ]
+      end
+    end
+    if @run_parser
+      @run_parser.select{|p| p }.each do |p|
+        f_arr << [ p.center_name,
+                   p.instrument_name,
+                   p.run_center,
+                   p.pipeline.map{|node| node[:program]} ]
+      end
+    end
+    if @sample_parser
+      @sample_parser.select{|p| p }.each do |p|
+        f_arr << [ p.title,
+                   p.sample_description,
+                   p.sample_detail.values,
+                   p.taxon_id,
+                   p.common_name,
+                   p.scientific_name,
+                   p.anonymized_name,
+                   p.individual_name ]
+      end
+    end
+    if @pub_parser
+      @pub_parser.select{|p| p }.each do |p|
+        authors = p.authors.map{|a| a[:lastname] + " " + a[:forename] }
+        mesh = p.mesh_terms.map{|a| a[:descriptor_name] }
+        f_arr << [ authors,
+                   mesh,
+                   p.journal_title,
+                   p.article_title,
+                   p.abstract,
+                   p.affiliation ]
+      end
+    end
+    if @pmc_parser
+      @pmc_parser.select{|p| p }.each do |p|
+        pmc_text = p.body.select{|n| n }.map do |section|
+          if section.has_key?(:subsec)
+            section[:subsec].map do |subsec|
+              subsec[:subsec_text]
+            end
+          else
+            section[:sec_text]
+          end
+        end
+        f_arr << [ pmc_text, p.keywords ]
+      end
     end
     f_arr.flatten.join("\s")
   end
