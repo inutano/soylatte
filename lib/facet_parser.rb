@@ -1,41 +1,32 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 require "yaml"
-require "sra_metadata_parser"
+require "./parser_gen"
 
 class FacetParser
-  def self.load_file(config_path)
-    config = YAML.load_file(config_path)
-    file_path = config["file_path"]
-    @accessions = file_path["accessions"]
-    @run_members = file_path["run_members"]
-    @xbase = file_path["sra_metadata_xml"]
+  def self.load_files(config_path)
+    SRAParserGen.load_files(config_path)
+    @@run_members = YAML.load_file(config_path)["file_path"]["sra_run_members"]
   end
   
   def initialize(runid)
     @runid = runid
-    @subid = `grep #{@runid} #{accessions} | cut -f 2`.chomp
-    @xml_path_head = File.join(@xbase, @subid.slice(0,6), @subid)
+    pgen = SRAParserGen.new(runid)
+    @sub_parser = pgen.submission_parser
+    @study_parser = pgen.study_parser
+    @exp_parser = pgen.experiment_parser
+    @sample_parser = pgen.sample_parser
+    @run_parser = pgen.run_parser
+    @pub_parser = pgen.pubmed_parser
+    @pmc_parser = pgen.pmc_parser
   end
   
   def studyid
-    `grep #{@runid} #{@run_members} | cut -f 5`.chomp
-    #"SRP000001"
-  end
-  
-  def sampleid
-    `grep #{@runid} #{run_members} | cut -f 4`.chomp
-  end
-  
-  def expid
-    `grep #{@runid} #{@run_member} | cut -f 3`.chomp
+    `grep #{@runid} #{@@run_members} | cut -f 5`.chomp
   end
   
   def taxonid
-    xml = File.join(@xml_path_head, "#{@subid}.sample.xml")
-    parser = SRAMetadataParser::Sample.new(self.sampleid, xml)
-    parser.taxon_id
-    #9606
+    @sample_parser.first.taxon_id
   end
   
   def study_type
@@ -53,26 +44,80 @@ class FacetParser
                 "Exome Sequencing" => 1,
                 "Forensic or Paleo-genomics" => 0,
                 "Synthetic Genomics" => 0 }
-    xml = File.join(@xml_path_head, "#{@subid}.study.xml")
-    parser = SRAMetadataParser::Study.new(self.studyid, xml)
-    described_study_type = parser.study_type
+    described_study_type = @study_parser.first.study_type
     app_ref[described_study_type]
-    #1
   end
   
   def instrument
-    xml = File.join(@xml_path_head, "#{@subid}.experiment.xml")
-    parser = SRAMetadataParser::Experiment.new(self.expid, xml)
-    parser.instrument_model
-    "illumina HiSeq 2000"
+    @exp_parser.first.instrument_model
   end
   
   def full_text
-    "hogehoge"
+    f_arr = []
+    @sub_parser.select{|p| p }.each do |p|
+      f_arr << [ p.submission_comment,
+                 p.center_name,
+                 p.lab_name ]
+    end
+    @study_parser.select{|p| p }.each do |p|
+      f_arr << [ p.center_name,
+                 p.center_project_name,
+                 p.study_title,
+                 p.study_type,
+                 p.study_abstract,
+                 p.study_description ]
+    end
+    @exp_parser.select{|p| p }.each do |p|
+      f_arr << [ p.center_name,
+                 p.title,
+                 p.design_description,
+                 p.library_name,
+                 p.platform,
+                 p.instrument_model ]
+    end
+    @run_parser.select{|p| p }.each do |p|
+      f_arr << [ p.center_name,
+                 p.instrument_name,
+                 p.run_center,
+                 p.pipeline.map{|node| node[:program]} ]
+    end
+    @sample_parser.select{|p| p }.each do |p|
+      f_arr << [ p.title,
+                 p.sample_description,
+                 p.sample_detail.values,
+                 p.taxon_id,
+                 p.common_name,
+                 p.scientific_name,
+                 p.anonymized_name,
+                 p.individual_name ]
+    end
+    @pub_parser.select{|p| p }.each do |p|
+      authors = p.authors.map{|a| a[:lastname] + " " + a[:forename] }
+      mesh = p.mesh_terms.map{|a| a[:descriptor_name] }
+      f_arr << [ authors,
+                 mesh,
+                 p.journal_title,
+                 p.article_title,
+                 p.abstract,
+                 p.affiliation ]
+    end
+    @pmc_parser.select{|p| p }.each do |p|
+      pmc_text = p.body.select{|n| n }.map do |section|
+        if section.has_key?(:subsec)
+          section[:subsec].map do |subsec|
+            subsec[:subsec_text]
+          end
+        else
+          section[:sec_text]
+        end
+      end
+      f_arr << [ pmc_text, p.keywords ]
+    end
+    f_arr.flatten.join("\s")
   end
   
-  def paper
-    true
+  def paper?
+    !@pub_parser.select{|p| p }.empty?
   end
   
   def insert
@@ -81,7 +126,15 @@ class FacetParser
       taxonid: self.taxonid,
       study_type: self.study_type,
       instrument: self.instrument,
-      fulltext: self.fulltext,
-      paper: self.paper }
+      fulltext: self.full_text,
+      paper: self.paper? }
   end
+end
+
+if __FILE__ == $0
+  require "ap"
+  FacetParser.load_files("./config.yaml")
+  fp = FacetParser.new("DRR000001")
+  
+  puts fp.insert
 end
