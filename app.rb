@@ -8,6 +8,7 @@ require "./lib/facet_controller"
 
 Configuration = YAML.load_file("./lib/config.yaml")
 Logfile = Configuration["logfile"]
+FacetController.connect_db(Configuration["db_path"])
 
 def logging(query)
   log = #{query} + "\t" + Time.now.to_s
