@@ -2,10 +2,33 @@
 !!!
 %html
   %head
-    %title
+    %title tall-size-hot-soylatte
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+    %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "./style.css", :type => "text/css"}
   
   %body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand
+            DBCLS SRA metadata search (beta)
+          .nav-collapse
+            %ul.nav
+              %li
+                %a{:href => "/soylatte"} Home
+              %li
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
+              %li
+                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
+              %li
+                %a{:href => "http://twitter.com/inutano"} Contact
+
     %header
       %h1 op. soylatte
       %p :)
@@ -14,38 +37,34 @@
       %h2 search public high throughput sequencing data
       %hr
       
-      %form{ :name => "filters", :action => "/search", :method => "POST" }
+      %form{ :name => "filters", :action => "/filter", :method => "POST" }
         %h4 select filters to reduce search target
         %fieldset
           %legend
             Filtering Option
-          %select{ :id => "species", :name => "species" }
+          %select{ :id => "species", :name => "species", :width => 66 }
             %option{ :value => "9606" }
               human
             %option{ :value => "10090" }
               mouse
             %option{ :value => "10116" }
               rat
-          %select{ :id => "study_type", :name => "study_type" }
-            %option{ :value => "D" }
+          %select{ :id => "study_type", :name => "study_type", :width => 66 }
+            %option{ :value => "1" }
               Genomic Sequence
-            %option{ :value => "R" }
+            %option{ :value => "2" }
               Transcriptomic Sequence
-            %option{ :value => "M" }
+            %option{ :value => "3" }
               Metagenomic Sequence
-          %select{ :id => "platform", :name => "platform" }
-            %option{ :value => "MiSeq" }
+          %select{ :id => "platform", :name => "platform", :width => 66 }
+            %option{ :value => "Illumina MiSeq" }
               Illumina MiSeq
-            %option{ :value => "IonProton" }
+            %option{ :value => "Ion Proton" }
               Ion Proton
             %option{ :value => "GridION" }
               GridION
-        %button{ :type => "button" }
+        %button{ :type => "submit" }
           check
-        
-        %h4 keyword search with fileters selected above
-        %input{ :type => "text", :name => "search_query", :width => 86 }
-        %input{ :type => "submit", :value => "search" }
         
       
     %footer
