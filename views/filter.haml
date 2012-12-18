@@ -1,0 +1,70 @@
+!!! XML
+!!!
+%html
+  %head
+    %title filter result
+    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+    %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "./style.css", :type => "text/css"}
+  
+  %body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand
+            DBCLS SRA metadata search (beta)
+          .nav-collapse
+            %ul.nav
+              %li
+                %a{:href => "/soylatte"} Home
+              %li
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
+              %li
+                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
+              %li
+                %a{:href => "http://twitter.com/inutano"} Contact
+
+    %header
+      %h1 op. soylatte
+      %p :)
+    
+    %section
+      %h2 filter result
+      %hr
+      
+      %h4 query
+      %p= "species: " + @sp
+      %p= "study_type: " + @st
+      %p= "platform: " + @pl
+      
+      %h4 database condition
+      - total = @total_number
+      - req = @number_of_records[:on_demand]
+      - tax = @number_of_records[:taxonid]
+      - stu = @number_of_records[:study_type]
+      - ins = @number_of_records[:instrument]
+      - preq = req / total.to_f
+      - ptax = tax / total.to_f
+      - pstu = stu / total.to_f
+      - pins = ins / total.to_f
+      
+      %p= "requested filtering condition: " + "#{req.to_s}/#{total.to_s}, #{preq.to_s}%"
+      %p= "requested organism: " + "#{tax.to_s}/#{total.to_s}, #{ptax.to_s}%"
+      %p= "requested study type: " + "#{stu.to_s}/#{total.to_s}, #{pstu.to_s}%"
+      %p= "requested instrument: " + "#{ins.to_s}/#{total.to_s}, #{pins.to_s}%"
+      
+      %h4 keyword search with fileters selected above
+      %form{ :name => "search", :action => "/search", :method => "POST" }
+        %input{ :type => "text", :name => "search_query", :width => 86 }
+        %input{ :type => "submit", :value => "search" }
+      
+    %footer
+      powered by
+      %a{ :href => "http://dbcls.rois.ac.jp/en" }
+        DBCLS
+      , project licensed under CC-BY 2.1 JP
