@@ -2,10 +2,33 @@
 !!!
 %html
   %head
-    %title
+    %title search result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+    %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "./style.css", :type => "text/css"}
   
   %body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand
+            DBCLS SRA metadata search (beta)
+          .nav-collapse
+            %ul.nav
+              %li
+                %a{:href => "/soylatte"} Home
+              %li
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
+              %li
+                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
+              %li
+                %a{:href => "http://twitter.com/inutano"} Contact
+
     %header
       %h1 op. soylatte
       %p :)
@@ -15,11 +38,12 @@
       %hr
       
       %h4 search query
-      %p= "species: " + @sp
-      %p= "study_type: " + @st
-      %p= "platform: " + @pl
-      %p= "search_query: " + @qu
-      
+      %p= @query
+
+      %h4 search result
+      - @result.each do |studyid|
+        %p= studyid
+        
     %footer
       powered by
       %a{ :href => "http://dbcls.rois.ac.jp/en" }
