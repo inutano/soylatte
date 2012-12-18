@@ -12,6 +12,10 @@ class FacetController
     @db = Groonga["Facets"]  
   end
   
+  def close
+    @db.close
+  end
+  
   def record(studyid)
     @db[studyid]
   end
@@ -58,7 +62,7 @@ if __FILE__ == $0
   
   ap db.count_on_demand(9606, 1, "Illumina Genome Analyzer II")
   
-  ap db.search_fulltext("breast cancer")
+  ap db.search_fulltext("cancer")
   
   rec = db.record("DRP000001")
   ap rec
