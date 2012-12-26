@@ -23,7 +23,8 @@ class Database
   end
   
   def projects
-    @db ||= Groonga["Projects"]
+#    @db ||= Groonga["Projects"]
+    @db ||= Groonga["Facets"]
   end
   
   def size
@@ -37,24 +38,32 @@ class Database
     num_of_records = match_records.size
     ratio = num_of_records / self.size.to_f
     ratio_to_percent = (ratio * 100).round(2)
-    { sym => { size: num_of_records, percent: ratio_to_percent} }
+    { size: num_of_records, percent: ratio_to_percent}
   end
   
   def mix_match_records(cond)
-    match_records = @db.select do |record|
-      ev = cond.keys.map{|sym| record.send(sym) == cond[sym] }
-      !ev.include?(false)
+    table_taxon = @db.select do |record|
+      record.taxonid == cond[:taxonid]
+    end
+    table_study_type = table_taxon.select do |record|
+      record.study_type == cond[:study_type]
+    end
+    match_records = table_study_type.select do |record|
+      record.instrument == cond[:instrument]
     end
     num_of_records = match_records.size
     ratio = num_of_records / self.size.to_f
     ratio_to_percent = (ratio * 100).round(2)
-    { mix: { size: num_of_records, percent: ratio_to_percent} }
+    { size: num_of_records, percent: ratio_to_percent}
   end
     
   def filter(cond)
-    singles = cond.keys.map{|sym| single_match_records(sym, cond) }
-    mix = mix_match_records(cond)
-    singles << mix
+    result = {}
+    cond.keys.each do |sym| 
+      result[sym] = single_match_records(sym, cond)
+    end
+    result[:mix] = mix_match_records(cond)
+    result
   end
   
   def search_fulltext(query)
