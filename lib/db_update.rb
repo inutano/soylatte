@@ -11,6 +11,7 @@ def create_db(db_path)
   Groonga::Schema.create_table("Projects", :type => :hash)
   Groonga::Schema.change_table("Projects") do |table|
     table.uint16("runid")
+    table.short_text("study_title")
     table.uint16("taxonid")
     table.uint16("study_type")
     table.short_text("instrument")
@@ -66,16 +67,18 @@ if __FILE__ == $0
     accessions = config["file_path"]["sra_accessions"]
     studyids = `grep '^ERP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
     
-    FacetParser.load_files(config_path)
+    Groonga::Database.open(db_path)
+    MetadataParser.load_files(config_path)
     
     inserts = Parallel.map(studyids) do |studyid|
-      f = FacetParser.new(studyid)
-      f.insert
+      if !Groonga["Projects"][studyid]
+        f = MetadataParser.new(studyid)
+        f.insert
+      end
     end
     
-    Groonga::Database.open(db_path)
     Parallel.each(inserts) do |insert|
-      add_record(insert)
+      add_record(insert) if insert
     end
   end
 end

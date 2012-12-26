@@ -25,6 +25,10 @@ class MetadataParser
     `grep #{@studyid} #{@@run_members} | cut -f 1`.split("\n")
   end
   
+  def study_title
+    @study_parser.first.study_title
+  end
+  
   def taxonid
     @sample_parser.first.taxon_id
   rescue
@@ -143,6 +147,7 @@ class MetadataParser
   def insert
     { studyid: @studyid,
       runid: self.runid.length,
+      study_title: self.study_title,
       taxonid: self.taxonid,
       study_type: self.study_type,
       instrument: self.instrument,
@@ -156,5 +161,5 @@ if __FILE__ == $0
   MetadataParser.load_files("./config.yaml")
   mp = MetadataParser.new("DRP000001")
   
-  puts mp.insert
+  ap mp.insert
 end
