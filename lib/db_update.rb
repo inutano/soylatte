@@ -3,13 +3,13 @@
 require "yaml"
 require "groonga"
 require "parallel"
-require "./facet_parser"
+require "./metadata_parser"
 
 def create_facet_db(db_path)
   Groonga::Database.create(:path => db_path)
 
-  Groonga::Schema.create_table("Facets", :type => :hash)
-  Groonga::Schema.change_table("Facets") do |table|
+  Groonga::Schema.create_table("Projects", :type => :hash)
+  Groonga::Schema.change_table("Projects") do |table|
     table.uint16("runid")
     table.uint16("taxonid")
     table.uint16("study_type")
@@ -20,11 +20,11 @@ def create_facet_db(db_path)
   
   Groonga::Schema.create_table("Idx_int", :type => :hash)
   Groonga::Schema.change_table("Idx_int") do |table|
-    table.index("Facets.runid")
-    table.index("Facets.taxonid")
-    table.index("Facets.study_type")
-    table.index("Facets.instrument")
-    table.index("Facets.paper")
+    table.index("Projects.runid")
+    table.index("Projects.taxonid")
+    table.index("Projects.study_type")
+    table.index("Projects.instrument")
+    table.index("Projects.paper")
   end
   
   Groonga::Schema.create_table("Idx_text",
@@ -33,12 +33,12 @@ def create_facet_db(db_path)
     default_tokenizer: "TokenBigram"
   )
   Groonga::Schema.change_table("Idx_text") do |table|
-    table.index("Facets.fulltext")
+    table.index("Projects.fulltext")
   end
 end
 
 def add_record(insert)
-  db = Groonga["Facets"]
+  db = Groonga["Projects"]
   studyid = insert[:studyid]
   db.add(studyid)
   
@@ -63,7 +63,7 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^DRP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
+    studyids = `grep '^ERP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
     
     FacetParser.load_files(config_path)
     
