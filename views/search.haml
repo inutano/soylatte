@@ -37,12 +37,37 @@
       %h2 search result
       %hr
       
-      %h4 search query
+      %h3 search query
       %p= @query
 
-      %h4 search result
-      - @result.each do |record|
-        %p= record.key.key
+      %h3 search result
+      %h4= @result.size.to_s + " of records"
+      %table{ :class => "table table-hover" }
+        // %table{ :class => "table table-hover" }
+        %tr
+          %th id
+          %th project title
+          %th number of sequencing
+          %th publication
+      
+        - @result.each do |record|
+          - projectid = record.key.key
+          - if record.paper
+            %tr{ :class => "info" }
+              %td
+                %a{ :href => "/view/#{projectid}"}= projectid
+              // %td= record.title
+              %td project title
+              %td= record.runid.to_s
+              %td= record.paper
+          - else
+            %tr
+              %td
+                %a{ :href => "/view/#{projectid}"}= projectid
+              // %td= record.title
+              %td project title
+              %td= record.runid.to_s
+              %td= record.paper
         
     %footer
       powered by
