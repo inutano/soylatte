@@ -5,7 +5,7 @@ require "groonga"
 require "parallel"
 require "./metadata_parser"
 
-def create_facet_db(db_path)
+def create_db(db_path)
   Groonga::Database.create(:path => db_path)
 
   Groonga::Schema.create_table("Projects", :type => :hash)
@@ -57,9 +57,10 @@ if __FILE__ == $0
   db_path = config["db_path"]
 
   Groonga::Context.default_options = { encoding: :utf8 }
+  
   case ARGV.first
   when "--up"
-    create_facet_db(db_path)
+    create_db(db_path)
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]

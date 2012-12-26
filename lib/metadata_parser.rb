@@ -3,7 +3,7 @@
 require "yaml"
 require "./parser_gen"
 
-class FacetParser
+class MetadataParser
   def self.load_files(config_path)
     SRAParserGen.load_files(config_path)
     @@run_members = YAML.load_file(config_path)["file_path"]["sra_run_members"]
@@ -153,8 +153,8 @@ end
 
 if __FILE__ == $0
   require "ap"
-  FacetParser.load_files("./config.yaml")
-  fp = FacetParser.new("DRP000001")
+  MetadataParser.load_files("./config.yaml")
+  mp = MetadataParser.new("DRP000001")
   
-  puts fp.insert
+  puts mp.insert
 end
