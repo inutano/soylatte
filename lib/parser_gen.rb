@@ -152,7 +152,7 @@ if __FILE__ == $0
   require "ap"
   SRAParserGen.load_files("../lib/config.yaml")
   
-  ids = ["DRR000001","DRR000010","DRR000020"]
+  ids = ["DRP000001","DRP000017","DRR000030"]
   ids.each do |id|
     p = SRAParserGen.new(id)
 
