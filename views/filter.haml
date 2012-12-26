@@ -54,9 +54,20 @@
       - pins = @result[:instrument][:percent].to_s
       
       %h1= "requested filtering condition: " + "#{mix}/#{total}, #{pmix}%"
+      %div{ :class => "progress" }
+        %div{ :class => "bar", :style => "width: #{pmix}%;"}
+      
       %h1= "requested organism: " + "#{tax}/#{total}, #{ptax}%"
+      %div{ :class => "progress" }
+        %div{ :class => "bar", :style => "width: #{ptax}%;"}
+
       %h1= "requested study type: " + "#{stu}/#{total}, #{pstu}%"
+      %div{ :class => "progress" }
+        %div{ :class => "bar", :style => "width: #{pstu}%;"}
+
       %h1= "requested instrument: " + "#{ins}/#{total}, #{pins}%"
+      %div{ :class => "progress" }
+        %div{ :class => "bar", :style => "width: #{pins}%;"}
       
       %h4 keyword search with fileters selected above
       %form{ :name => "search", :action => "/search", :method => "POST" }
