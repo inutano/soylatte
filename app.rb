@@ -5,6 +5,7 @@ require "haml"
 require "sass"
 require "yaml"
 require "./lib/database"
+require "./lib/project_report"
 
 def logging(query)
   logfile = YAML.load_file("./lib/config.yaml")["logfile"]
@@ -53,7 +54,8 @@ post "/search" do
 end
 
 get %r{/view/((S|E|D)RP\d\{6\})$} do |id, db|
-  @material = get_material(id)
+  ProjectReport.load_files("./lib/config.yaml")
+  @report = ProjectReport.new(id).report
   haml :view_project
 end
 
