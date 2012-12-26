@@ -43,20 +43,20 @@
       /* %p= "platform: " + @pl */
       
       %h4 database condition
-      - total = @total_number
-      - req = @number_of_records[:on_demand]
-      - tax = @number_of_records[:taxonid]
-      - stu = @number_of_records[:study_type]
-      - ins = @number_of_records[:instrument]
-      - preq = req / total.to_f
-      - ptax = tax / total.to_f
-      - pstu = stu / total.to_f
-      - pins = ins / total.to_f
+      - total = @total_number.to_s
+      - mix = @result[:mix][:size].to_s
+      - tax = @result[:taxonid][:size].to_s
+      - stu = @result[:study_type][:size].to_s
+      - ins = @result[:instrument][:size].to_s
+      - pmix = @result[:mix][:percent].to_s
+      - ptax = @result[:taxonid][:percent].to_s
+      - pstu = @result[:study_type][:percent].to_s
+      - pins = @result[:instrument][:percent].to_s
       
-      %p= "requested filtering condition: " + "#{req.to_s}/#{total.to_s}, #{preq.to_s}%"
-      %p= "requested organism: " + "#{tax.to_s}/#{total.to_s}, #{ptax.to_s}%"
-      %p= "requested study type: " + "#{stu.to_s}/#{total.to_s}, #{pstu.to_s}%"
-      %p= "requested instrument: " + "#{ins.to_s}/#{total.to_s}, #{pins.to_s}%"
+      %h1= "requested filtering condition: " + "#{mix}/#{total}, #{pmix}%"
+      %h1= "requested organism: " + "#{tax}/#{total}, #{ptax}%"
+      %h1= "requested study type: " + "#{stu}/#{total}, #{pstu}%"
+      %h1= "requested instrument: " + "#{ins}/#{total}, #{pins}%"
       
       %h4 keyword search with fileters selected above
       %form{ :name => "search", :action => "/search", :method => "POST" }
