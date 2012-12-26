@@ -67,7 +67,6 @@ class Database
   end
   
   def search_fulltext(query)
-    result = @db.select{|r| r.fulltext =~ query }
-    result.map{|r| r.key.key }
+    @db.select{|r| r.fulltext =~ query }
   end
 end

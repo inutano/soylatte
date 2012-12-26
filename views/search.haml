@@ -41,8 +41,8 @@
       %p= @query
 
       %h4 search result
-      - @result.each do |studyid|
-        %p= studyid
+      - @result.each do |record|
+        %p= record.key.key
         
     %footer
       powered by
