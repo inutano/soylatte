@@ -21,12 +21,15 @@ class ProjectReport
   end
   
   def general_info
-    { study_title: @study_parser.first.study_title,
-      study_abstract: @study_parser.first.study_abstract,
-      study_description: @study_parser.first.study_description,
-      num_of_exp: @exp_parser.size,
-      num_of_sample: @sample_parser.size,
-      num_of_run: @run_parser.size }
+    if @study_parser.size == 1
+      sp = @study_parser.first
+      { study_title: sp.study_title,
+        study_abstract: sp.study_abstract,
+        study_description: sp.study_description,
+        num_of_exp: @exp_parser.size,
+        num_of_sample: @sample_parser.size,
+        num_of_run: @run_parser.size }
+    end
   end
   
   def paper_info
@@ -42,9 +45,20 @@ class ProjectReport
   end
   
   def pmc_info
+    @pmc_parser.select{|n| n }.map do |pp|
+      { pmcid: pp.pmcid,
+        journal_title: pp.journal_title,
+        introduction: pp.body.select{|s| s[:sec_title] =~ /introduction/i },
+        methods: pp.body.select{|s| s[:sec_title] =~ /method/i },
+        results: pp.body.select{|s| s[:sec_title] =~ /result/i },
+        discussion: pp.body.select{|s| s[:sec_title] =~ /discussion/i },
+        references: pp.ref_journal_list,
+      }
+    end
   end
   
   def before_seq
+    
   end
   
   def sequencing
