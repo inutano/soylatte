@@ -20,7 +20,7 @@ class ProjectReport
     @pmc_parser = pgen.pmc_parser
   end
   
-  def general_info
+  def project_info
     if @study_parser.size == 1
       sp = @study_parser.first
       { study_title: sp.study_title,
@@ -58,7 +58,7 @@ class ProjectReport
   end
   
   def before_seq
-    
+    @sample_parser.
   end
   
   def sequencing
