@@ -10,10 +10,7 @@ class ProjectReport
   
   def initialize(studyid)
     @studyid = studyid
-    pgen = SRAParserGen.new(studyid)
-    @sub_parser = pgen.submission_parser
-    @sample_parser = pgen.sample_parser
-    @run_parser = pgen.run_parser
+    @pgen = SRAParserGen.new(studyid)
   end
   
   def project_info
@@ -30,7 +27,7 @@ class ProjectReport
   end
   
   def paper_info
-    pub_parser = pgen.pubmed_parser
+    pub_parser = @pgen.pubmed_parser
     pub_parser.select{|n| n }.map do |pp|
       { pmid: pp.pmid,
         journal: pp.journal_title,
@@ -43,7 +40,7 @@ class ProjectReport
   end
   
   def pmc_info
-    pmc_parser = pgen.pmc_parser
+    pmc_parser = @pgen.pmc_parser
     pmc_parser.select{|n| n }.map do |pp|
       { pmcid: pp.pmcid,
         journal_title: pp.journal_title,
@@ -57,7 +54,7 @@ class ProjectReport
   end
   
   def experiment_info
-    exp_parser = pgen.experiment_parser
+    exp_parser = @pgen.experiment_parser
     exp_parser.select{|n| n }.map do |ep|
       { exp_title: ep.title,
         design_description: ep.design_description,
@@ -73,10 +70,23 @@ class ProjectReport
     end
   end
   
-  def sequencing
+  def sample_info
+    sample_parser = @pgen.sample_parser
+    sample_parser.select{|n| n }.map do |sp|
+      { title: sp.title,
+        description: sp.sample_description,
+        taxonid: sp.taxon_id,
+        common_name: sp.common_name,
+        scientific_name: sp.scientific_name,
+        }
+    end
   end
   
-  def after_seq
+  def run_info
+    run_parser = @pgen.run_parser
+    run_parser.select{|n| n }.map do |rp|
+      # nothing
+    end
   end
   
   def report
