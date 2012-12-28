@@ -3,9 +3,9 @@
 require "yaml"
 require "open-uri"
 require "json"
-require "./sra_metadata_parser"
-require "./pubmed_metadata_parser"
-require "./pmc_metadata_parser"
+require "#{File.expand_path(File.dirname(__FILE__))}/sra_metadata_parser"
+require "#{File.expand_path(File.dirname(__FILE__))}/pubmed_metadata_parser"
+require "#{File.expand_path(File.dirname(__FILE__))}/pmc_metadata_parser"
 
 class SRAParserGen
   def self.load_files(config_path)
