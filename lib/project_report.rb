@@ -4,7 +4,7 @@ require "yaml"
 require "#{File.expand_path(File.dirname(__FILE__))}/parser_gen"
 
 class ProjectReport
-  def load_files(config_path)
+  def self.load_files(config_path)
     SRAParserGen.load_files(config_path)
   end
   
@@ -14,15 +14,11 @@ class ProjectReport
   end
   
   def project_info
-    study_parser = pgen.study_parser
+    study_parser = @pgen.study_parser
     if study_parser.size == 1
       sp = study_parser.first
       { study_title: sp.study_title,
-        study_abstract: sp.study_abstract,
-        study_description: sp.study_description,
-        num_of_exp: @exp_parser.size,
-        num_of_sample: @sample_parser.size,
-        num_of_run: @run_parser.size }
+        study_type: sp.study_type }
     end
   end
   
@@ -42,12 +38,13 @@ class ProjectReport
   def pmc_info
     pmc_parser = @pgen.pmc_parser
     pmc_parser.select{|n| n }.map do |pp|
+      body = pp.body.select{|sec| sec }
       { pmcid: pp.pmcid,
         journal_title: pp.journal_title,
-        introduction: pp.body.select{|s| s[:sec_title] =~ /introduction/i },
-        methods: pp.body.select{|s| s[:sec_title] =~ /method/i },
-        results: pp.body.select{|s| s[:sec_title] =~ /result/i },
-        discussion: pp.body.select{|s| s[:sec_title] =~ /discussion/i },
+        introduction: body.select{|s| s[:sec_title] =~ /introduction/i },
+        methods: body.select{|s| s[:sec_title] =~ /method/i },
+        results: body.select{|s| s[:sec_title] =~ /result/i },
+        discussion: body.select{|s| s[:sec_title] =~ /discussion/i },
         references: pp.ref_journal_list,
       }
     end
@@ -56,16 +53,10 @@ class ProjectReport
   def experiment_info
     exp_parser = @pgen.experiment_parser
     exp_parser.select{|n| n }.map do |ep|
-      { exp_title: ep.title,
-        design_description: ep.design_description,
-        sampleid: ep.sample_accession,
-        lib_name: ep.library_name,
-        lib_strategy: ep.library_strategy,
-        lib_source: ep.library_source,
-        lib_selection: ep.library_selection,
+      { sampleid: ep.sample_accession,
         lib_layout: ep.library_layout,
-        lib_protocol: ep.library_construction_protocol,
         platform: ep.platform,
+        lib_protocol: ep.library_construction_protocol,
         instrument: ep.instrument_model }
     end
   end
@@ -73,12 +64,9 @@ class ProjectReport
   def sample_info
     sample_parser = @pgen.sample_parser
     sample_parser.select{|n| n }.map do |sp|
-      { title: sp.title,
-        description: sp.sample_description,
-        taxonid: sp.taxon_id,
+      { taxonid: sp.taxon_id,
         common_name: sp.common_name,
-        scientific_name: sp.scientific_name,
-        }
+        scientific_name: sp.scientific_name }
     end
   end
   
@@ -90,5 +78,18 @@ class ProjectReport
   end
   
   def report
+    { project: self.project_info,
+      paper: self.paper_info,
+      pmc: self.pmc_info,
+      experiment: self.experiment_info,
+      sample_info: self.sample_info }
   end
+end
+
+if __FILE__ == $0
+  require "ap"
+  ProjectReport.load_files("./config.yaml")
+  id = "DRP000001"
+  pr = ProjectReport.new(id)
+  ap pr.report
 end
