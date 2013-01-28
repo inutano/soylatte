@@ -24,29 +24,33 @@ class ProjectReport
   
   def paper_info
     pub_parser = @pgen.pubmed_parser
-    pub_parser.select{|n| n }.map do |pp|
-      { pmid: pp.pmid,
-        journal: pp.journal_title,
-        title: pp.article_title,
-        abstract: pp.abstract,
-        affiliation: pp.affiliation,
-        authors: pp.authors.map{|a| a.values.join("\s")},
-        date: pp.date_created.values.join("/") }
+    if pub_parser
+      pub_parser.select{|n| n }.map do |pp|
+        { pmid: pp.pmid,
+          journal: pp.journal_title,
+          title: pp.article_title,
+          abstract: pp.abstract,
+          affiliation: pp.affiliation,
+          authors: pp.authors.map{|a| a.values.join("\s")},
+          date: pp.date_created.values.join("/") }
+      end
     end
   end
   
   def pmc_info
     pmc_parser = @pgen.pmc_parser
-    pmc_parser.select{|n| n }.map do |pp|
-      body = pp.body.select{|sec| sec }
-      { pmcid: pp.pmcid,
-        journal_title: pp.journal_title,
-        introduction: body.select{|s| s[:sec_title] =~ /introduction/i },
-        methods: body.select{|s| s[:sec_title] =~ /method/i },
-        results: body.select{|s| s[:sec_title] =~ /result/i },
-        discussion: body.select{|s| s[:sec_title] =~ /discussion/i },
-        references: pp.ref_journal_list,
-      }
+    if pmc_parser
+      pmc_parser.select{|n| n }.map do |pp|
+        body = pp.body.select{|sec| sec }
+        { pmcid: pp.pmcid,
+          journal_title: pp.journal_title,
+          introduction: body.select{|s| s[:sec_title] =~ /introduction/i or s[:sec_title] =~ /background/i },
+          methods: body.select{|s| s[:sec_title] =~ /method/i },
+          results: body.select{|s| s[:sec_title] =~ /result/i },
+          discussion: body.select{|s| s[:sec_title] =~ /discussion/i },
+          references: pp.ref_journal_list,
+        }
+      end
     end
   end
   
@@ -82,7 +86,7 @@ class ProjectReport
       paper: self.paper_info,
       pmc: self.pmc_info,
       experiment: self.experiment_info,
-      sample_info: self.sample_info }
+      sample: self.sample_info }
   end
 end
 
