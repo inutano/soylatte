@@ -53,7 +53,7 @@ post "/search" do
   end
 end
 
-get %r{/view/((S|E|D)RP\d\{6\})$} do |id, db|
+get %r{/view/((S|E|D)RP\d{6})} do |id, db|
   ProjectReport.load_files("./lib/config.yaml")
   @report = ProjectReport.new(id).report
   haml :view_project
