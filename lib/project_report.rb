@@ -14,16 +14,23 @@ class ProjectReport
     @@xmlbase = fpath["xmlbase"]
     @@accessions = fpath["sra_accessions"]
     @@run_members = fpath["sra_run_members"]
-    @@publication_url = fpath["publication"]
-    @@pmcid = fpath["PMC-ids"]
     @@taxon_table = fpath["taxon_table"]
     @@fqc_path = config["fqc_path"]
+
+    @@eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
+
+    raw_json = open(fpath["publication"]).read
+    @@paper_json = JSON.parse(raw_json, :symbolize_names => true)
+
+    @@pmcid_table = fpath["PMC-ids"]
   end
   
   def initialize(studyid)
     @studyid = studyid
     @subid = `grep "^#{@studyid}" #{@@accessions} | cut -f 2`.chomp
     @xml_head = File.join(@@xmlbase, @subid.slice(0..5), @subid, @subid)
+
+    @paperinfo = @@paper_json[:ResultSet][:Result].select{|ent| ent[:sra_id] == @subid }
   end
   attr_reader :subid
   
@@ -123,7 +130,43 @@ class ProjectReport
   end
   
   def paper
-    
+    if @paperinfo
+      @paperinfo.map do |entry|
+        pmid = entry[:pmid]
+        arg = "db=pubmed&id=#{pmid}&retmode=xml"
+        prsr = PubMedMetadataParser.new(open(@@eutil_base + arg).read)
+        { pmid: pmid,
+          journal: prsr.journal_title,
+          title: prsr.article_title,
+          abstract: prsr.abstract,
+          affiliation: prsr.affiliation,
+          authors: prsr.authors.map{|a| a.values.join("\s") },
+          date: prsr.date_created.values.join("/") }
+      end
+    end
+  end
+  
+  def pmc
+    if @paperinfo
+      @paperinfo.map do |entry|
+        pmid = entry[:pmid]
+        pmcid = `grep #{pmid} #{@@pmcid_table}`.split(",")[8]
+        if pmcid
+          arg = "db=pmc&id=#{pmcid}&retmode=xml"
+          prsr = PMCMetadataParser.new(open(@@eutil_base + arg).read)
+          body = prsr.body.compact
+          { }
+        { pmcid: pp.pmcid,
+          journal_title: pp.journal_title,
+          introduction: body.select{|s| s[:sec_title] =~ /introduction/i or s[:sec_title] =~ /background/i },
+          methods: body.select{|s| s[:sec_title] =~ /method/i },
+          results: body.select{|s| s[:sec_title] =~ /result/i },
+          discussion: body.select{|s| s[:sec_title] =~ /discussion/i },
+          references: pp.ref_journal_list,
+        }
+        end
+      end
+    end
   end
   
   def report
