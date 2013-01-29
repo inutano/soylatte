@@ -54,7 +54,7 @@ class ProjectReport
           scientific_name: scientific_name }
       end
     end
-    sample_table.select{|n| n }
+    sample_table.compact
   end
   
   def experiment
@@ -65,10 +65,10 @@ class ProjectReport
         { expid: expid,
           lib_layout: prsr.library_layout,
           platform: prsr.platform,
-          instrumentL prsr.instrument_model }
+          instrument: prsr.instrument_model }
       end
     end
-    exp_table.select{|n| n }
+    exp_table.compact
   end
   
   def read_profile(runid)
@@ -80,6 +80,22 @@ class ProjectReport
         total_seq: prsr.total_sequences,
         seq_length: prsr.sequence_length }
     end
+  end
+  
+  def general_table
+    study = self.study
+    sample = self.sample
+    experiment = self.experiment
+    
+    study_title = study[:study_title]
+    study_type = study[:study_type]
+    scientific_name = sample.map{|n| n[:scientific_name] }.uniq.join(", ")
+    instrument = experiment.map{|n| n[:instrument] }.uniq.join(", ")
+    
+    { study_title: study_title,
+      study_type: study_type,
+      scientific_name: scientific_name,
+      instrument: instrument }
   end
   
   def run_table
@@ -99,12 +115,13 @@ class ProjectReport
       lib_layout = experiment[:lib_layout]
       
       { runid: runid,
+        expid: expid,
         sampleid: sampleid,
         study_type: study_type,
         organism: organism,
         instrument: instrument,
         lib_layout: lib_layout,
-        read_detail: self.read_profile(runid) }
+        read_profile: self.read_profile(runid) }
     end
   end
   
@@ -148,31 +165,47 @@ class ProjectReport
   
   def pmc
     if @paperinfo
-      @paperinfo.map do |entry|
+      pmcinfo = @paperinfo.map do |entry|
         pmid = entry[:pmid]
         pmcid = `grep #{pmid} #{@@pmcid_table}`.split(",")[8]
         if pmcid
           arg = "db=pmc&id=#{pmcid}&retmode=xml"
           prsr = PMCMetadataParser.new(open(@@eutil_base + arg).read)
           body = prsr.body.compact
-          { }
-        { pmcid: pp.pmcid,
-          journal_title: pp.journal_title,
-          introduction: body.select{|s| s[:sec_title] =~ /introduction/i or s[:sec_title] =~ /background/i },
-          methods: body.select{|s| s[:sec_title] =~ /method/i },
-          results: body.select{|s| s[:sec_title] =~ /result/i },
-          discussion: body.select{|s| s[:sec_title] =~ /discussion/i },
-          references: pp.ref_journal_list,
-        }
+          introduction = body.select{|s| s[:sec_title] =~ /introduction|background/i }
+          methods = body.select{|s| s[:sec_title] =~ /methods/i }
+          results = body.select{|s| s[:sec_title] =~ /results/i }
+          discussion = body.select{|s| s[:sec_title] =~ /discussion/i }
+          
+          { pmcid: pmcid,
+            introduction: introduction,
+            methods: methods,
+            results: results,
+            discussion: discussion,
+            references: prsr.ref_journal_list,
+            cited_by: prsr.cited_by }
         end
       end
+      pmcinfo.compact if !pmcinfo.compact.empty?
     end
   end
   
   def report
+    { general: self.general_table,
+      paper: self.paper,
+      pmc: self.pmc,
+      run_table: self.run_table,
+      sample_table: self.sample_table }
   end
 end
 
+if __FILE__ == $0
+  require "ap"
+  ProjectReport.load_files("./config.yaml")
+  id = "DRP000001"
+  pr = ProjectReport.new(id)
+  ap pr.report
+end
 
 
 =begin
@@ -263,11 +296,4 @@ class ProjectReport
   end
 end
 
-if __FILE__ == $0
-  require "ap"
-  ProjectReport.load_files("./config.yaml")
-  id = "DRP000001"
-  pr = ProjectReport.new(id)
-  ap pr.report
-end
 =end
