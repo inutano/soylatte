@@ -81,6 +81,8 @@ class ProjectReport
         total_seq: prsr.total_sequences,
         seq_length: prsr.sequence_length }
     end
+  rescue Errno::ENOENT
+    nil
   end
   
   def general_table
@@ -200,11 +202,33 @@ class ProjectReport
   end
 end
 
+def mess(message)
+  puts message + "\t" + Time.now.strftime("%H:%M:%S")
+end
+
 if __FILE__ == $0
   require "ap"
-  ProjectReport.load_files("./config.yaml")
-  id = "DRP000017" #"DRP000001"
   
+  mess "loading config.yaml"
+  ProjectReport.load_files("./config.yaml")
+  
+  id = "DRP000001" #"DRP000017" #"DRP000001"
+  
+  mess "creating ProjectReport object"
   pr = ProjectReport.new(id)
-  ap pr.report
+  
+  mess "general table"
+  ap pr.general_table.class
+
+  mess "paper info"
+  ap pr.paper.class
+
+  mess "pmc info"
+  ap pr.pmc.class
+  
+  mess "run table"
+  ap pr.run_table.class
+
+  mess "sample table"
+  ap pr.sample_table.class
 end
