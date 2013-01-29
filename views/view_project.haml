@@ -1,0 +1,151 @@
+!!! XML
+!!!
+%html
+  %head
+    %title= @report[:general][:study_title]
+    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+    // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
+  
+  %body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand
+            DBCLS SRA metadata search (beta)
+          .nav-collapse
+            %ul.nav
+              %li
+                %a{:href => "/soylatte"} Home
+              %li
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
+              %li
+                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
+              %li
+                %a{:href => "http://twitter.com/inutano"} Contact
+    
+    %section
+      %h2 Project Summary
+      %hr
+      
+      %h3= @report[:general][:study_title]
+      %table{ :class => "table table-hover" }
+        %thead
+          %tr
+            %th study type
+            %th sample organism
+            %th sequencing platform
+        %tbody
+          %tr
+            %td= @report[:general][:study_type]
+            %td= @report[:general][:scientific_name]
+            %td= @report[:general][:instrument]
+          
+    - if @report[:paper]
+      - @report[:paper].each do |paper|
+        %section
+          %h2 Article Summary
+          %hr
+        
+          %h3= paper[:title]
+          %p= paper[:authors].join(", ")
+          %p= paper[:journal] + ", " + paper[:date]
+          
+          %p= paper[:abstract]
+
+    - if @report[:pmc]
+      - @report[:pmc].each do |pmc|
+        %section
+          %h2 Article Detail
+          %hr
+          
+          %h3 Methods
+          - pmc[:methods].each do |section_methods|
+            - if section_methods.has_key?(:subsec)
+              - section_methods[:subsec].each do |subsec|
+                %li= subsec[:subsec_title]
+              
+          %h3 Results
+          - pmc[:results].each do |section_results|
+            - if section_results.has_key?(:subsec)
+              - section_results[:subsec].each do |subsec|
+                %li= subsec[:subsec_title]
+                
+          %h3 Cited by
+          - pmc[:cited_by].each do |citedby|
+            %li= citedby[:title]
+
+    %section
+      %h2 Sequencing
+      %hr
+      %table{ :class => "table table-hover" }
+        %thead
+          %tr{ :class => "info" }
+            %th runid
+            %th sample id
+            %th study type
+            %th sample organism
+            %th sequencing instrument
+            %th library layout
+        
+        %tbody            
+        - @report[:run_table].each do |row|
+          %tr
+            %td= row[:runid]
+            %td= row[:sampleid]
+            %td= row[:study_type]
+            %td= row[:organism]
+            %td= row[:instrument]
+            %td= row[:lib_layout]
+      
+      %h2 Read profile
+      %hr
+      - @report[:run_table].each do |row|
+        %h3= row[:runid]
+        - if !row[:read_profile]
+          %p no data
+        - else
+          %table{ :class => "table table-hover" }
+            %thead
+              %tr
+                %th read
+                %th total number of sequence
+                %th sequencing length
+            %tbody
+            - row[:read_profile].each do |read|
+              %tr
+                %td= read[:read]
+                %td= read[:total_seq]
+                %td= read[:seq_length]
+                
+    %section
+      %h2 Samples
+      %hr
+      %table{ :class => "table table-hover" }
+        %thead
+          %tr{ :class => "info" }
+            %th sample id
+            %th sample description
+            %th run id
+        
+        %tbody
+        - @report[:sample_table].each do |row|
+          %tr
+            %td= row[:sampleid]
+            %td= row[:sample_description]
+            %td= row[:runid].join(", ")
+
+    %section
+      %h2 Linkout/Resources
+      %hr
+    
+    %footer
+      powered by
+      %a{ :href => "http://dbcls.rois.ac.jp/en" }
+        DBCLS
+      , project licensed under CC-BY 2.1 JP
