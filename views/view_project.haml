@@ -5,10 +5,13 @@
     %title= @report[:general][:study_title]
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
     // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
   
   %body
+    %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+    %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
     .navbar.navbar-fixed-top
       .navbar-inner
         .container
@@ -23,18 +26,22 @@
               %li
                 %a{:href => "/soylatte"} Home
               %li
-                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
+                %a{:href => "http://g86.dbcls.jp/chateautogo"}blog
               %li
-                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                  %i{ :class => "icon-github" }
               %li
-                %a{:href => "http://twitter.com/inutano"} Contact
+                %a{:href => "http://twitter.com/inutano"}
+                  %i{ :class => "icon-twitter" }
     
     %section
-      %h2 Project Summary
+      %h2
+        %i.icon-pencil.icon-large
+        Project Summary
       %hr
       
-      %h3= @report[:general][:study_title]
-      %table{ :class => "table table-hover" }
+      %p.lead= @report[:general][:study_title]
+      %table.table.table-hover
         %thead
           %tr
             %th study type
@@ -49,86 +56,110 @@
     - if @report[:paper]
       - @report[:paper].each do |paper|
         %section
-          %h2 Article Summary
+          %h2 
+            %i.icon-file.icon-large
+            Article Summary
           %hr
         
           %h3= paper[:title]
-          %p= paper[:authors].join(", ")
-          %p= paper[:journal] + ", " + paper[:date]
-          
-          %p= paper[:abstract]
+          %blockquote
+            %small= paper[:authors].join(", ")
+            %small= paper[:journal] + ", " + paper[:date]
+            %p= paper[:abstract]
 
     - if @report[:pmc]
       - @report[:pmc].each do |pmc|
         %section
-          %h2 Article Detail
+          %h2 
+            %i.icon-book.icon-large
+            Article Detail
           %hr
           
           %h3 Methods
-          - pmc[:methods].each do |section_methods|
-            - if section_methods.has_key?(:subsec)
-              - section_methods[:subsec].each do |subsec|
-                %li= subsec[:subsec_title]
-              
-          %h3 Results
-          - pmc[:results].each do |section_results|
-            - if section_results.has_key?(:subsec)
-              - section_results[:subsec].each do |subsec|
-                %li= subsec[:subsec_title]
+          .accordion#accordion2
+            - pmc[:methods].each do |section_methods|
+              - if section_methods.has_key?(:subsec)
+                - section_methods[:subsec].each do |subsec|
+                - nospace = subsec[:subsec_title].gsub("\s","_")
+                  .accordion-group
+                    .accordion-heading
+                      %a.accordion-toggle{ "data-toggle" => "collapse", "data-parent" => "#accordion2", :href => nospace.sub(/^/,"\#") }
+                        = subsec[:subsec_title]
+                    .accordion-body.collapse{ :id => nospace }
+                      .accordion-inner
+                        %blockquote
+                          %p= subsec[:subsec_text].join("\n")
                 
+          %h3 Results
+          .accordion#accordion3
+            - pmc[:results].each do |section_results|
+              - if section_results.has_key?(:subsec)
+                - section_results[:subsec].each do |subsec|
+                - nospace = subsec[:subsec_title].gsub("\s","_")
+                  .accordion-group
+                    .accordion-heading
+                      %a.accordion-toggle{ "data-toggle" => "collapse", "data-parent" => "#accordion3", :href => nospace.sub(/^/,"\#") }
+                        = subsec[:subsec_title]
+                    .accordion-body.collapse{ :id => nospace }
+                      .accordion-inner
+                        %blockquote
+                          %p= subsec[:subsec_text].join("\n")
+
           %h3 Cited by
+          %ol
           - pmc[:cited_by].each do |citedby|
-            %li= citedby[:title]
+            %li
+              %a{ :href => "http://www.ncbi.nlm.nih.gov/pmc/articles/#{citedby[:pmcid]}" }= citedby[:title]
 
     %section
-      %h2 Sequencing
+      %h2 
+        %i.icon-reorder.icon-large
+        Sequencing Profile
       %hr
-      %table{ :class => "table table-hover" }
+      %table.table.table-hover
         %thead
-          %tr{ :class => "info" }
+          %tr
             %th runid
             %th sample id
             %th study type
             %th sample organism
             %th sequencing instrument
             %th library layout
+            %th total number of sequence
+            %th sequence length
         
         %tbody            
         - @report[:run_table].each do |row|
-          %tr
-            %td= row[:runid]
-            %td= row[:sampleid]
-            %td= row[:study_type]
-            %td= row[:organism]
-            %td= row[:instrument]
-            %td= row[:lib_layout]
-      
-      %h2 Read profile
-      %hr
-      - @report[:run_table].each do |row|
-        %h3= row[:runid]
-        - if !row[:read_profile]
-          %p no data
-        - else
-          %table{ :class => "table table-hover" }
-            %thead
-              %tr
-                %th read
-                %th total number of sequence
-                %th sequencing length
-            %tbody
+          - if !row[:read_profile]
+            %tr
+              %td= row[:runid]
+              %td= row[:sampleid]
+              %td= row[:study_type]
+              %td= row[:organism]
+              %td= row[:instrument]
+              %td= row[:lib_layout]
+              %td no data
+              %td no data
+          - else
             - row[:read_profile].each do |read|
               %tr
                 %td= read[:read]
+                %td= row[:sampleid]
+                %td= row[:study_type]
+                %td= row[:organism]
+                %td= row[:instrument]
+                %td= row[:lib_layout]
                 %td= read[:total_seq]
                 %td= read[:seq_length]
-                
+            
     %section
-      %h2 Samples
+      %h2 
+        %i.icon-beaker.icon-large.icon-spin
+        Sample Profile
       %hr
-      %table{ :class => "table table-hover" }
+      %table.table.table-hover
         %thead
-          %tr{ :class => "info" }
+          %tr
             %th sample id
             %th sample description
             %th run id
@@ -141,11 +172,16 @@
             %td= row[:runid].join(", ")
 
     %section
-      %h2 Linkout/Resources
+      %h2 
+        %i.icon-share.icon-large
+        Linkout/Resources
       %hr
     
     %footer
       powered by
       %a{ :href => "http://dbcls.rois.ac.jp/en" }
         DBCLS
-      , project licensed under CC-BY 2.1 JP
+      , project licensed under CC-BY 2.1 JP. /
+      Font Awesome by Dave Gandy - 
+      %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
+        http://fortawesome.github.com/Font-Awesome
