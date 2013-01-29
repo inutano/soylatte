@@ -170,7 +170,7 @@ class ProjectReport
     if @paperinfo
       pmcinfo = @paperinfo.map do |entry|
         pmid = entry[:pmid]
-        pmcid = `grep #{pmid} #{@@pmcid_table}`.split(",")[8]
+        pmcid = `grep -m 1 #{pmid} #{@@pmcid_table}`.split(",")[8]
         if pmcid
           arg = "db=pmc&id=#{pmcid}&retmode=xml"
           prsr = PMCMetadataParser.new(open(@@eutil_base + arg).read)
@@ -212,7 +212,7 @@ if __FILE__ == $0
   mess "loading config.yaml"
   ProjectReport.load_files("./config.yaml")
   
-  id = "DRP000001" #"DRP000017" #"DRP000001"
+  id = "DRP000017" #"DRP000001"
   
   mess "creating ProjectReport object"
   pr = ProjectReport.new(id)
