@@ -6,6 +6,7 @@ require "sass"
 require "yaml"
 require "./lib/database"
 require "./lib/project_report"
+require "./lib/run_report"
 
 def logging(query)
   logfile = YAML.load_file("./lib/config.yaml")["logfile"]
@@ -61,6 +62,25 @@ get %r{/view/((S|E|D)RP\d{6})} do |id, db|
   ProjectReport.load_files("./lib/config.yaml")
   @report = ProjectReport.new(id).report
   haml :view_project
+end
+
+get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
+  RunReport.load_files("./lib/config.yaml")
+  run_report = RunReport.new(id)
+  if run_report
+    @report = run_report.report
+    haml :view_run
+  else
+    haml :not_found
+  end
+end
+
+get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fname|
+  qc_path = YAML.load_file("./lib/config.yaml")["fqc_path"]
+  pfx = fname.slice(0,6)
+  id = fname.slice(0,9)
+  img_path = File.join(qc_path, pfx, id, "#{fname}_fastqc/Images/#{img_fname}.png")
+  send_file img_path
 end
 
 not_found do

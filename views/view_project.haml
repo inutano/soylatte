@@ -162,7 +162,8 @@
         - @report[:run_table].each do |row|
           - if !row[:read_profile]
             %tr
-              %td= row[:runid]
+              %td
+                %a{ :href => "/view/#{row[:runid]}" }= row[:runid]
               %td= row[:sampleid]
               %td= row[:study_type]
               %td= row[:organism]
@@ -173,7 +174,8 @@
           - else
             - row[:read_profile].each do |read|
               %tr
-                %td= read[:read]
+                %td
+                  %a{ :href => "/view/#{read[:read]}" }= read[:read]
                 %td= row[:sampleid]
                 %td= row[:study_type]
                 %td= row[:organism]
