@@ -91,12 +91,14 @@ class ProjectReport
     sample = self.sample
     experiment = self.experiment
     
+    studyid = study[:studyid]
     study_title = study[:study_title]
     study_type = study[:study_type]
     scientific_name = sample.map{|n| n[:scientific_name] }.uniq.join(", ")
     instrument = experiment.map{|n| n[:instrument] }.uniq.join(", ")
     
-    { study_title: study_title,
+    { studyid: studyid,
+      study_title: study_title,
       study_type: study_type,
       scientific_name: scientific_name,
       instrument: instrument }

@@ -207,14 +207,14 @@
         Linkout/Resources
       %hr
 
-      // %ol
-      //  - studyid = @report[:general][:studyid]
-      //  %li
-      //    %a{ :href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=" + studyid }
-      //      DRASearch - DDBJ/DRA
-      //  %li
-      //    %a{ :href => "http://www.ebi.ac.uk/ena/data/view/" + studyid }
-      //      ENA Browser - EBI/ENA
+      %ul
+        - studyid = @report[:general][:studyid]
+        %li
+          %a{ :href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=" + studyid }
+            DRASearch - DDBJ/DRA
+        %li
+          %a{ :href => "http://www.ebi.ac.uk/ena/data/view/" + studyid }
+            ENA Browser - EBI/ENA
     
     %footer
       powered by
