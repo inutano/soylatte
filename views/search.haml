@@ -2,75 +2,83 @@
 !!!
 %html
   %head
-    %title search result
+    %title Search Result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "./style.css", :type => "text/css"}
-  
-  %body
-    .navbar.navbar-fixed-top
-      .navbar-inner
-        .container
-          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
-            %span.icon-bar
-            %span.icon-bar
-            %span.icon-bar
-          %a.brand
-            DBCLS SRA metadata search (beta)
-          .nav-collapse
-            %ul.nav
-              %li
-                %a{:href => "/soylatte"} Home
-              %li
-                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
-              %li
-                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
-              %li
-                %a{:href => "http://twitter.com/inutano"} Contact
-
-    %header
-      %h1 op. soylatte
-      %p :)
+    // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
     
-    %section
-      %h2 search result
-      %hr
+  %body
+    .container
+      %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+      %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
+      .navbar.navbar-fixed-top
+        .navbar-inner
+          .container
+            %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
+              %span.icon-bar
+              %span.icon-bar
+              %span.icon-bar
+            %a.brand
+              DBCLS SRA metadata search (beta)
+            .nav-collapse
+              %ul.nav
+                %li
+                  %a{:href => "/soylatte"} Home
+                %li
+                  %a{:href => "http://g86.dbcls.jp/chateautogo"}blog
+                %li
+                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                    %i.icon-github
+                %li
+                  %a{:href => "http://twitter.com/inutano"}
+                    %i.icon-twitter
+  
+      .page-header
+        %h1
+          DBCLS SRA Metadata Search
+          %small
+            project: Soylatte
       
-      %h3 search query
-      %p= @query
-
-      %h3 search result
-      %h4= @result.size.to_s + " of records"
-      %table{ :class => "table table-hover" }
-        // %table{ :class => "table table-hover" }
-        %tr
-          %th id
-          %th project title
-          %th number of sequencing
-          %th publication
-      
-        - @result.each do |record|
-          - projectid = record.key.key
-          - if record.paper
-            %tr{ :class => "info" }
-              %td
-                %a{ :href => "/view/#{projectid}"}= projectid
-              // %td= record.title
-              %td project title
-              %td= record.runid.to_s
-              %td= record.paper
-          - else
-            %tr
-              %td
-                %a{ :href => "/view/#{projectid}"}= projectid
-              // %td= record.title
-              %td project title
-              %td= record.runid.to_s
-              %td= record.paper
+      %section
+        %p.lead= "Search query: " + @query
+        %hr
         
-    %footer
-      powered by
-      %a{ :href => "http://dbcls.rois.ac.jp/en" }
-        DBCLS
-      , project licensed under CC-BY 2.1 JP
+        %h4= @result.size.to_s + " of records"
+        %table.table.table-hover
+          %thead
+            %tr
+              %th Project ID
+              %th Project Title
+              %th Number of Sequencing
+              %th Publication?
+          
+          %tbody
+          - @result.each do |record|
+            - projectid = record.key.key
+            - if record.paper
+              %tr{ :class => "info" }
+                %td
+                  %a{ :href => "/view/#{projectid}"}= projectid
+                // %td= record.title
+                %td project title
+                %td= record.runid.to_s
+                %td= record.paper
+            - else
+              %tr
+                %td
+                  %a{ :href => "/view/#{projectid}"}= projectid
+                // %td= record.title
+                %td project title
+                %td= record.runid.to_s
+                %td= record.paper
+          
+      %footer
+        powered by
+        %a{ :href => "http://dbcls.rois.ac.jp/en" }
+          DBCLS
+        , project licensed under CC-BY 2.1 JP. /
+        Font Awesome by Dave Gandy - 
+        %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
+          http://fortawesome.github.com/Font-Awesome

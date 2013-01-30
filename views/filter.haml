@@ -2,80 +2,87 @@
 !!!
 %html
   %head
-    %title filter result
+    %title Filtering Result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "./style.css", :type => "text/css"}
+    // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
   
   %body
-    .navbar.navbar-fixed-top
-      .navbar-inner
-        .container
-          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
-            %span.icon-bar
-            %span.icon-bar
-            %span.icon-bar
-          %a.brand
-            DBCLS SRA metadata search (beta)
-          .nav-collapse
-            %ul.nav
-              %li
-                %a{:href => "/soylatte"} Home
-              %li
-                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
-              %li
-                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
-              %li
-                %a{:href => "http://twitter.com/inutano"} Contact
+    .container
+      %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+      %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
+      .navbar.navbar-fixed-top
+        .navbar-inner
+          .container
+            %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse" }
+              %span.icon-bar
+              %span.icon-bar
+              %span.icon-bar
+            %a.brand
+              DBCLS SRA metadata search (beta)
+            .nav-collapse
+              %ul.nav
+                %li
+                  %a{:href => "/soylatte"} Home
+                %li
+                  %a{:href => "http://g86.dbcls.jp/chateautogo"}blog
+                %li
+                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                    %i.icon-github
+                %li
+                  %a{:href => "http://twitter.com/inutano"}
+                    %i.icon-twitter
 
-    %header
-      %h1 op. soylatte
-      %p :)
+      .page-header
+        %h1
+          DBCLS SRA Metadata Search
+          %small
+            project: Soylatte
     
-    %section
-      %h2 filter result
-      %hr
-      
-      %h4 query
-      /* %p= "species: " + @sp */
-      /* %p= "study_type: " + @st */
-      /* %p= "platform: " + @pl */
-      
-      %h4 database condition
-      - total = @total_number.to_s
-      - mix = @result[:mix][:size].to_s
-      - tax = @result[:taxonid][:size].to_s
-      - stu = @result[:study_type][:size].to_s
-      - ins = @result[:instrument][:size].to_s
-      - pmix = @result[:mix][:percent].to_s
-      - ptax = @result[:taxonid][:percent].to_s
-      - pstu = @result[:study_type][:percent].to_s
-      - pins = @result[:instrument][:percent].to_s
-      
-      %h1= "requested filtering condition: " + "#{mix}/#{total}, #{pmix}%"
-      %div{ :class => "progress" }
-        %div{ :class => "bar", :style => "width: #{pmix}%;"}
-      
-      %h1= "requested organism: " + "#{tax}/#{total}, #{ptax}%"
-      %div{ :class => "progress" }
-        %div{ :class => "bar", :style => "width: #{ptax}%;"}
-
-      %h1= "requested study type: " + "#{stu}/#{total}, #{pstu}%"
-      %div{ :class => "progress" }
-        %div{ :class => "bar", :style => "width: #{pstu}%;"}
-
-      %h1= "requested instrument: " + "#{ins}/#{total}, #{pins}%"
-      %div{ :class => "progress" }
-        %div{ :class => "bar", :style => "width: #{pins}%;"}
-      
-      %h4 keyword search with fileters selected above
-      %form{ :name => "search", :action => "/search", :method => "POST" }
-        %input{ :type => "text", :name => "search_query", :width => 86 }
-        %input{ :type => "submit", :value => "search" }
-      
-    %footer
-      powered by
-      %a{ :href => "http://dbcls.rois.ac.jp/en" }
-        DBCLS
-      , project licensed under CC-BY 2.1 JP
+      %section
+        .row
+          .span7
+            %p.lead Requested filtering condition
+            %hr
+            %p.count= "#{@result[:mix][:size]}/#{@total_number}, #{@result[:mix][:percent]}%"
+            .progress
+              .bar{ :style => "width: #{@result[:mix][:percent]}%;" }
+          .span5.filtersearch
+            %p.lead Fulltext search
+            %form.search{ :name => "search", :action => "/search", :method => "POST" }
+              %label search with this condition
+              %input.input-large.search-query{ :type => "text", :name => "search_query" }
+              %button.btn{ :type => "submit" }
+                search
+        %hr
+        %p.lead For each condition:
+        .row
+          .span4
+            %p.lead Sample Organism
+            %hr
+            %p.count= "#{@result[:taxonid][:size]}/#{@total_number}, #{@result[:taxonid][:percent]}%"
+            .progress
+              .bar{ :style => "width: #{@result[:taxonid][:percent]}%;" }
+          .span4
+            %p.lead Study Type
+            %hr
+            %p.count= "#{@result[:study_type][:size]}/#{@total_number}, #{@result[:study_type][:percent]}%"
+            .progress
+              .bar{ :style => "width: #{@result[:study_type][:percent]}%;" }
+          .span4
+            %p.lead Sequencing Platform
+            %hr
+            %p.count= "#{@result[:instrument][:size]}/#{@total_number}, #{@result[:instrument][:percent]}%"
+            .progress
+              .bar{ :style => "width: #{@result[:instrument][:percent]}%;" }
+        
+      %footer
+        powered by
+        %a{ :href => "http://dbcls.rois.ac.jp/en" }
+          DBCLS
+        , project licensed under CC-BY 2.1 JP. /
+        Font Awesome by Dave Gandy - 
+        %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
+          http://fortawesome.github.com/Font-Awesome

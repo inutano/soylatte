@@ -2,73 +2,98 @@
 !!!
 %html
   %head
-    %title tall-size-hot-soylatte
+    %title tallsize hot soylatte :)
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "./style.css", :type => "text/css"}
+    // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
   
   %body
-    .navbar.navbar-fixed-top
-      .navbar-inner
-        .container
-          %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
-            %span.icon-bar
-            %span.icon-bar
-            %span.icon-bar
-          %a.brand
-            DBCLS SRA metadata search (beta)
-          .nav-collapse
-            %ul.nav
-              %li
-                %a{:href => "/soylatte"} Home
-              %li
-                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"} github
-              %li
-                %a{:href => "http://g86.dbcls.jp/chateautogo"} Blog
-              %li
-                %a{:href => "http://twitter.com/inutano"} Contact
+    .container
+      %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+      %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
+      .navbar.navbar-fixed-top
+        .navbar-inner
+          .container
+            %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse" }
+              %span.icon-bar
+              %span.icon-bar
+              %span.icon-bar
+            %a.brand
+              DBCLS SRA metadata search (beta)
+            .nav-collapse
+              %ul.nav
+                %li
+                  %a{:href => "/soylatte"} Home
+                %li
+                  %a{:href => "http://g86.dbcls.jp/chateautogo"}blog
+                %li
+                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                    %i.icon-github
+                %li
+                  %a{:href => "http://twitter.com/inutano"}
+                    %i.icon-twitter
+      
+      .page-header
+        %h1
+          DBCLS SRA Metadata Search
+          %small
+            project: Soylatte
+      
+      %section
+        .row
+          .span6
+            %p.lead Setting search filter
+            %form.form-horizontal{ :name => "filters", :action => "/filter", :method => "POST" }
+              .control-group  
+                %label.control-label{ "for" => "species" } Sample Organism
+                .controls
+                  %select{ :id => "species", :name => "species", :width => 66 }
+                    %option{ :value => "9606" }
+                      human
+                    %option{ :value => "10090" }
+                      mouse
+                    %option{ :value => "10116" }
+                      rat
+              .control-group
+                %label.control-label{ "for" => "study_type" } Study Type
+                .controls
+                  %select{ :id => "study_type", :name => "study_type", :width => 66 }
+                    %option{ :value => "1" }
+                      Genomic Sequence
+                    %option{ :value => "2" }
+                      Transcriptomic Sequence
+                    %option{ :value => "3" }
+                      Metagenomic Sequence
+              .control-group    
+                %label.control-label{ "for" => "platform" } Sequencing Platform
+                .controls
+                  %select{ :id => "platform", :name => "platform", :width => 66 }
+                    %option{ :value => "Illumina MiSeq" }
+                      Illumina MiSeq
+                    %option{ :value => "Ion Proton" }
+                      Ion Proton
+                    %option{ :value => "GridION" }
+                      GridION
+              .control-group
+                .controls
+                  %button.btn{ :type => "submit" }
+                    submit condition
+          
+          .span6
+            %p.lead Fulltext search
+            %form.search{ :name => "search", :action => "/search", :method => "POST" }
+              %label search without filtering
+              %input.input-large.search-query{ :type => "text", :name => "search_query" }
+              %button.btn{ :type => "submit" }
+                search
 
-    %header
-      %h1 op. soylatte
-      %p :)
-    
-    %section
-      %h2 search public high throughput sequencing data
-      %hr
-      
-      %form{ :name => "filters", :action => "/filter", :method => "POST" }
-        %h4 select filters to reduce search target
-        %fieldset
-          %legend
-            Filtering Option
-          %select{ :id => "species", :name => "species", :width => 66 }
-            %option{ :value => "9606" }
-              human
-            %option{ :value => "10090" }
-              mouse
-            %option{ :value => "10116" }
-              rat
-          %select{ :id => "study_type", :name => "study_type", :width => 66 }
-            %option{ :value => "1" }
-              Genomic Sequence
-            %option{ :value => "2" }
-              Transcriptomic Sequence
-            %option{ :value => "3" }
-              Metagenomic Sequence
-          %select{ :id => "platform", :name => "platform", :width => 66 }
-            %option{ :value => "Illumina MiSeq" }
-              Illumina MiSeq
-            %option{ :value => "Ion Proton" }
-              Ion Proton
-            %option{ :value => "GridION" }
-              GridION
-        %button{ :type => "submit" }
-          check
-        
-      
-    %footer
-      powered by
-      %a{ :href => "http://dbcls.rois.ac.jp/en" }
-        DBCLS
-      , project licensed under CC-BY 2.1 JP
+      %footer
+        powered by
+        %a{ :href => "http://dbcls.rois.ac.jp/en" }
+          DBCLS
+        , project licensed under CC-BY 2.1 JP. /
+        Font Awesome by Dave Gandy - 
+        %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
+          http://fortawesome.github.com/Font-Awesome
