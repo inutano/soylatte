@@ -37,7 +37,8 @@ class ProjectReport
   
   def study
     prsr = SRAMetadataParser::Study.new(@studyid, @xml_head + ".study.xml")
-    { study_title: prsr.study_title,
+    { studyid: @studyid,
+      study_title: prsr.study_title,
       study_type: prsr.study_type }
   end
   
@@ -154,14 +155,35 @@ class ProjectReport
       @paperinfo.map do |entry|
         pmid = entry[:pmid]
         arg = "db=pubmed&id=#{pmid}&retmode=xml"
-        prsr = PubMedMetadataParser.new(open(@@eutil_base + arg).read)
+        pm_prsr = PubMedMetadataParser.new(open(@@eutil_base + arg).read)
+        
+        pmcid = `grep -m 1 #{pmid} #{@@pmcid_table}`.split(",")[8]
+        pmc = if pmcid
+                arg = "db=pmc&id=#{pmcid}&retmode=xml"
+                pmc_prsr = PMCMetadataParser.new(open(@@eutil_base + arg).read)
+                body = pmc_prsr.body.compact
+                introduction = body.select{|s| s[:sec_title] =~ /introduction|background/i }
+                methods = body.select{|s| s[:sec_title] =~ /methods/i }
+                results = body.select{|s| s[:sec_title] =~ /results/i }
+                discussion = body.select{|s| s[:sec_title] =~ /discussion/i }
+                
+                { pmcid: pmcid,
+                  introduction: introduction,
+                  methods: methods,
+                  results: results,
+                  discussion: discussion,
+                  references: pmc_prsr.ref_journal_list,
+                  cited_by: pmc_prsr.cited_by }
+              end
+        
         { pmid: pmid,
-          journal: prsr.journal_title,
-          title: prsr.article_title,
-          abstract: prsr.abstract,
-          affiliation: prsr.affiliation,
-          authors: prsr.authors.map{|a| a.values.join("\s") },
-          date: prsr.date_created.values.join("/") }
+          journal: pm_prsr.journal_title,
+          title: pm_prsr.article_title,
+          abstract: pm_prsr.abstract,
+          affiliation: pm_prsr.affiliation,
+          authors: pm_prsr.authors.map{|a| a.values.join("\s") },
+          date: pm_prsr.date_created.values.join("/"),
+          pmc: pmc }
       end
     end
   end
@@ -208,27 +230,25 @@ end
 
 if __FILE__ == $0
   require "ap"
-  
-  mess "loading config.yaml"
-  ProjectReport.load_files("./config.yaml")
-  
-  id = "DRP000017" #"DRP000001"
+
+  ProjectReport.load_files("./config.yaml")  
+  id = "DRP000169" #"DRP000017" #"DRP000001"
   
   mess "creating ProjectReport object"
   pr = ProjectReport.new(id)
   
   mess "general table"
-  ap pr.general_table.class
+  ap pr.general_table
 
   mess "paper info"
-  ap pr.paper.class
+  ap pr.paper
 
   mess "pmc info"
-  ap pr.pmc.class
+  ap pr.pmc
   
   mess "run table"
-  ap pr.run_table.class
+  ap pr.run_table
 
   mess "sample table"
-  ap pr.sample_table.class
+  ap pr.sample_table
 end
