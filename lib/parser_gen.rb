@@ -33,7 +33,7 @@ class SRAParserGen
              when "A"
                id
              else
-               `grep #{id} #{@@accessions} | cut -f 2 | sort -u`.chomp
+               `grep -m 1 #{id} #{@@accessions} | cut -f 2`.chomp
              end
     @xml_head = File.join(@@xmlbase, @subid.slice(0,6), @subid)
   end
@@ -51,7 +51,7 @@ class SRAParserGen
               when "P"
                 [@id]
               when "A"
-                `grep #{@id} #{@@accessions} | grep "^.RP" | cut -f 1 | sort -u`.split("\n")
+                `grep #{@id} #{@@accessions} | grep "^.RP" | cut -f 1`.split("\n")
               when "R"
                 `grep #{@id} #{@@run_members} | cut -f 5 | sort -u`.split("\n")
               else
@@ -70,7 +70,7 @@ class SRAParserGen
               when "X"
                 [@id]
               when "A"
-                `grep #{@id} #{@@accessions} | grep "^.RX" | cut -f 1 | sort -u`.split("\n")
+                `grep #{@id} #{@@accessions} | grep "^.RX" | cut -f 1`.split("\n")
               when "R"
                 `grep #{@id} #{@@run_members} | cut -f 3 | sort -u`.split("\n")
               else
@@ -89,7 +89,7 @@ class SRAParserGen
               when "S"
                 [@id]
               when "A"
-                `grep #{@id} #{@@accessions} | grep "^.RS" | cut -f 1 | sort -u`.split("\n")
+                `grep #{@id} #{@@accessions} | grep "^.RS" | cut -f 1`.split("\n")
               when "R"
                 `grep #{@id} #{@@run_members} | cut -f 4 | sort -u`.split("\n")
               else
@@ -150,18 +150,55 @@ end
 
 if __FILE__ == $0
   require "ap"
-  SRAParserGen.load_files("../lib/config.yaml")
   
-  ids = ["DRP000001","DRP000017","DRR000030"]
+  t0 = Time.now
+  SRAParserGen.load_files("../lib/config.yaml")
+  t00 = Time.now
+  ap "loadfiles"
+  ap t00 - t0
+  
+  ids = ["DRP000017"] #["DRP000001","DRP000017","DRR000030"]
   ids.each do |id|
+    
+    
+    t1 = Time.now
     p = SRAParserGen.new(id)
+    ap "create object"
+    ap t1 - t00
 
-    ap p.submission_parser
-    ap p.study_parser
-    ap p.experiment_parser
-    ap p.sample_parser
-    ap p.run_parser
-    ap p.pubmed_parser
-    ap p.pmc_parser
+    t2 = Time.now
+    ap p.submission_parser.class
+    ap "submission"
+    ap t2 - t1
+
+    t3 = Time.now
+    ap p.study_parser.class
+    ap "study"
+    ap t3 - t2
+
+    t4 = Time.now
+    ap p.experiment_parser.class
+    ap "exp"
+    ap t4 - t3
+
+    t5 = Time.now
+    ap p.sample_parser.class
+    ap "sample"
+    ap t5 - t4
+
+    t6 = Time.now
+    ap p.run_parser.class
+    ap "run"
+    ap t6 - t5
+
+    t7 = Time.now
+    ap p.pubmed_parser.class
+    ap "pubmed"
+    ap t7 - t6
+
+    t8 = Time.now
+    ap p.pmc_parser.class
+    ap "pmc"
+    ap t8 - t7
   end
 end

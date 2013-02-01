@@ -20,6 +20,7 @@ class MetadataParser
     @pub_parser = pgen.pubmed_parser
     @pmc_parser = pgen.pmc_parser
   end
+  attr_reader :studyid
   
   def runid
     `grep #{@studyid} #{@@run_members} | cut -f 1`.split("\n")
@@ -158,8 +159,55 @@ end
 
 if __FILE__ == $0
   require "ap"
+  t00 = Time.now
   MetadataParser.load_files("./config.yaml")
-  mp = MetadataParser.new("DRP000001")
+  t01 = Time.now
+  ap "load file"
+  ap t01 - t00
   
-  ap mp.insert
+  mp = MetadataParser.new("DRP000001")
+  t02 = Time.now
+  ap "create object"
+  ap t02 - t01
+  
+  t1 = Time.now
+  ap mp.studyid.class
+  t2 = Time.now
+  ap "studyid"
+  ap t2 - t1
+  
+  ap mp.runid.class
+  t3 = Time.now
+  ap "runid"
+  ap t3 - t2
+  
+  ap mp.study_title.class
+  t4 = Time.now
+  ap "studytitle"
+  ap t4 - t3
+  
+  ap mp.taxonid.class
+  t5 = Time.now
+  ap "taxonid"
+  ap t5 - t4
+  
+  ap mp.study_type.class
+  t6 = Time.now
+  ap "studytype"
+  ap t6 - t5
+  
+  ap mp.instrument.class
+  t7 = Time.now
+  ap "instrument"
+  ap t7 - t6
+  
+  ap mp.full_text.class
+  t8 = Time.now
+  ap "fulltext"
+  ap t8 - t7
+  
+  ap mp.paper?.class
+  ap "paper?"
+  t9 = Time.now
+  ap t9 - t8
 end
