@@ -5,6 +5,8 @@ require "groonga"
 require "parallel"
 require "./metadata_parser"
 
+require "ap"
+
 def create_db(db_path)
   Groonga::Database.create(:path => db_path)
 
@@ -57,7 +59,8 @@ end
 if __FILE__ == $0
   config_path = "./config.yaml"
   config = YAML.load_file(config_path)
-  db_path = config["db_path"]
+  #db_path = config["db_path"]
+  db_path = "../db_test/project.db"
 
   Groonga::Context.default_options = { encoding: :utf8 }
   
@@ -67,20 +70,35 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..999]
     
     Groonga::Database.open(db_path)
     MetadataParser.load_files(config_path)
     
+    ap Groonga["Projects"]
+
+    Groonga::Database.open("../db/idtable.db")
+    iddb = Groonga["IDtable"]
+    
+    ap Groonga["IDtable"]
+    
     inserts = Parallel.map(studyids) do |studyid|
       if !Groonga["Projects"][studyid]
-        f = MetadataParser.new(studyid)
+        f = MetadataParser.new(studyid, iddb)
         f.insert
       end
     end
     
     Parallel.each(inserts) do |insert|
       add_record(insert) if insert
+    end
+  
+  when "--debug"
+    Groonga::Database.open(db_path)
+    db = Groonga["Projects"]
+    ap db.size
+    if ARGV[1]
+      ap db.select{|r| r.fulltext =~ /#{ARGV[1]}/ }.map{|r| r.key.key }
     end
   end
 end
