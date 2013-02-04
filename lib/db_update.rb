@@ -22,6 +22,7 @@ def create_db(db_path)
   Groonga::Schema.create_table("Idx_int", :type => :hash)
   Groonga::Schema.change_table("Idx_int") do |table|
     table.index("Projects.runid")
+    table.index("Projects.study_title")
     table.index("Projects.taxonid")
     table.index("Projects.study_type")
     table.index("Projects.instrument")
@@ -45,6 +46,7 @@ def add_record(insert)
   
   record = db[studyid]
   record.runid = insert[:runid]
+  record.study_title = insert[:study_title]
   record.taxonid = insert[:taxonid]
   record.study_type = insert[:study_type]
   record.instrument = insert[:instrument]
@@ -65,7 +67,7 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^ERP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")
     
     Groonga::Database.open(db_path)
     MetadataParser.load_files(config_path)
