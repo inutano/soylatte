@@ -30,22 +30,22 @@ class SRAParserGen
   def initialize(id, db)
     @id = id
     @db = db
-    @id_type = id.slice(2,1)
+    @id_type = @id.slice(2,1)
     @subid = case @id_type
              when "A"
-               id
+               @id
              when "P"
-               @db.select{|r| r.project == id }.first.submission
+               @db.select{|r| r.project == @id }.first.submission
              when "X"
-               @db.select{|r| r.experiment == id }.first.submission
+               @db.select{|r| r.experiment == @id }.first.submission
              when "S"
-               @db.select{|r| r.sample == id }.first.submission
+               @db.select{|r| r.sample =~ @id }.first.submission
              when "R"
-               @db.select{|r| r.key.key == id }.first.submission
+               @db[@id].submission
              end
     @xml_head = File.join(@@xmlbase, @subid.slice(0,6), @subid)
   end
-  attr_accessor :subid
+  #attr_reader :subid
   
   def submission_parser
     xml = File.join(@xml_head, "#{@subid}.submission.xml")
@@ -59,13 +59,13 @@ class SRAParserGen
                   when "P"
                     [@id]
                   when "A"
-                    @db.select{|r| r.submission == id }.map{|r| r.project }.uniq
+                    @db.select{|r| r.submission == @id }.map{|r| r.project }.uniq
                   when "X"
-                    @db.select{|r| r.experiment == id }.map{|r| r.project }.uniq
+                    @db.select{|r| r.experiment == @id }.map{|r| r.project }.uniq
                   when "S"
-                    @db.select{|r| r.sample == id }.map{|r| r.project }.uniq
+                    @db.select{|r| r.sample =~ @id }.map{|r| r.project }.uniq
                   when "R"
-                    @db.select{|r| r.key.key == id }.map{|r| r.project }.uniq
+                    [@db[@id].project]
                   end
     xml = File.join(@xml_head, "#{@subid}.study.xml")
     studyid_arr.map do |studyid|
@@ -80,13 +80,13 @@ class SRAParserGen
                 when "X"
                   [@id]
                 when "A"
-                  @db.select{|r| r.submission == id }.map{|r| r.experiment }.uniq
+                  @db.select{|r| r.submission == @id }.map{|r| r.experiment }.uniq
                 when "P"
-                  @db.select{|r| r.project == id }.map{|r| r.experiment }.uniq
+                  @db.select{|r| r.project == @id }.map{|r| r.experiment }.uniq
                 when "S"
-                  @db.select{|r| r.sample == id }.map{|r| r.experiment }.uniq
+                  @db.select{|r| r.sample =~ @id }.map{|r| r.experiment }.uniq
                 when "R"
-                  @db.select{|r| r.key.key == id }.map{|r| r.experiment }.uniq
+                  [@db[@id].experiment]
                 end
     xml = File.join(@xml_head, "#{@subid}.experiment.xml")
     expid_arr.map do |expid|
@@ -101,13 +101,13 @@ class SRAParserGen
                    when "S"
                      [@id]
                    when "A"
-                     @db.select{|r| r.submission == id }.map{|r| r.sample }.uniq
+                     @db.select{|r| r.submission == @id }.map{|r| r.sample }.uniq
                    when "P"
-                     @db.select{|r| r.project == id }.map{|r| r.sample }.uniq
+                     @db.select{|r| r.project == @id }.map{|r| r.sample }.uniq
                    when "X"
-                     @db.select{|r| r.experiment == id }.map{|r| r.sample }.uniq
+                     @db.select{|r| r.experiment == @id }.map{|r| r.sample }.uniq
                    when "R"
-                     @db.select{|r| r.key.key == id }.map{|r| r.sample }.uniq
+                     [@db[@id].sample]
                    end
     xml = File.join(@xml_head, "#{@subid}.sample.xml")
     sampleid_arr.map{|ids| ids.split(",") }.flatten.uniq.map do |sampleid|
@@ -119,16 +119,16 @@ class SRAParserGen
   
   def run_parser
     runid_arr = case @id_type
-                when "S"
+                when "R"
                   [@id]
                 when "A"
-                  @db.select{|r| r.submission == id }.map{|r| r.key.key }.uniq
+                  @db.select{|r| r.submission == @id }.map{|r| r.key.key }.uniq
                 when "P"
-                  @db.select{|r| r.project == id }.map{|r| r.key.key }.uniq
+                  @db.select{|r| r.project == @id }.map{|r| r.key.key }.uniq
                 when "X"
-                  @db.select{|r| r.experiment == id }.map{|r| r.key.key }.uniq
+                  @db.select{|r| r.experiment == @id }.map{|r| r.key.key }.uniq
                 when "S"
-                  @db.select{|r| r.sample == id }.map{|r| r.key.key }.uniq
+                  @db.select{|r| r.sample == @id }.map{|r| r.key.key }.uniq
                 end
     xml = File.join(@xml_head, "#{@subid}.run.xml")
     runid_arr.map do |runid|
@@ -170,53 +170,56 @@ if __FILE__ == $0
   require "ap"
   
   t0 = Time.now
+  ap "loadfiles"
   SRAParserGen.load_files("../lib/config.yaml")
   t00 = Time.now
-  ap "loadfiles"
   ap t00 - t0
   
+  db_path = "./id_table_db/idtable.db"
+  Groonga::Database.open(db_path)
+  db = Groonga["IDtable"]
+
   ids = ["DRP000001","DRP000017","DRR000030"]
   ids.each do |id|
-    
-    
+
     t1 = Time.now
-    p = SRAParserGen.new(id)
     ap "create object"
+    parser = SRAParserGen.new(id, db)
     ap t1 - t00
 
     t2 = Time.now
-    ap p.submission_parser.class
     ap "submission"
+    ap parser.submission_parser.class
     ap t2 - t1
 
     t3 = Time.now
-    ap p.study_parser.class
     ap "study"
+    ap parser.study_parser.class
     ap t3 - t2
 
     t4 = Time.now
-    ap p.experiment_parser.class
     ap "exp"
+    ap parser.experiment_parser.class
     ap t4 - t3
 
     t5 = Time.now
-    ap p.sample_parser.class
     ap "sample"
+    ap parser.sample_parser.class
     ap t5 - t4
 
     t6 = Time.now
-    ap p.run_parser.class
     ap "run"
+    ap parser.run_parser.class
     ap t6 - t5
 
     t7 = Time.now
-    ap p.pubmed_parser.class
     ap "pubmed"
+    ap parser.pubmed_parser.class
     ap t7 - t6
 
     t8 = Time.now
-    ap p.pmc_parser.class
     ap "pmc"
+    ap parser.pmc_parser.class
     ap t8 - t7
   end
 end

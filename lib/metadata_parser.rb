@@ -9,9 +9,9 @@ class MetadataParser
     @@run_members = YAML.load_file(config_path)["file_path"]["sra_run_members"]
   end
   
-  def initialize(studyid)
+  def initialize(studyid, db)
     @studyid = studyid
-    pgen = SRAParserGen.new(studyid)
+    pgen = SRAParserGen.new(studyid, db)
     @sub_parser = pgen.submission_parser
     @study_parser = pgen.study_parser
     @exp_parser = pgen.experiment_parser
@@ -160,54 +160,58 @@ end
 if __FILE__ == $0
   require "ap"
   t00 = Time.now
+  ap "load file"
   MetadataParser.load_files("./config.yaml")
   t01 = Time.now
-  ap "load file"
   ap t01 - t00
   
-  mp = MetadataParser.new("DRP000001")
-  t02 = Time.now
+  db_path = "./id_table_db/idtable.db"
+  Groonga::Database.open(db_path)
+  db = Groonga["IDtable"]
+  
   ap "create object"
+  mp = MetadataParser.new("DRP000001", db)
+  t02 = Time.now
   ap t02 - t01
   
   t1 = Time.now
+  ap "studyid"
   ap mp.studyid.class
   t2 = Time.now
-  ap "studyid"
   ap t2 - t1
   
+  ap "runid"
   ap mp.runid.class
   t3 = Time.now
-  ap "runid"
   ap t3 - t2
   
+  ap "studytitle"
   ap mp.study_title.class
   t4 = Time.now
-  ap "studytitle"
   ap t4 - t3
   
+  ap "taxonid"
   ap mp.taxonid.class
   t5 = Time.now
-  ap "taxonid"
   ap t5 - t4
   
+  ap "studytype"
   ap mp.study_type.class
   t6 = Time.now
-  ap "studytype"
   ap t6 - t5
   
+  ap "instrument"
   ap mp.instrument.class
   t7 = Time.now
-  ap "instrument"
   ap t7 - t6
   
+  ap "fulltext"
   ap mp.full_text.class
   t8 = Time.now
-  ap "fulltext"
   ap t8 - t7
   
-  ap mp.paper?.class
   ap "paper?"
+  ap mp.paper?.class
   t9 = Time.now
   ap t9 - t8
 end
