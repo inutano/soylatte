@@ -9,7 +9,7 @@ class Database
   attr_reader :grndb
   
   config = "/Users/inutano/project/soylatte/config.yaml"
-  @@db_path = YAML.load_file(config)["db_path"]
+  @@db_path = YAML.load_file(config)["project_db_path"]
   
   def initialize
     open
