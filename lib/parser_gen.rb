@@ -169,58 +169,27 @@ end
 if __FILE__ == $0
   require "ap"
   
-  t0 = Time.now
-  ap "loadfiles"
   SRAParserGen.load_files("../config.yaml")
-  t00 = Time.now
-  ap t00 - t0
-  
   db_path = "./id_table_db/idtable.db"
   Groonga::Database.open(db_path)
   db = Groonga["IDtable"]
 
   #ids = ["DRP000001","DRP000017","DRR000030"]
-  ids = ["DRP000060"]
+  ids = ["ERP000115"]
   ids.each do |id|
-
-    t1 = Time.now
-    ap "create object"
+    r = db.select{|r| r.project == id }
+    ap id
+    ap r.map{|r| r.submission }
+    ap r.map{|r| r.experiment }
+    ap r.map{|r| r.sample }
+    ap r.map{|r| r.key.key }
     parser = SRAParserGen.new(id, db)
-    ap t1 - t00
-
-    t2 = Time.now
-    ap "submission"
-    ap parser.submission_parser.class
-    ap t2 - t1
-
-    t3 = Time.now
-    ap "study"
-    ap parser.study_parser.class
-    ap t3 - t2
-
-    t4 = Time.now
-    ap "exp"
-    ap parser.experiment_parser.class
-    ap t4 - t3
-
-    t5 = Time.now
-    ap "sample"
-    ap parser.sample_parser.class
-    ap t5 - t4
-
-    t6 = Time.now
-    ap "run"
-    ap parser.run_parser.class
-    ap t6 - t5
-
-    t7 = Time.now
-    ap "pubmed"
-    ap parser.pubmed_parser.class
-    ap t7 - t6
-
-    t8 = Time.now
-    ap "pmc"
-    ap parser.pmc_parser.class
-    ap t8 - t7
+    ap parser.submission_parser
+    ap parser.study_parser
+    ap parser.experiment_parser
+    ap parser.sample_parser
+    ap parser.run_parser
+    ap parser.pubmed_parser
+    ap parser.pmc_parser
   end
 end
