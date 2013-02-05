@@ -8,7 +8,7 @@ class Database
   include Singleton
   attr_reader :grndb
   
-  config = "/Users/inutano/project/soylatte/lib/config.yaml"
+  config = "/Users/inutano/project/soylatte/config.yaml"
   @@db_path = YAML.load_file(config)["db_path"]
   
   def initialize

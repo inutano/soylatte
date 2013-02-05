@@ -57,7 +57,7 @@ def add_record(insert)
 end
 
 if __FILE__ == $0
-  config_path = "./config.yaml"
+  config_path = "../config.yaml"
   config = YAML.load_file(config_path)
   #db_path = config["db_path"]
   db_path = "../db_test/project.db"

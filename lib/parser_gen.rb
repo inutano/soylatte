@@ -171,7 +171,7 @@ if __FILE__ == $0
   
   t0 = Time.now
   ap "loadfiles"
-  SRAParserGen.load_files("../lib/config.yaml")
+  SRAParserGen.load_files("../config.yaml")
   t00 = Time.now
   ap t00 - t0
   

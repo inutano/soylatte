@@ -12,7 +12,7 @@ require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
 require File.expand_path(File.dirname(__FILE__)) + "/fastqc_result_parser"
 
 class ProjectReport
-  config_path = "/Users/inutano/project/soylatte/lib/config.yaml"
+  config_path = "/Users/inutano/project/soylatte/config.yaml"
   @@db_path = YAML.load_file(config_path)["idtable_path"]
   
   def initialize(studyid, config_path)
@@ -215,7 +215,7 @@ end
 if __FILE__ == $0
   require "ap"
   ap Time.now
-  config_path = "./config.yaml"
+  config_path = "../config.yaml"
   ids = ["DRP000169", "DRP000017", "DRP000001"]
   ids.each do |id|
     ap ProjectReport.new(id, config_path).report.class
