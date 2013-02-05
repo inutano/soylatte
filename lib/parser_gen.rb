@@ -101,13 +101,13 @@ class SRAParserGen
                    when "S"
                      [@id]
                    when "A"
-                     @db.select{|r| r.submission == @id }.map{|r| r.sample }.uniq
+                     @db.select{|r| r.submission == @id }.map{|r| r.sample }.compact.map{|csv| csv.split(",") }.flatten.uniq
                    when "P"
-                     @db.select{|r| r.project == @id }.map{|r| r.sample }.uniq
+                     @db.select{|r| r.project == @id }.map{|r| r.sample }.compact.map{|csv| csv.split(",") }.flatten.uniq
                    when "X"
-                     @db.select{|r| r.experiment == @id }.map{|r| r.sample }.uniq
+                     @db.select{|r| r.experiment == @id }.map{|r| r.sample }.compact.map{|csv| csv.split(",") }.flatten.uniq
                    when "R"
-                     [@db[@id].sample]
+                     [@db[@id].sample].compact.map{|csv| csv.split(",") }.flatten
                    end
     xml = File.join(@xml_head, "#{@subid}.sample.xml")
     sampleid_arr.map{|ids| ids.split(",") }.flatten.uniq.map do |sampleid|
@@ -179,7 +179,8 @@ if __FILE__ == $0
   Groonga::Database.open(db_path)
   db = Groonga["IDtable"]
 
-  ids = ["DRP000001","DRP000017","DRR000030"]
+  #ids = ["DRP000001","DRP000017","DRR000030"]
+  ids = ["DRP000060"]
   ids.each do |id|
 
     t1 = Time.now
