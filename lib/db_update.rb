@@ -80,8 +80,13 @@ if __FILE__ == $0
     
     MetadataParser.load_files(config_path)
     inserts = Parallel.map(not_recorded.compact) do |studyid|
-      f = MetadataParser.new(studyid)
-      f.insert
+      begin
+        f = MetadataParser.new(studyid)
+        f.insert
+      rescue => e
+        puts studyid
+        puts e
+      end
     end
     
     if prj_db.closed?
