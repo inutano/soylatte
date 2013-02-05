@@ -53,14 +53,13 @@ def add_record(insert)
   record.study_type = insert[:study_type]
   record.instrument = insert[:instrument]
   record.fulltext = insert[:fulltext]
-  record.paper = insert[:paper]  
+  record.paper = insert[:paper]
 end
 
 if __FILE__ == $0
   config_path = "../config.yaml"
   config = YAML.load_file(config_path)
-  #db_path = config["project_db_path"]
-  db_path = "../db_test/project.db"
+  db_path = config["project_db_path"]
 
   Groonga::Context.default_options = { encoding: :utf8 }
   
@@ -70,7 +69,7 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..99]
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..999]
 
     prj_db = Groonga::Database.open(db_path)
     not_recorded = Parallel.map(studyids) do |studyid|
