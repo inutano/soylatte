@@ -26,14 +26,6 @@ class MetadataParser
     @run_parser = pgen.run_parser
     @pub_parser = pgen.pubmed_parser
     @pmc_parser = pgen.pmc_parser
-  rescue => e
-    record = @@db.select{|r| r.project == @studyid }
-    puts @studyid
-    puts record.map{|r| r.submission }
-    puts record.map{|r| r.sample }
-    puts record.map{|r| r.key.key }
-    puts record.map{|r| r.experiment }
-    puts e   
   end
   attr_reader :studyid
   
@@ -170,14 +162,6 @@ class MetadataParser
       instrument: self.instrument,
       fulltext: self.full_text,
       paper: self.paper? }
-  rescue => e
-    record = @@db.select{|r| r.project == @studyid }
-    puts @studyid
-    puts record.map{|r| r.submission }
-    puts record.map{|r| r.sample }
-    puts record.map{|r| r.key.key }
-    puts record.map{|r| r.experiment }
-    puts e
   end
 end
 
