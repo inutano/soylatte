@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
 
 require "yaml"
+require "groonga"
 require "./parser_gen"
+
+require "ap"
 
 class MetadataParser
   def self.load_files(config_path)
     SRAParserGen.load_files(config_path)
-    @@run_members = YAML.load_file(config_path)["file_path"]["sra_run_members"]
+    config = YAML.load_file(config_path)
+    @@run_members = config["file_path"]["sra_run_members"]
+    
+    @@idtable_db = Groonga::Database.open(config["idtable_db_path"])
+    @@db ||= Groonga["IDtable"]
   end
   
-  def initialize(studyid, db)
+  def initialize(studyid)
     @studyid = studyid
-    pgen = SRAParserGen.new(studyid, db)
+    pgen = SRAParserGen.new(studyid, @@db)
     @sub_parser = pgen.submission_parser
     @study_parser = pgen.study_parser
     @exp_parser = pgen.experiment_parser
@@ -19,11 +26,20 @@ class MetadataParser
     @run_parser = pgen.run_parser
     @pub_parser = pgen.pubmed_parser
     @pmc_parser = pgen.pmc_parser
+  rescue => e
+    record = @@db.select{|r| r.project == @studyid }
+    puts @studyid
+    puts record.map{|r| r.submission }
+    puts record.map{|r| r.sample }
+    puts record.map{|r| r.key.key }
+    puts record.map{|r| r.experiment }
+    puts e   
   end
   attr_reader :studyid
   
   def runid
-    `grep #{@studyid} #{@@run_members} | cut -f 1`.split("\n")
+    @@db.select{|r| r.project == @studyid }.map{|r| r.key.key }
+    #`grep #{@studyid} #{@@run_members} | cut -f 1`.split("\n")
   end
   
   def study_title
@@ -154,6 +170,14 @@ class MetadataParser
       instrument: self.instrument,
       fulltext: self.full_text,
       paper: self.paper? }
+  rescue => e
+    record = @@db.select{|r| r.project == @studyid }
+    puts @studyid
+    puts record.map{|r| r.submission }
+    puts record.map{|r| r.sample }
+    puts record.map{|r| r.key.key }
+    puts record.map{|r| r.experiment }
+    puts e
   end
 end
 
@@ -161,16 +185,19 @@ if __FILE__ == $0
   require "ap"
   t00 = Time.now
   ap "load file"
-  MetadataParser.load_files("./config.yaml")
+  MetadataParser.load_files("../config.yaml")
   t01 = Time.now
   ap t01 - t00
-  
+
+=begin  
   db_path = "./id_table_db/idtable.db"
   Groonga::Database.open(db_path)
   db = Groonga["IDtable"]
+=end
   
   ap "create object"
-  mp = MetadataParser.new("DRP000001", db)
+  #mp = MetadataParser.new("DRP000001", db)
+  mp = MetadataParser.new("DRP000060")
   t02 = Time.now
   ap t02 - t01
   
