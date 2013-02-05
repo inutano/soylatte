@@ -69,7 +69,7 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..999]
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..2999]
 
     prj_db = Groonga::Database.open(db_path)
     not_recorded = Parallel.map(studyids) do |studyid|
