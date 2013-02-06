@@ -74,14 +74,14 @@ class MetadataParser
   def full_text
     f_arr = []
     if @sub_parser
-      @sub_parser.select{|p| p }.each do |p|
+      @sub_parser.compact.each do |p|
         f_arr << [ p.submission_comment,
                    p.center_name,
                    p.lab_name ]
       end
     end
     if @study_parser
-      @study_parser.select{|p| p }.each do |p|
+      @study_parser.compact.each do |p|
         f_arr << [ p.center_name,
                    p.center_project_name,
                    p.study_title,
@@ -91,7 +91,7 @@ class MetadataParser
       end
     end
     if @exp_parser
-      @exp_parser.select{|p| p }.each do |p|
+      @exp_parser.compact.each do |p|
         f_arr << [ p.center_name,
                    p.title,
                    p.design_description,
@@ -101,7 +101,7 @@ class MetadataParser
       end
     end
     if @run_parser
-      @run_parser.select{|p| p }.each do |p|
+      @run_parser.compact.each do |p|
         f_arr << [ p.center_name,
                    p.instrument_name,
                    p.run_center,
@@ -109,7 +109,7 @@ class MetadataParser
       end
     end
     if @sample_parser
-      @sample_parser.select{|p| p }.each do |p|
+      @sample_parser.compact.each do |p|
         f_arr << [ p.title,
                    p.sample_description,
                    p.sample_detail.values,
@@ -121,7 +121,7 @@ class MetadataParser
       end
     end
     if @pub_parser
-      @pub_parser.select{|p| p }.each do |p|
+      @pub_parser.compact.each do |p|
         authors = p.authors.map{|a| a[:lastname] + " " + a[:forename] }
         mesh = p.mesh_terms.map{|a| a[:descriptor_name] }
         f_arr << [ authors,
@@ -133,8 +133,8 @@ class MetadataParser
       end
     end
     if @pmc_parser
-      @pmc_parser.select{|p| p }.each do |p|
-        pmc_text = p.body.select{|n| n }.map do |section|
+      @pmc_parser.compact.each do |p|
+        pmc_text = p.body.compact.map do |section|
           if section.has_key?(:subsec)
             section[:subsec].map do |subsec|
               subsec[:subsec_text]
