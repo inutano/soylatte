@@ -111,8 +111,12 @@ class SRAParserGen
                    end
     xml = File.join(@xml_head, "#{@subid}.sample.xml")
     sampleid_arr.map{|ids| ids.split(",") }.flatten.uniq.map do |sampleid|
-      if File.exist?(xml)
+      begin
         SRAMetadataParser::Sample.new(sampleid, xml)
+      rescue NameError, Errno::ENOENT
+        cor_subid = `grep -m 1 #{sampleid} #{@@accessions} | cut -f 2`.chomp
+        cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".sample.xml")
+        SRAMetadataParser::Sample.new(sampleid, cor_xml)
       end
     end
   end
@@ -170,12 +174,12 @@ if __FILE__ == $0
   require "ap"
   
   SRAParserGen.load_files("../config.yaml")
-  db_path = "./id_table_db/idtable.db"
+  db_path = "../db/idtable.db"
   Groonga::Database.open(db_path)
   db = Groonga["IDtable"]
 
   #ids = ["DRP000001","DRP000017","DRR000030"]
-  ids = ["ERP000115"]
+  ids = ["ERP000400"]
   ids.each do |id|
     r = db.select{|r| r.project == id }
     ap id
