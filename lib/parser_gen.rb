@@ -89,7 +89,11 @@ class SRAParserGen
       rescue NameError, Errno::ENOENT
         cor_subid = `grep -m 1 "^#{studyid}" #{@@accessions} | cut -f 2`.chomp
         cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".study.xml")
-        SRAMetadataParser::Study.new(studyid, cor_xml)
+        begin
+          SRAMetadataParser::Study.new(studyid, cor_xml)
+        rescue NameError, Errno::ENOENT
+          nil
+        end
       end
     end
   end
@@ -114,7 +118,11 @@ class SRAParserGen
       rescue NameError, Errno::ENOENT
         cor_subid = `grep -m 1 "^#{expid}" #{@@accessions} | cut -f 2`.chomp
         cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".experiment.xml")
-        SRAMetadataParser::Experiment.new(expid, cor_xml)
+        begin 
+          SRAMetadataParser::Experiment.new(expid, xml)
+        rescue NameError, Errno::ENOENT
+          nil
+        end
       end
     end
   end
@@ -134,12 +142,17 @@ class SRAParserGen
                    end
     xml = File.join(@xml_head, "#{@subid}.sample.xml")
     sampleid_arr.map{|ids| ids.split(",") }.flatten.uniq.map do |sampleid|
+      ap sampleid
       begin
         SRAMetadataParser::Sample.new(sampleid, xml)
       rescue NameError, Errno::ENOENT
         cor_subid = `grep -m 1 "^#{sampleid}" #{@@accessions} | cut -f 2`.chomp
         cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".sample.xml")
-        SRAMetadataParser::Sample.new(sampleid, cor_xml)
+        begin
+          SRAMetadataParser::Sample.new(sampleid, cor_xml)
+        rescue NameError, Errno::ENOENT
+          nil
+        end
       end
     end
   end
@@ -164,7 +177,11 @@ class SRAParserGen
       rescue NameError, Errno::ENOENT
         cor_subid = `grep -m 1 "^#{runid}" #{@@accessions} | cut -f 2`.chomp
         cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".run.xml")
-        SRAMetadataParser::Run.new(runid, cor_xml)
+        begin
+          SRAMetadataParser::Run.new(runid, cor_xml)
+        rescue NameError, Errno::ENOENT
+          nil
+        end
       end
     end
   end
@@ -206,7 +223,7 @@ if __FILE__ == $0
   db = Groonga["IDtable"]
 
   #ids = ["DRP000001","DRP000017","DRR000030"]
-  ids = ["ERP000400"]
+  ids = [ARGV.first]
   ids.each do |id|
     r = db.select{|r| r.project == id }
     ap id
@@ -222,5 +239,6 @@ if __FILE__ == $0
     ap parser.run_parser
     ap parser.pubmed_parser
     ap parser.pmc_parser
+    ap parser.subid
   end
 end
