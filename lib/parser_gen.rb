@@ -39,28 +39,28 @@ class SRAParserGen
                if subid_arr.size > 1
                  `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
                else
-                 subid_arr.first.submission
+                 subid_arr.first
                end
              when "X"
                subid_arr = @db.select{|r| r.experiment == @id }.map{|r| r.submission }.uniq.compact
                if subid_arr.size > 1
                  `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
                else
-                 subid_arr.first.submission
+                 subid_arr.first
                end
              when "S"
                subid_arr = @db.select{|r| r.sample =~ @id }.map{|r| r.submission }.uniq.compact
                if subid_arr.size > 1
                  `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
                else
-                 subid_arr.first.submission
+                 subid_arr.first
                end
              when "R"
                @db[@id].submission
              end
     @xml_head = File.join(@@xmlbase, @subid.slice(0,6), @subid)
   end
-  #attr_reader :subid
+  attr_reader :subid
   
   def submission_parser
     xml = File.join(@xml_head, "#{@subid}.submission.xml")
