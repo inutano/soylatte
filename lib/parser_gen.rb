@@ -142,7 +142,6 @@ class SRAParserGen
                    end
     xml = File.join(@xml_head, "#{@subid}.sample.xml")
     sampleid_arr.map{|ids| ids.split(",") }.flatten.uniq.map do |sampleid|
-      ap sampleid
       begin
         SRAMetadataParser::Sample.new(sampleid, xml)
       rescue NameError, Errno::ENOENT
