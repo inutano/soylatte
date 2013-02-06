@@ -84,8 +84,12 @@ class SRAParserGen
                   end
     xml = File.join(@xml_head, "#{@subid}.study.xml")
     studyid_arr.map do |studyid|
-      if File.exist?(xml)
+      begin
         SRAMetadataParser::Study.new(studyid, xml)
+      rescue NameError, Errno::ENOENT
+        cor_subid = `grep -m 1 "^#{studyid}" #{@@accessions} | cut -f 2`.chomp
+        cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".study.xml")
+        SRAMetadataParser::Study.new(studyid, cor_xml)
       end
     end
   end
@@ -105,8 +109,12 @@ class SRAParserGen
                 end
     xml = File.join(@xml_head, "#{@subid}.experiment.xml")
     expid_arr.map do |expid|
-      if File.exist?(xml)
+      begin
         SRAMetadataParser::Experiment.new(expid, xml)
+      rescue NameError, Errno::ENOENT
+        cor_subid = `grep -m 1 "^#{expid}" #{@@accessions} | cut -f 2`.chomp
+        cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".experiment.xml")
+        SRAMetadataParser::Experiment.new(expid, cor_xml)
       end
     end
   end
@@ -129,7 +137,7 @@ class SRAParserGen
       begin
         SRAMetadataParser::Sample.new(sampleid, xml)
       rescue NameError, Errno::ENOENT
-        cor_subid = `grep -m 1 #{sampleid} #{@@accessions} | cut -f 2`.chomp
+        cor_subid = `grep -m 1 "^#{sampleid}" #{@@accessions} | cut -f 2`.chomp
         cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".sample.xml")
         SRAMetadataParser::Sample.new(sampleid, cor_xml)
       end
@@ -151,8 +159,12 @@ class SRAParserGen
                 end
     xml = File.join(@xml_head, "#{@subid}.run.xml")
     runid_arr.map do |runid|
-      if File.exist?(xml)
+      begin
         SRAMetadataParser::Run.new(runid, xml)
+      rescue NameError, Errno::ENOENT
+        cor_subid = `grep -m 1 "^#{runid}" #{@@accessions} | cut -f 2`.chomp
+        cor_xml = File.join(@@xmlbase, cor_subid.slice(0..5), cor_subid, cor_subid + ".run.xml")
+        SRAMetadataParser::Run.new(runid, cor_xml)
       end
     end
   end
