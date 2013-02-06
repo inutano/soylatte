@@ -35,11 +35,26 @@ class SRAParserGen
              when "A"
                @id
              when "P"
-               @db.select{|r| r.project == @id }.first.submission
+               subid_arr = @db.select{|r| r.project == @id }.map{|r| r.submission }.uniq.compact
+               if subid_arr.size > 1
+                 `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
+               else
+                 subid_arr.first.submission
+               end
              when "X"
-               @db.select{|r| r.experiment == @id }.first.submission
+               subid_arr = @db.select{|r| r.experiment == @id }.map{|r| r.submission }.uniq.compact
+               if subid_arr.size > 1
+                 `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
+               else
+                 subid_arr.first.submission
+               end
              when "S"
-               @db.select{|r| r.sample =~ @id }.first.submission
+               subid_arr = @db.select{|r| r.sample =~ @id }.map{|r| r.submission }.uniq.compact
+               if subid_arr.size > 1
+                 `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
+               else
+                 subid_arr.first.submission
+               end
              when "R"
                @db[@id].submission
              end
