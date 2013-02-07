@@ -58,7 +58,8 @@ end
 if __FILE__ == $0
   config_path = "../config.yaml"
   config = YAML.load_file(config_path)
-  db_path = config["project_db_path"]
+  #db_path = config["project_db_path"]
+  db_path = "../db_test/project.db"
 
   Groonga::Context.default_options = { encoding: :utf8 }
   
@@ -68,7 +69,7 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..99]
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..799]
 
     project_db = Groonga::Database.open(db_path)
     db = Groonga["Projects"]
@@ -76,8 +77,10 @@ if __FILE__ == $0
       !db[studyid]
     end
     
-    while !not_recorded.empty?
-      list_of_id = not_recorded.shift(50)
+    wlist = not_recorded.delete_if{|id| id == "ERP000238" }
+    
+    while !wlist.empty?
+      list_of_id = wlist.shift(10)
       MetadataParser.load_files(config_path)
       inserts = Parallel.map(list_of_id) do |studyid|
         begin
@@ -97,6 +100,8 @@ if __FILE__ == $0
       Parallel.each(inserts.compact) do |insert|
         add_record(db, insert)
       end
+      puts list_of_id
+      puts "done. #{Time.now}"
     end
   
   when "--debug"
