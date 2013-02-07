@@ -181,7 +181,7 @@ if __FILE__ == $0
   
   ap "create object"
   #mp = MetadataParser.new("DRP000001", db)
-  mp = MetadataParser.new("DRP000060")
+  mp = MetadataParser.new(ARGV.first)
   t02 = Time.now
   ap t02 - t01
   
