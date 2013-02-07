@@ -13,7 +13,7 @@ class MetadataParser
     @@run_members = config["file_path"]["sra_run_members"]
     
     @@idtable_db = Groonga::Database.open(config["idtable_db_path"])
-    @@db ||= Groonga["IDtable"]
+    @@db = Groonga["IDtable"]
   end
   
   def initialize(studyid)
