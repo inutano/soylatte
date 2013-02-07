@@ -41,8 +41,7 @@ def create_db(db_path)
   end
 end
 
-def add_record(insert)
-  db = Groonga["Projects"]
+def add_record(db, insert)
   studyid = insert[:studyid]
   db.add(studyid)
   
@@ -69,17 +68,16 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..2999]
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..99]
 
     prj_db = Groonga::Database.open(db_path)
-    not_recorded = Parallel.map(studyids) do |studyid|
-      if !Groonga["Projects"][studyid]
-        studyid
-      end
+    db = Groonga["Projects"]
+    not_recorded = studyids.select do |studyid|
+      !db[studyid]
     end
     
     MetadataParser.load_files(config_path)
-    inserts = Parallel.map(not_recorded.compact) do |studyid|
+    inserts = Parallel.map(not_recorded) do |studyid|
       begin
         f = MetadataParser.new(studyid)
         f.insert
@@ -92,9 +90,9 @@ if __FILE__ == $0
     if prj_db.closed?
       prj_db = Groonga::Database.open(db_path)
     end
-    
+    db = Groonga["Projects"]
     Parallel.each(inserts) do |insert|
-      add_record(insert) if insert
+      add_record(db, insert) if insert
     end
   
   when "--debug"
