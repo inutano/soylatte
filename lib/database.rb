@@ -23,8 +23,7 @@ class Database
   end
   
   def projects
-#    @db ||= Groonga["Projects"]
-    @db ||= Groonga["Facets"]
+    @db ||= Groonga["Projects"]
   end
   
   def size
