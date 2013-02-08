@@ -47,6 +47,12 @@
         
         %h4= @result.size.to_s + " of records"
         %table.table.table-hover
+          - study_type_ref = { 1 => "Genome",
+                               2 => "Transcriptome",
+                               3 => "Epigenome",
+                               4 => "Metagenome",
+                               5 => "Cancer Genomics",
+                               0 => "Other" }
           %thead
             %tr
               %th Project ID
@@ -65,7 +71,7 @@
                 %td
                   %a{ :href => "/view/#{projectid}"}= projectid
                 %td= record.study_title
-                %td= record.study_type
+                %td= study_type_ref[record.study_type]
                 %td= record.instrument
                 %td= record.scientific_name
                 %td= record.runid.to_s
@@ -75,7 +81,7 @@
                 %td
                   %a{ :href => "/view/#{projectid}"}= projectid
                 %td= record.study_title
-                %td= record.study_type
+                %td= study_type_ref[record.study_type]
                 %td= record.instrument
                 %td= record.scientific_name
                 %td= record.runid.to_s
