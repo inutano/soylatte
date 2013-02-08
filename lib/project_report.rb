@@ -85,8 +85,7 @@ class ProjectReport
   
   def taxonid2sname(taxonid)
     taxon_table = @config["file_path"]["taxon_table"]
-    field = `cat #{taxon_table} | awk -F "|" '$1 == #{taxonid} && $4 ~ "scientific" { print $2 }'`
-    field.chomp.delete("\t")
+    `grep -m 1 '^#{taxonid}' #{taxon_table} | cut -d ',' -f 2`.chomp
   end
   
   def read_info(runid)

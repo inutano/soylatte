@@ -11,6 +11,7 @@ class MetadataParser
     SRAParserGen.load_files(config_path)
     config = YAML.load_file(config_path)
     @@run_members = config["file_path"]["sra_run_members"]
+    @@taxon_table = config["file_path"]["taxon_table"]
     
     @@idtable_db = Groonga::Database.open(config["idtable_db_path"])
     @@db = Groonga["IDtable"]
@@ -42,6 +43,11 @@ class MetadataParser
     @sample_parser.first.taxon_id
   rescue
     nil
+  end
+  
+  def scientific_name
+    id = self.taxonid
+    `grep -m 1 '^#{id}' #{@@taxon_table} | cut -d ',' -f 2`.chomp
   end
   
   def study_type
@@ -158,6 +164,7 @@ class MetadataParser
       runid: self.runid.length,
       study_title: self.study_title,
       taxonid: self.taxonid,
+      scientific_name: self.scientific_name,
       study_type: self.study_type,
       instrument: self.instrument,
       fulltext: self.full_text,
@@ -201,8 +208,9 @@ if __FILE__ == $0
   t4 = Time.now
   ap t4 - t3
   
-  ap "taxonid"
+  ap "taxonid, s_name"
   ap mp.taxonid.class
+  ap mp.scientific_name
   t5 = Time.now
   ap t5 - t4
   
