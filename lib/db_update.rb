@@ -69,15 +69,15 @@ if __FILE__ == $0
   
   when "--update"
     accessions = config["file_path"]["sra_accessions"]
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..799]
-
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1 | sort -u`.split("\n")[0..4999]
+    
     project_db = Groonga::Database.open(db_path)
     db = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
       !db[studyid]
     end
     
-    wlist = not_recorded.delete_if{|id| id == "ERP000238" }
+    wlist = not_recorded.delete_if{|id| id =~ /^(ERP000238|SRP001518|SRP002163)$/ }
     
     while !wlist.empty?
       list_of_id = wlist.shift(10)
