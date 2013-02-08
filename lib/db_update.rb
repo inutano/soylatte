@@ -15,6 +15,7 @@ def create_db(db_path)
     table.uint16("runid")
     table.short_text("study_title")
     table.uint16("taxonid")
+    table.short_text("scientific_name")
     table.uint16("study_type")
     table.short_text("instrument")
     table.text("fulltext")
@@ -24,7 +25,6 @@ def create_db(db_path)
   Groonga::Schema.create_table("Idx_int", :type => :hash)
   Groonga::Schema.change_table("Idx_int") do |table|
     table.index("Projects.runid")
-    table.index("Projects.study_title")
     table.index("Projects.taxonid")
     table.index("Projects.study_type")
     table.index("Projects.instrument")
@@ -37,6 +37,8 @@ def create_db(db_path)
     default_tokenizer: "TokenBigram"
   )
   Groonga::Schema.change_table("Idx_text") do |table|
+    table.index("Projects.study_title")
+    table.index("Projects.scientific_name")
     table.index("Projects.fulltext")
   end
 end
@@ -49,6 +51,7 @@ def add_record(db, insert)
   record.runid = insert[:runid]
   record.study_title = insert[:study_title]
   record.taxonid = insert[:taxonid]
+  record.scientific_name = insert[:scientific_name]
   record.study_type = insert[:study_type]
   record.instrument = insert[:instrument]
   record.fulltext = insert[:fulltext]

@@ -51,6 +51,9 @@
             %tr
               %th Project ID
               %th Project Title
+              %th Study Type
+              %th Sequencing Platform
+              %th Scientific Name
               %th Number of Sequencing
               %th Publication?
           
@@ -61,16 +64,20 @@
               %tr{ :class => "info" }
                 %td
                   %a{ :href => "/view/#{projectid}"}= projectid
-                // %td= record.title
-                %td project title
+                %td= record.study_title
+                %td= record.study_type
+                %td= record.instrument
+                %td= record.scientific_name
                 %td= record.runid.to_s
                 %td= record.paper
             - else
               %tr
                 %td
                   %a{ :href => "/view/#{projectid}"}= projectid
-                // %td= record.title
-                %td project title
+                %td= record.study_title
+                %td= record.study_type
+                %td= record.instrument
+                %td= record.scientific_name
                 %td= record.runid.to_s
                 %td= record.paper
           
