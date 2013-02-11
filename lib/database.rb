@@ -30,6 +30,14 @@ class Database
     @db.size
   end
   
+  def instruments
+    @db.records.map{|r| r.instrument }.uniq.compact.sort
+  end
+
+  def scientific_names
+    @db.records.map{|r| r.scientific_name }.uniq.compact.sort
+  end
+  
   def single_match_records(sym, cond)
     match_records = @db.select do |record|
       record.send(sym) == cond[sym]
@@ -68,4 +76,11 @@ class Database
   def search_fulltext(query)
     @db.select{|r| r.fulltext =~ query }
   end
+end
+
+if __FILE__ == $0
+  require "ap"
+  db = Database.instance
+  ap db.instruments
+  ap db.scientific_names
 end
