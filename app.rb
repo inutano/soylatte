@@ -41,11 +41,11 @@ get "/" do
 end
 
 post "/filter" do
-  condition = { taxonid: params[:species],
-                study_type: params[:study_type],
-                instrument: params[:platform] }
+  @condition = { taxonid: params[:species],
+                 study_type: params[:study_type],
+                 instrument: params[:platform] }
   @total_number = Database.instance.size
-  @result = Database.instance.filter(condition)
+  @result = Database.instance.filter(@condition)
   haml :filter
 end
 
