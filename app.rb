@@ -4,6 +4,7 @@ require "sinatra"
 require "haml"
 require "sass"
 require "yaml"
+require "json"
 require "./lib/database"
 require "./lib/project_report"
 require "./lib/run_report"
@@ -34,6 +35,8 @@ get "/soy_style.css" do
 end
 
 get "/" do
+  @instruments = Datbaase.instance.instruments
+  @organisms = JSON.dump(Database.instance.scientific_names)
   haml :index
 end
 
