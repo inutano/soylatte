@@ -61,11 +61,17 @@
                 .controls
                   %select{ :id => "study_type", :name => "study_type", :width => 66 }
                     %option{ :value => "1" }
-                      Genomic Sequence
+                      Genome
                     %option{ :value => "2" }
-                      Transcriptomic Sequence
+                      Transcriptome
                     %option{ :value => "3" }
-                      Metagenomic Sequence
+                      Epigenome
+                    %option{ :value => "4" }
+                      Metagenome
+                    %option{ :value => "5" }
+                      Cancer Genomics
+                    %option{ :value => "0" }
+                      Other
               .control-group    
                 %label.control-label{ "for" => "platform" } Sequencing Platform
                 .controls
