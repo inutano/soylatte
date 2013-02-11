@@ -8,6 +8,9 @@
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
+    :javascript
+      var organismList = #{@organisms};
+      $("#typeSpecies").typeahead({source: organismList});
   
   %body
     .container
@@ -49,13 +52,14 @@
               .control-group  
                 %label.control-label{ "for" => "species" } Sample Organism
                 .controls
-                  %select{ :id => "species", :name => "species", :width => 66 }
-                    %option{ :value => "9606" }
-                      human
-                    %option{ :value => "10090" }
-                      mouse
-                    %option{ :value => "10116" }
-                      rat
+                  %input.input-large.search-query{ :type => "text", :name => "species", :id => "typeSpecies"}
+                  //%select{ :id => "species", :name => "species", :width => 66 }
+                  //  %option{ :value => "9606" }
+                  //    human
+                  //  %option{ :value => "10090" }
+                  //    mouse
+                  //  %option{ :value => "10116" }
+                  //    rat
               .control-group
                 %label.control-label{ "for" => "study_type" } Study Type
                 .controls
@@ -73,15 +77,12 @@
                     %option{ :value => "0" }
                       Other
               .control-group    
-                %label.control-label{ "for" => "platform" } Sequencing Platform
+                %label.control-label{ "for" => "platform" } Sequencing Instrument
                 .controls
                   %select{ :id => "platform", :name => "platform", :width => 66 }
-                    %option{ :value => "Illumina MiSeq" }
-                      Illumina MiSeq
-                    %option{ :value => "Ion Proton" }
-                      Ion Proton
-                    %option{ :value => "GridION" }
-                      GridION
+                    - @instruments.each do |instrument|
+                      %option{ :value => instrument }
+                        instrument
               .control-group
                 .controls
                   %button.btn{ :type => "submit" }
