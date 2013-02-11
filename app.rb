@@ -57,13 +57,48 @@ post "/search" do
   if @result
     haml :search
   else
-    haml :search_failed
+    haml :not_found
   end
 end
 
 get %r{/view/((S|E|D)RP\d{6})} do |id, db|
   @report = ProjectReport.new(id, "./config.yaml").report
   haml :view_project
+end
+
+get %r{/data/((S|E|D)R(P|R)\d{6})?type=(.+)retmode=(.+)} do |id, db, idtype, dtype, retmode|
+  puts [id, db, idtype, dtype, retmode]
+  when idtype
+  case "P"
+    report = ProjectReport.new(id, "./config.yaml").report
+    when dtype
+    case "run"
+      run_table = report[:run_table]
+      when retmode
+      case "tsv"
+        run_table.map{|n| n.values.join("\t") }.join("\n")
+      case "json"
+        JSON.dump(run_table.map{|n| n.values })
+      else
+        :not_found
+      end
+    case "sample"
+      sample_table = report[:sample_table]
+      when retmode
+      case "tsv"
+        sample_table.map{|n| n.values.join("\t") }.join("\n")
+      case "json"
+        JSON.dump(sample_table.map{|n| n.values })
+      else
+        :not_found
+      end
+    else
+      haml :not_found
+    end
+  #case "R"
+  else
+    haml :not_found
+  end
 end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
