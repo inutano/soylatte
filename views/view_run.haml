@@ -27,13 +27,18 @@
                 %li
                   %a{:href => "/soylatte"} Home
                 %li
-                  %a{:href => "http://g86.dbcls.jp/chateautogo"}blog
+                  %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
                 %li
-                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
-                    %i{ :class => "icon-github" }
+                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit", "data-toggle" => "tooltip", "title" => "github repo"}
+                    %i.icon-github
                 %li
-                  %a{:href => "http://twitter.com/inutano"}
-                    %i{ :class => "icon-twitter" }
+                  %a{:href => "http://twitter.com/inutano", "data-toggle" => "tooltip", "title" => "Twitter" }
+                    %i.icon-twitter
+                :javascript
+                  $("a").tooltip({
+                    'selector': '',
+                    'placement': 'bottom'
+                  });
     
       %section
         %h2
