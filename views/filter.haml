@@ -51,12 +51,14 @@
           .span7
             %p.lead Requested filtering condition
             %hr
+            %p= @scientific_name + ", " + @type + ", " + @instrument
             %p.count= "#{@result[:mix][:size]}/#{@total_number}, #{@result[:mix][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:mix][:percent]}%;" }
           .span5.filtersearch
             %p.lead Fulltext search
-            %form.search{ :name => "search", :action => "/search", :method => "POST" }
+            - post_option = "species=#{@scientific_name}&type=#{@type}&instrument=#{@instrument}"
+            %form.search{ :name => "search", :action => "/search?#{post_option}", :method => "POST" }
               %label Search with this condition
               %input.input-large.search-query{ :type => "text", :name => "search_query" }
               %button.btn{ :type => "submit" }
@@ -67,18 +69,21 @@
           .span4
             %p.lead Sample Organism
             %hr
+            %p= @scientific_name
             %p.count= "#{@result[:taxonid][:size]}/#{@total_number}, #{@result[:taxonid][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:taxonid][:percent]}%;" }
           .span4
             %p.lead Study Type
             %hr
+            %p= @type
             %p.count= "#{@result[:study_type][:size]}/#{@total_number}, #{@result[:study_type][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:study_type][:percent]}%;" }
           .span4
             %p.lead Sequencing Platform
             %hr
+            %p= @instrument
             %p.count= "#{@result[:instrument][:size]}/#{@total_number}, #{@result[:instrument][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:instrument][:percent]}%;" }

@@ -62,25 +62,24 @@
                 %label.control-label{ "for" => "study_type" } Study Type
                 .controls
                   %select{ :id => "study_type", :name => "study_type", :width => 66 }
-                    %option{ :value => "1" }
+                    %option{ :value => "Genome" }
                       Genome
-                    %option{ :value => "2" }
+                    %option{ :value => "Transcriptome" }
                       Transcriptome
-                    %option{ :value => "3" }
+                    %option{ :value => "Epigenome" }
                       Epigenome
-                    %option{ :value => "4" }
+                    %option{ :value => "Metagenome" }
                       Metagenome
-                    %option{ :value => "5" }
+                    %option{ :value => "Cancer Genomics" }
                       Cancer Genomics
-                    %option{ :value => "0" }
+                    %option{ :value => "Other" }
                       Other
               .control-group    
                 %label.control-label{ "for" => "platform" } Sequencing Instrument
                 .controls
                   %select{ :id => "platform", :name => "platform", :width => 66 }
                     - @instruments.each do |instrument|
-                      %option{ :value => instrument }
-                        instrument
+                      %option{ :value => instrument }= instrument
               .control-group
                 .controls
                   %button.btn{ :type => "submit" }

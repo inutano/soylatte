@@ -5,6 +5,8 @@ require "haml"
 require "sass"
 require "yaml"
 require "json"
+require "uri"
+
 require "./lib/database"
 require "./lib/project_report"
 require "./lib/run_report"
@@ -40,17 +42,32 @@ get "/" do
   haml :index
 end
 
-post "filter" do
-  taxonid = params[:species]
+post "/filter" do
+  scientific_name = params[:species]
   study_type = params[:study_type]
   instrument = params[:platform]
-  redirect "/filter?species=#{taxonid}&type=#{study_type}&instrument=#{instrument}"
-end
+  options = "species=#{scientific_name}&type=#{study_type}&instrument=#{instrument}"
+  encoded = URI.encode(options)
+  redirect to("/filter?#{encoded}")
+end  
 
 get "/filter" do
-  @condition = { taxonid: params[:species],
-                 study_type: params[:study_type],
-                 instrument: params[:instrument] }
+  @scientific_name = params[:species]
+  @type = params[:type]
+  @instrument = params[:instrument]
+  
+  taxonid = Database.instance.name2taxonid(@scientific_name)
+  type_ref = { "Genome" => 1,
+               "Transcriptome" => 2,
+               "Epigenome" => 3,
+               "Metagenome" => 4,
+               "Cancer Genomics" => 5,
+               "Other" => 0 }
+  study_type = type_ref[@type]
+  
+  @condition = { taxonid: taxonid,
+                 study_type: study_type,
+                 instrument: @instrument }
   @total_number = Database.instance.size
   @result = Database.instance.filter(@condition)
   haml :filter

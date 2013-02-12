@@ -38,6 +38,10 @@ class Database
     @db.records.map{|r| r.scientific_name }.uniq.compact.sort
   end
   
+  def name2taxonid(name)
+    @db.select{|r| r.scientific_name == name }.first.taxonid
+  end
+  
   def single_match_records(sym, cond)
     match_records = @db.select do |record|
       record.send(sym) == cond[sym]
@@ -82,5 +86,5 @@ if __FILE__ == $0
   require "ap"
   db = Database.instance
   ap db.instruments
-  ap db.scientific_names
+#  ap db.scientific_names
 end
