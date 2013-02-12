@@ -40,10 +40,17 @@ get "/" do
   haml :index
 end
 
-post "/filter" do
+post "filter" do
+  taxonid = params[:species]
+  study_type = params[:study_type]
+  instrument = params[:platform]
+  redirect "/filter?species=#{taxonid}&type=#{study_type}&instrument=#{instrument}"
+end
+
+get "/filter" do
   @condition = { taxonid: params[:species],
                  study_type: params[:study_type],
-                 instrument: params[:platform] }
+                 instrument: params[:instrument] }
   @total_number = Database.instance.size
   @result = Database.instance.filter(@condition)
   haml :filter
