@@ -7,18 +7,21 @@
     // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/tablesorter/css/theme.bootstrap.css" }
     %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
+    
+    %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+    %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
+    %script{ :src => "http://g86.dbcls.jp/~iNut/tablesorter/js/jquery.tablesorter.js" }
+    %script{ :src => "http://g86.dbcls.jp/~iNut/tablesorter/js/jquery.tablesorter.widgets.js" }
     :javascript
-      $(function(){
+      $(document).ready(function(){
         $("#projectList").tablesorter();
       });
+      
     
   %body
     .container
-      %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
-      %script{ :src => "http://g86.dbcls.jp/~iNut/tablesorter/js/jquery.tablesorter.js" }
-      %script{ :src => "http://g86.dbcls.jp/~iNut/tablesorter/js/jquery.tablesorter.widgets.js" }
-      %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
       .navbar.navbar-fixed-top
         .navbar-inner
           .container
@@ -70,28 +73,28 @@
               %th Publication?
           
           %tbody
-          - @result.each do |record|
-            - projectid = record.key.key
-            - if record.paper
-              %tr{ :class => "info" }
-                %td
-                  %a{ :href => "/view/#{projectid}"}= projectid
-                %td= record.study_title
-                %td= study_type_ref[record.study_type]
-                %td= record.instrument
-                %td= record.scientific_name
-                %td= record.runid.to_s
-                %td= record.paper
-            - else
-              %tr
-                %td
-                  %a{ :href => "/view/#{projectid}"}= projectid
-                %td= record.study_title
-                %td= study_type_ref[record.study_type]
-                %td= record.instrument
-                %td= record.scientific_name
-                %td= record.runid.to_s
-                %td= record.paper
+            - @result.each do |record|
+              - projectid = record.key.key
+              - if record.paper
+                %tr{ :class => "info" }
+                  %td
+                    %a{ :href => "/view/#{projectid}"}= projectid
+                  %td= record.study_title
+                  %td= study_type_ref[record.study_type]
+                  %td= record.instrument
+                  %td= record.scientific_name
+                  %td= record.runid.to_s
+                  %td= record.paper
+              - else
+                %tr
+                  %td
+                    %a{ :href => "/view/#{projectid}"}= projectid
+                  %td= record.study_title
+                  %td= study_type_ref[record.study_type]
+                  %td= record.instrument
+                  %td= record.scientific_name
+                  %td= record.runid.to_s
+                  %td= record.paper
           
       %footer
         powered by
@@ -101,3 +104,4 @@
         Font Awesome by Dave Gandy - 
         %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
           http://fortawesome.github.com/Font-Awesome
+
