@@ -35,7 +35,7 @@ get "/soy_style.css" do
 end
 
 get "/" do
-  @instruments = Datbaase.instance.instruments
+  @instruments = Database.instance.instruments
   @organisms = JSON.dump(Database.instance.scientific_names)
   haml :index
 end
@@ -66,36 +66,37 @@ get %r{/view/((S|E|D)RP\d{6})} do |id, db|
   haml :view_project
 end
 
-get %r{/data/((S|E|D)R(P|R)\d{6})?type=(.+)retmode=(.+)} do |id, db, idtype, dtype, retmode|
-  puts [id, db, idtype, dtype, retmode]
-  when idtype
-  case "P"
+get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
+  dtype = params[:type]
+  retmode = params[:retmode]
+  case idtype
+  when "P"
     report = ProjectReport.new(id, "./config.yaml").report
-    when dtype
-    case "run"
+    case dtype
+    when "run"
       run_table = report[:run_table]
-      when retmode
-      case "tsv"
+      case retmode
+      when "tsv"
         run_table.map{|n| n.values.join("\t") }.join("\n")
-      case "json"
+      when "json"
         JSON.dump(run_table.map{|n| n.values })
       else
-        :not_found
+        haml :not_found
       end
-    case "sample"
+    when "sample"
       sample_table = report[:sample_table]
-      when retmode
-      case "tsv"
+      case retmode
+      when "tsv"
         sample_table.map{|n| n.values.join("\t") }.join("\n")
-      case "json"
+      when "json"
         JSON.dump(sample_table.map{|n| n.values })
       else
-        :not_found
+        haml :not_found
       end
     else
       haml :not_found
     end
-  #case "R"
+  #when "R"
   else
     haml :not_found
   end
