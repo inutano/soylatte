@@ -54,7 +54,7 @@
               .control-group  
                 %label.control-label{ "for" => "species" } Sample Organism
                 .controls
-                  %input.input-large.search-query#typeSpecies{ :type => "text", :name => "species" }
+                  %input.input-large.search-query#typeSpecies{ :type => "text", :name => "species", :placeholder => "Type scientific name" }
                   :javascript
                     var organismList = #{@organisms};
                     $('#typeSpecies').typeahead({source: organismList});
@@ -62,6 +62,7 @@
                 %label.control-label{ "for" => "study_type" } Study Type
                 .controls
                   %select{ :id => "study_type", :name => "study_type", :width => 66 }
+                    %option{ :value => "" } -
                     %option{ :value => "Genome" }
                       Genome
                     %option{ :value => "Transcriptome" }
@@ -78,6 +79,7 @@
                 %label.control-label{ "for" => "platform" } Sequencing Instrument
                 .controls
                   %select{ :id => "platform", :name => "platform", :width => 66 }
+                    %option{ :value => "" } -
                     - @instruments.each do |instrument|
                       %option{ :value => instrument }= instrument
               .control-group
@@ -89,7 +91,7 @@
             %p.lead Fulltext search
             %form.search{ :name => "search", :action => "/search", :method => "POST" }
               %label search without filtering
-              %input.input-large.search-query{ :type => "text", :name => "search_query" }
+              %input.input-large.search-query{ :type => "text", :name => "search_query", :placeholder => "Type search query" }
               %button.btn{ :type => "submit" }
                 search
 

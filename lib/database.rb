@@ -43,25 +43,40 @@ class Database
   end
   
   def single_match_records(sym, cond)
-    match_records = @db.select do |record|
-      record.send(sym) == cond[sym]
+    value = cond[sym]
+    if value && value != ""
+      match_records = @db.select do |record|
+        record.send(sym) == value
+      end
+      num_of_records = match_records.size
+      ratio = num_of_records / self.size.to_f
+      ratio_to_percent = (ratio * 100).round(2)
+      { size: num_of_records, percent: ratio_to_percent}
+    else
+      { size: self.size, percent: 100.0 }
     end
-    num_of_records = match_records.size
-    ratio = num_of_records / self.size.to_f
-    ratio_to_percent = (ratio * 100).round(2)
-    { size: num_of_records, percent: ratio_to_percent}
   end
   
   def mix_match_records(cond)
-    table_taxon = @db.select do |record|
-      record.taxonid == cond[:taxonid]
-    end
-    table_study_type = table_taxon.select do |record|
-      record.study_type == cond[:study_type]
-    end
-    match_records = table_study_type.select do |record|
-      record.instrument == cond[:instrument]
-    end
+    taxonid = cond[:taxonid]
+    study_type = cond[:study_type]
+    instrument = cond[:instrument]
+    table_taxon = if taxonid
+                    @db.select{|r| r.taxonid == taxonid }
+                  else
+                    @db
+                  end
+    table_study_type = if study_type
+                         table_taxon.select{|r| r.study_type == study_type }
+                       else
+                         table_taxon
+                       end
+    match_records = if !instrument.empty?
+                      table_study_type.select{|r| r.instrument == instrument }
+                    else
+                      table_study_type
+                    end
+    
     num_of_records = match_records.size
     ratio = num_of_records / self.size.to_f
     ratio_to_percent = (ratio * 100).round(2)
@@ -70,15 +85,37 @@ class Database
     
   def filter(cond)
     result = {}
-    cond.keys.each do |sym| 
+    cond.keys.each do |sym|
       result[sym] = single_match_records(sym, cond)
     end
     result[:mix] = mix_match_records(cond)
     result
   end
   
-  def search_fulltext(query)
-    @db.select{|r| r.fulltext =~ query }
+  def search_fulltext(query, condition)
+    scientific_name = condition[:scientific_name]
+    study_type = condition[:study_type]
+    instrument = condition[:instrument]
+    rec_species = if scientific_name and scientific_name != ""
+                    @db.select{|r| r.scientific_name == scientific_name }
+                  else
+                    @db
+                  end
+    rec_study = if study_type and study_type != ""
+                  rec_species.select{|r| r.study_type == study_type }
+                else
+                  rec_species
+                end
+    search_target = if instrument and instrument != ""
+                      rec_study.select{|r| r.instrument == instrument }
+                    else
+                      rec_study
+                    end
+    if query and query != ""
+      search_target.select{|r| r.fulltext =~ query }
+    else
+      search_target
+    end
   end
 end
 

@@ -51,7 +51,7 @@
           .span7
             %p.lead Requested filtering condition
             %hr
-            %p= @scientific_name + ", " + @type + ", " + @instrument
+            %p= [@scientific_name, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
             %p.count= "#{@result[:mix][:size]}/#{@total_number}, #{@result[:mix][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:mix][:percent]}%;" }
@@ -69,21 +69,21 @@
           .span4
             %p.lead Sample Organism
             %hr
-            %p= @scientific_name
+            %p= @scientific_name.empty? ? "All" : @scientific_name
             %p.count= "#{@result[:taxonid][:size]}/#{@total_number}, #{@result[:taxonid][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:taxonid][:percent]}%;" }
           .span4
             %p.lead Study Type
             %hr
-            %p= @type
+            %p= @type.empty? ? "All" : @type
             %p.count= "#{@result[:study_type][:size]}/#{@total_number}, #{@result[:study_type][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:study_type][:percent]}%;" }
           .span4
             %p.lead Sequencing Platform
             %hr
-            %p= @instrument
+            %p= @instrument.empty? ? "All" : @instrument
             %p.count= "#{@result[:instrument][:size]}/#{@total_number}, #{@result[:instrument][:percent]}%"
             .progress
               .bar{ :style => "width: #{@result[:instrument][:percent]}%;" }

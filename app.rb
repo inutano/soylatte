@@ -11,6 +11,8 @@ require "./lib/database"
 require "./lib/project_report"
 require "./lib/run_report"
 
+require "ap"
+
 def logging(query)
   logfile = YAML.load_file("./config.yaml")["logfile"]
   log = Time.now.to_s + "\t" + query
@@ -56,7 +58,7 @@ get "/filter" do
   @type = params[:type]
   @instrument = params[:instrument]
   
-  taxonid = Database.instance.name2taxonid(@scientific_name)
+  taxonid = Database.instance.name2taxonid(@scientific_name) if !@scientific_name.empty?
   type_ref = { "Genome" => 1,
                "Transcriptome" => 2,
                "Epigenome" => 3,
@@ -75,9 +77,19 @@ end
 
 post "/search" do
   query_raw = params[:search_query]
+  type_ref = { "Genome" => 1,
+               "Transcriptome" => 2,
+               "Epigenome" => 3,
+               "Metagenome" => 4,
+               "Cancer Genomics" => 5,
+               "Other" => 0 }
+  study_type = type_ref[params[:type]]
+  @condition = { scientific_name: params[:species],
+                 study_type: study_type,
+                 instrument: params[:instrument] }
   @query = query_filter(query_raw)
   
-  @result = Database.instance.search_fulltext(@query)
+  @result = Database.instance.search_fulltext(@query, @condition)
   if @result
     haml :search
   else
