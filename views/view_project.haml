@@ -147,6 +147,16 @@
           %i.icon-reorder.icon-large
           Sequencing Profile
         %hr
+
+        .data_retrieve
+          %span.data_retrieve
+            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=run&retmode=tsv" }
+              %i.icon-file
+                TSV
+            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=run&retmode=json" }
+              %i.icon-file
+                JSON
+
         %table.table.table-hover
           %thead
             %tr
@@ -190,6 +200,16 @@
           %i.icon-beaker.icon-large.icon-spin
           Sample Profile
         %hr
+
+        .data_retrieve
+          %span.data_retrieve
+            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=sample&retmode=tsv" }
+              %i.icon-file
+                TSV
+            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=sample&retmode=json" }
+              %i.icon-file
+                JSON
+
         %table.table.table-hover
           %thead
             %tr
