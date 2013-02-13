@@ -149,6 +149,7 @@ class ProjectReport
     runids = @records.map{|r| r.key.key }
     run_table = Parallel.map(runids) do |runid|
       rec = @db[runid]
+      subid = rec.submission
       expid = rec.experiment
       sampleid = rec.sample
       
@@ -181,6 +182,7 @@ class ProjectReport
       end
       
       { runid: runid,
+        subid: subid,
         expid: expid,
         sampleid: sampleid,
         study_type: study_info[:study_type],

@@ -173,13 +173,20 @@
               %th Library Layout
               %th Total Number of Sequence
               %th Sequence Length
+              %th Download
           
           %tbody            
           - @report[:run_table].each do |row|
+            - subid = row[:subid]
+            - expid = row[:expid]
+            - runid = row[:runid]
+            - ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
+            - ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
+            - ncbi_base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra"
             - if !row[:read_profile]
               %tr
                 %td
-                  %a{ :href => "/view/#{row[:runid]}" }= row[:runid]
+                  %a{ :href => "/view/#{runid}" }= runid
                 %td= row[:sampleid]
                 %td= row[:study_type]
                 %td= row[:organism]
@@ -187,6 +194,19 @@
                 %td= row[:lib_layout]
                 %td no data
                 %td no data
+                %td
+                  .dropdown
+                    %a.dropdown-toggle{ :href => "#", "data-toggle" => "dropdown" } FTP
+                    %ul.dropdown-menu{ "role" => "menu", "aria-lebbledby" => "dLabel" }
+                      %li
+                        %a{ :href => "#{File.join(ddbj_base, "fastq", subid.slice(0..5), subid, expid)}" } DDBJ/FASTQ
+                      %li
+                        %a{ :href => "#{File.join(ddbj_base, "sralite/ByExp/litesra", expid.slice(0..2), expid.slice(0..5), expid)}" } DDBJ/SRALite
+                      %li
+                        %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
+                      %li
+                        %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
+                
             - else
               - row[:read_profile].each do |read|
                 %tr
@@ -199,7 +219,19 @@
                   %td= row[:lib_layout]
                   %td= read[:total_seq]
                   %td= read[:seq_length]
-              
+                  %td
+                    .dropdown
+                      %a.dropdown-toggle{ :href => "#", "data-toggle" => "dropdown" } FTP
+                      %ul.dropdown-menu{ "role" => "menu", "aria-lebbledby" => "dLabel" }
+                        %li
+                          %a{ :href => "#{File.join(ddbj_base, "fastq", subid.slice(0..5), subid, expid)}" } DDBJ/FASTQ
+                        %li
+                          %a{ :href => "#{File.join(ddbj_base, "sralite/ByExp/litesra", expid.slice(0..2), expid.slice(0..5), expid)}" } DDBJ/SRALite
+                        %li
+                          %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
+                        %li
+                          %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
+                            
       %section
         %h2 
           %i.icon-beaker.icon-large.icon-spin
