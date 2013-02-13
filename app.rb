@@ -14,16 +14,28 @@ require "./lib/run_report"
 require "ap"
 
 def logging(query)
-  logfile = YAML.load_file("./config.yaml")["logfile"]
+  logfile = settings.config["logfile"]
   log = Time.now.to_s + "\t" + query
   open(logfile,"a"){|f| f.puts(log) }
 end
 
-def query_filter(query_raw)
-  query_raw
+def query_filter(query)
+  size = query.size
+  invalid_char = settings.config["invalid_char"]
+  if size > 140 || size < 2
+    valid_query = query.force_encoding("utf-8")
+    invalid_char.each do |char|
+      valid_query.gsub!(char, "")
+    end
+    valid_query
+  end
 end
 
 set :haml, :format => :html5
+
+configure do
+  set :config, YAML.load_file("./config.yaml")
+end
 
 before do
   query = params[:search_query]
