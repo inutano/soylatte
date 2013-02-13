@@ -158,5 +158,7 @@ get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fna
 end
 
 not_found do
+  @instruments = Database.instance.instruments
+  @organisms = JSON.dump(Database.instance.scientific_names)
   haml :not_found
 end
