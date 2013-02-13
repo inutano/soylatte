@@ -110,7 +110,7 @@ post "/search" do
 end
 
 get %r{/view/((S|E|D)RP\d{6})} do |id, db|
-  @report = ProjectReport.new(id, "./config.yaml").report
+  @report = ProjectReport.new(id).report
   haml :view_project
 end
 
@@ -119,7 +119,7 @@ get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
   retmode = params[:retmode]
   case idtype
   when "P"
-    report = ProjectReport.new(id, "./config.yaml").report
+    report = ProjectReport.new(id).report
     case dtype
     when "run"
       run_table = report[:run_table]

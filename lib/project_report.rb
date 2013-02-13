@@ -13,11 +13,11 @@ require File.expand_path(File.dirname(__FILE__)) + "/fastqc_result_parser"
 
 class ProjectReport
   config_path = "/Users/inutano/project/soylatte/config.yaml"
-  @@db_path = YAML.load_file(config_path)["idtable_path"]
+  @@config = YAML.load_file(config_path)
+  @@db_path = @@config["idtable_path"]
   
-  def initialize(studyid, config_path)
+  def initialize(studyid)
     @studyid = studyid
-    @config = YAML.load_file(config_path)
     self.connect_db
     self.get_records
 
@@ -26,14 +26,14 @@ class ProjectReport
       raise ArgumentError
     else
       subid = subid_a.first
-      xmlbase = @config["file_path"]["xmlbase"]
+      xmlbase = @@config["file_path"]["xmlbase"]
       @xml = File.join(xmlbase, subid.slice(0..5), subid, subid)
     end
     
-    raw_json = open(@config["file_path"]["publication"]).read
+    raw_json = open(@@config["file_path"]["publication"]).read
     json = JSON.parse(raw_json, :symbolize_names => true)
     @paper = json[:ResultSet][:Result].select{|ent| ent[:sra_id] == subid }
-    @pmcid_table = @config["file_path"]["PMC-ids"]
+    @pmcid_table = @@config["file_path"]["PMC-ids"]
     @eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
   end
   attr_reader :iddb
@@ -84,12 +84,12 @@ class ProjectReport
   end
   
   def taxonid2sname(taxonid)
-    taxon_table = @config["file_path"]["taxon_table"]
+    taxon_table = @@config["file_path"]["taxon_table"]
     `grep -m 1 '^#{taxonid}' #{taxon_table} | cut -d ',' -f 2`.chomp
   end
   
   def read_info(runid)
-    path = File.join(@config["fqc_path"], runid.slice(0..5), runid)
+    path = File.join(@@config["fqc_path"], runid.slice(0..5), runid)
     Dir.entries(path).select{|f| f =~ /#{runid}/ }.map do |read|
       data_path = File.join(path, read, "fastqc_data.txt")
       qc_parser = FastQCParser.new(data_path)
