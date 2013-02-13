@@ -176,49 +176,24 @@
               %th Download
           
           %tbody            
-          - @report[:run_table].each do |row|
-            - subid = row[:subid]
-            - expid = row[:expid]
-            - runid = row[:runid]
-            - ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
-            - ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
-            - ncbi_base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra"
-            - if !row[:read_profile]
-              %tr
-                %td
-                  %a{ :href => "/view/#{runid}" }= runid
-                %td= row[:sampleid]
-                %td= row[:study_type]
-                %td= row[:organism]
-                %td= row[:instrument]
-                %td= row[:lib_layout]
-                %td no data
-                %td no data
-                %td
-                  .dropdown
-                    %a.dropdown-toggle{ :href => "#", "data-toggle" => "dropdown" } FTP
-                    %ul.dropdown-menu{ "role" => "menu", "aria-lebbledby" => "dLabel" }
-                      %li
-                        %a{ :href => "#{File.join(ddbj_base, "fastq", subid.slice(0..5), subid, expid)}" } DDBJ/FASTQ
-                      %li
-                        %a{ :href => "#{File.join(ddbj_base, "sralite/ByExp/litesra", expid.slice(0..2), expid.slice(0..5), expid)}" } DDBJ/SRALite
-                      %li
-                        %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
-                      %li
-                        %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
-                
-            - else
-              - row[:read_profile].each do |read|
+            - @report[:run_table].each do |row|
+              - subid = row[:subid]
+              - expid = row[:expid]
+              - runid = row[:runid]
+              - ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
+              - ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
+              - ncbi_base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra"
+              - if !row[:read_profile]
                 %tr
                   %td
-                    %a{ :href => "/view/#{read[:read]}" }= read[:read]
+                    %a{ :href => "/view/#{runid}" }= runid
                   %td= row[:sampleid]
                   %td= row[:study_type]
                   %td= row[:organism]
                   %td= row[:instrument]
                   %td= row[:lib_layout]
-                  %td= read[:total_seq]
-                  %td= read[:seq_length]
+                  %td no data
+                  %td no data
                   %td
                     .dropdown
                       %a.dropdown-toggle{ :href => "#", "data-toggle" => "dropdown" } FTP
@@ -231,6 +206,31 @@
                           %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
                         %li
                           %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
+                
+              - else
+                - row[:read_profile].each do |read|
+                  %tr
+                    %td
+                      %a{ :href => "/view/#{read[:read]}" }= read[:read]
+                    %td= row[:sampleid]
+                    %td= row[:study_type]
+                    %td= row[:organism]
+                    %td= row[:instrument]
+                    %td= row[:lib_layout]
+                    %td= read[:total_seq]
+                    %td= read[:seq_length]
+                    %td
+                      .dropdown
+                        %a.dropdown-toggle{ :href => "#", "data-toggle" => "dropdown" } FTP
+                        %ul.dropdown-menu{ "role" => "menu", "aria-lebbledby" => "dLabel" }
+                          %li
+                            %a{ :href => "#{File.join(ddbj_base, "fastq", subid.slice(0..5), subid, expid)}" } DDBJ/FASTQ
+                          %li
+                            %a{ :href => "#{File.join(ddbj_base, "sralite/ByExp/litesra", expid.slice(0..2), expid.slice(0..5), expid)}" } DDBJ/SRALite
+                          %li
+                            %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
+                          %li
+                            %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
                             
       %section
         %h2 
@@ -255,11 +255,15 @@
               %th run id
           
           %tbody
-          - @report[:sample_table].each do |row|
-            %tr
-              %td= row[:sampleid]
-              %td= row[:sample_description]
-              %td= row[:runid].join(", ")
+            - sample_table = @report[:sample_table]
+            - bag_of_words = sample_table.map{|n| n[:sample_description].split("\s") }.uniq.flatten
+            - uniq_words = bag_of_words.group_by{|i| i }.select{|k,v| v.size == 1 }.keys
+            - sample_table.each do |row|
+              - desc = row[:sample_description]
+              %tr
+                %td= row[:sampleid]
+                %td= desc.split("\s").map{|w| uniq_words.include?(w) ? "<span class='highlight'>#{w}<\/span>" : w }.join("\s")
+                %td= row[:runid].join(", ")
   
       %section
         %h2 
