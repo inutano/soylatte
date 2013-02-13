@@ -256,7 +256,8 @@
           
           %tbody
             - sample_table = @report[:sample_table]
-            - bag_of_words = sample_table.map{|n| n[:sample_description].split("\s") }.uniq.flatten
+            - min_sentences = sample_table.map{|n| n[:sample_description].split("\s") }.uniq
+            - bag_of_words = min_sentences.size == 1 ? [] : min_sentences.flatten
             - uniq_words = bag_of_words.group_by{|i| i }.select{|k,v| v.size == 1 }.keys
             - sample_table.each do |row|
               - desc = row[:sample_description]
