@@ -4,7 +4,7 @@ require "singleton"
 require "yaml"
 require "groonga"
 
-class Database
+class ProjectDB
   include Singleton
   attr_reader :grndb
   

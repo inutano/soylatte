@@ -7,7 +7,7 @@ require "yaml"
 require "json"
 require "uri"
 
-require "./lib/database"
+require "./lib/project_database"
 require "./lib/project_report"
 require "./lib/run_report"
 
@@ -61,8 +61,8 @@ get "/soy_style.css" do
 end
 
 get "/" do
-  @instruments = Database.instance.instruments
-  @organisms = JSON.dump(Database.instance.scientific_names)
+  @instruments = ProjectDB.instance.instruments
+  @organisms = JSON.dump(ProjectDB.instance.scientific_names)
   haml :index
 end
 
@@ -80,14 +80,14 @@ get "/filter" do
   @type = params[:type]
   @instrument = params[:instrument]
   
-  taxonid = Database.instance.name2taxonid(@scientific_name) if !@scientific_name.empty?
+  taxonid = ProjectDB.instance.name2taxonid(@scientific_name) if !@scientific_name.empty?
   study_type = type_ref(@type)
   
   @condition = { taxonid: taxonid,
                  study_type: study_type,
                  instrument: @instrument }
-  @total_number = Database.instance.size
-  @result = Database.instance.filter(@condition)
+  @total_number = ProjectDB.instance.size
+  @result = ProjectDB.instance.filter(@condition)
   haml :filter
 end
 
@@ -98,7 +98,7 @@ post "/search" do
 
   @query = query_filter(params[:search_query])
   if @query
-    @result = Database.instance.search_fulltext(@query, @condition)
+    @result = ProjectDB.instance.search_fulltext(@query, @condition)
     if @result.empty?
       haml :not_found
     else
@@ -169,7 +169,7 @@ get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fna
 end
 
 not_found do
-  @instruments = Database.instance.instruments
-  @organisms = JSON.dump(Database.instance.scientific_names)
+  @instruments = ProjectDB.instance.instruments
+  @organisms = JSON.dump(ProjectDB.instance.scientific_names)
   haml :not_found
 end
