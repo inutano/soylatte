@@ -151,9 +151,8 @@ get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
 end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
-  RunReport.load_files("./config.yaml")
   run_report = RunReport.new(id)
-  if run_report
+  if run_report.parser
     @report = run_report.report
     haml :view_run
   else
