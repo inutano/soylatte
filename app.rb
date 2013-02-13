@@ -31,6 +31,16 @@ def query_filter(query)
   end
 end
 
+def type_ref(type)
+  ref = { "Genome" => 1,
+          "Transcriptome" => 2,
+          "Epigenome" => 3,
+          "Metagenome" => 4,
+          "Cancer Genomics" => 5,
+          "Other" => 0 }
+  ref[type]
+end
+
 set :haml, :format => :html5
 
 configure do
@@ -71,13 +81,7 @@ get "/filter" do
   @instrument = params[:instrument]
   
   taxonid = Database.instance.name2taxonid(@scientific_name) if !@scientific_name.empty?
-  type_ref = { "Genome" => 1,
-               "Transcriptome" => 2,
-               "Epigenome" => 3,
-               "Metagenome" => 4,
-               "Cancer Genomics" => 5,
-               "Other" => 0 }
-  study_type = type_ref[@type]
+  study_type = type_ref(@type)
   
   @condition = { taxonid: taxonid,
                  study_type: study_type,
@@ -88,24 +92,20 @@ get "/filter" do
 end
 
 post "/search" do
-  query_raw = params[:search_query]
-  type_ref = { "Genome" => 1,
-               "Transcriptome" => 2,
-               "Epigenome" => 3,
-               "Metagenome" => 4,
-               "Cancer Genomics" => 5,
-               "Other" => 0 }
-  study_type = type_ref[params[:type]]
   @condition = { scientific_name: params[:species],
-                 study_type: study_type,
+                 study_type: type_ref(params[:type]),
                  instrument: params[:instrument] }
-  @query = query_filter(query_raw)
-  
-  @result = Database.instance.search_fulltext(@query, @condition)
-  if @result.empty?
-    haml :not_found
+
+  @query = query_filter(params[:search_query])
+  if @query
+    @result = Database.instance.search_fulltext(@query, @condition)
+    if @result.empty?
+      haml :not_found
+    else
+      haml :search
+    end
   else
-    haml :search
+    haml :not_found
   end
 end
 
@@ -162,7 +162,7 @@ get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
 end
 
 get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fname|
-  qc_path = YAML.load_file("./config.yaml")["fqc_path"]
+  qc_path = settings.config["fqc_path"]
   pfx = fname.slice(0,6)
   id = fname.slice(0,9)
   img_path = File.join(qc_path, pfx, id, "#{fname}_fastqc/Images/#{img_fname}.png")
