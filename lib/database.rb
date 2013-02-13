@@ -111,10 +111,12 @@ class Database
                     else
                       rec_study
                     end
-    if query and query != ""
-      search_target.select{|r| r.fulltext =~ query }
+    if !query
+      []
+    elsif query == ""
+      search_target.records
     else
-      search_target
+      search_target.select{|r| r.fulltext =~ query }.records
     end
   end
 end

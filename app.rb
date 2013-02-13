@@ -90,10 +90,10 @@ post "/search" do
   @query = query_filter(query_raw)
   
   @result = Database.instance.search_fulltext(@query, @condition)
-  if @result
-    haml :search
-  else
+  if @result.empty?
     haml :not_found
+  else
+    haml :search
   end
 end
 

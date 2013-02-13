@@ -109,7 +109,7 @@
           
           %tbody
             - @result.each do |record|
-              - projectid = record.key.key
+              - projectid = record["_key"]
               - if record.paper
                 %tr{ :class => "info" }
                   %td
