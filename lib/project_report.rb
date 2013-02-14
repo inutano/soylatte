@@ -14,7 +14,7 @@ require File.expand_path(File.dirname(__FILE__)) + "/fastqc_result_parser"
 class ProjectReport
   config_path = "/Users/inutano/project/soylatte/config.yaml"
   @@config = YAML.load_file(config_path)
-  @@db_path = @@config["idtable_path"]
+  @@db_path = @@config["project_db_path"]
   
   def initialize(studyid)
     @studyid = studyid
