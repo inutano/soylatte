@@ -100,12 +100,12 @@ post "/search" do
   if @query
     @result = ProjectDB.instance.search_fulltext(@query, @condition)
     if @result.empty?
-      haml :not_found
+      redirect to("/not_found")
     else
       haml :search
     end
   else
-    haml :not_found
+    redirect to("/not_found")
   end
 end
 
@@ -129,7 +129,7 @@ get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
       when "json"
         JSON.dump(run_table.map{|n| n.values })
       else
-        haml :not_found
+        redirect to("/not_found")
       end
     when "sample"
       sample_table = report[:sample_table]
@@ -139,14 +139,14 @@ get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
       when "json"
         JSON.dump(sample_table.map{|n| n.values })
       else
-        haml :not_found
+        redirect to("/not_found")
       end
     else
-      haml :not_found
+      redirect to("/not_found")
     end
   #when "R"
   else
-    haml :not_found
+    redirect to("/not_found")
   end
 end
 
@@ -156,7 +156,7 @@ get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
     @report = run_report.report
     haml :view_run
   else
-    haml :not_found
+    redirect to("/not_found")
   end
 end
 
