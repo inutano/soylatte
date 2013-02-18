@@ -1,5 +1,91 @@
 # -*- coding: utf-8 -*-
 
+require "groonga"
+require "yaml"
+
+def create_db(db_path)
+  Gronnga::Database.create(:path => db_path)
+  
+  Groonga::Schema.define do |schema|
+    schema.create_table("Samples", :type => :hash) do |table|
+      table.text("sample_description")
+      table.uint16("taxonid")
+      table.short_text("scientific_name")
+      table.short_text("submission_id")
+    end
+    
+    schema.create_table("Runs", type: :hash) do |table|
+      table.short_text("experiment_id")
+      table.short_text("instrument")
+      table.short_text("study_id")
+      table.short_text("submisssion_id")
+      table.reference("sample", "Samples", type: :vector)
+    end
+    
+    schema.create_table("Projects", type: :hash) do |table|
+      table.short_text("study_title")
+      table.short_text("study_type")
+      table.reference("run", "Runs", type: :vector)
+      table.short_text("submission_id", type: :vector)
+      table.uint16("pmid", type: :vector)
+      tbale.uint16("pmcid", type: :vector)
+      table.text("search_fulltext")
+    end
+    
+    schema.create_table("Index_hash", type: :hash) do |table|
+      table.index("Samples.taxonid")
+      table.index("Samples.scientific_name")
+      table.index("Runs.instrument")
+      table.index("Runs.experiment_id")
+      table.index("Projects.study_type")
+      table.index("Projects.submission_id")
+      table.index("Projects.pmid")
+      table.index("Projects.pmcid")
+    end
+    
+    schema.create_table("Index_text",
+      type: :patricia_trie,
+      key_normalize: true,
+      default_tokenizer: "TokenBigram"
+    )
+    schema.change_table("Index_text") do |table|
+      table.index("Projcets.search_fulltext")
+    end
+  end
+end
+
+if __FILE__ == $0
+  Groonga::Context.default_options = { encoding: :utf8 }
+
+  config_path = "../config.yaml"
+  config = YAML.load_file(config_path)
+  db_path = ARGV[1] || config["db_path"]
+  
+  case ARGV.first
+  when "--up"
+    create_db(db_path)
+  when "--update"
+    Groonga::Database.open(db_path)
+    # parallel gem or grid engine..
+    
+  when "--debug"
+    require "ap"
+    Groonga::Database.open(db_path)
+    
+    samples = Groonga["Samples"]
+    runs = Groonga["Runs"]
+    projects = Groonga["Projects"]
+    
+    query = "genome"
+    ap projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
+    
+    ap samples.size
+    ap runs.size
+    ap projects.size
+  end
+end
+
+=begin
 require "yaml"
 require "groonga"
 require "parallel"
@@ -116,3 +202,4 @@ if __FILE__ == $0
     end
   end
 end
+=end
