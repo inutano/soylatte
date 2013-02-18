@@ -2,6 +2,7 @@
 
 require "groonga"
 require "yaml"
+require "parallel"
 
 def create_db(db_path)
   Gronnga::Database.create(:path => db_path)
@@ -9,7 +10,7 @@ def create_db(db_path)
   Groonga::Schema.define do |schema|
     schema.create_table("Samples", :type => :hash) do |table|
       table.text("sample_description")
-      table.uint16("taxonid")
+      table.uint16("taxon_id")
       table.short_text("scientific_name")
       table.short_text("submission_id")
     end
@@ -27,20 +28,20 @@ def create_db(db_path)
       table.short_text("study_type")
       table.reference("run", "Runs", type: :vector)
       table.short_text("submission_id", type: :vector)
-      table.uint16("pmid", type: :vector)
-      tbale.uint16("pmcid", type: :vector)
+      table.uint16("pubmed_id", type: :vector)
+      tbale.uint16("pmc_id", type: :vector)
       table.text("search_fulltext")
     end
     
     schema.create_table("Index_hash", type: :hash) do |table|
-      table.index("Samples.taxonid")
+      table.index("Samples.taxon_id")
       table.index("Samples.scientific_name")
       table.index("Runs.instrument")
       table.index("Runs.experiment_id")
       table.index("Projects.study_type")
       table.index("Projects.submission_id")
-      table.index("Projects.pmid")
-      table.index("Projects.pmcid")
+      table.index("Projects.pubmed_id")
+      table.index("Projects.pmc_id")
     end
     
     schema.create_table("Index_text",
@@ -51,6 +52,21 @@ def create_db(db_path)
     schema.change_table("Index_text") do |table|
       table.index("Projcets.search_fulltext")
     end
+  end
+end
+
+class DBupdate
+  def initialize(id)
+    @id = id
+  end
+  
+  def sample_insert
+  end
+  
+  def run_insert
+  end
+  
+  def project_insert
   end
 end
 
@@ -66,7 +82,55 @@ if __FILE__ == $0
     create_db(db_path)
   when "--update"
     Groonga::Database.open(db_path)
-    # parallel gem or grid engine..
+    
+    accessions = config["sra_accessions"]
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
+    
+    projects = Groonga["Projects"]
+    not_recorded = studyids.select do |studyid|
+      !projects[studyid]
+    end
+    
+    # UPDATE SAMPLE
+    samples = Groonga["Samples"]
+    samples_not_recorded = Parallel.map(not_recorded) do |study_id|
+      # studyid => [sampleid, ..]
+    end
+    
+    Parallel.each(samples_not_recorded.flatten) do |sample_id|
+      insert = DBupdate.new(sample_id).sample_insert
+      samples.add(sample_id,
+                  sample_description: insert[:sample_description],
+                  taxon_id: insert[:taxon_id],
+                  scientific_name: insert[:scientific_name])
+    end
+    
+    # UPDATE RUN
+    runs = Groonga["Runs"]
+    runs_not_recorded = Parallel.map(not_recorded) do |study_id|
+      # studyid => [runid, ..]
+    end
+    
+    Parallel.each(runs_not_recorded.flatten) do |run_id|
+      insert = DBupdate.new(run_id).run_insert
+      runs.add(run_id,
+               experiment_id: insert[:experiment_id],
+               instrument: insert[:instrument],
+               sample: insert[:sample])
+    end
+    
+    # UPDATE PROJECT
+    Parallel.each(not_recorded) do |study_id|
+      insert = DBupdate.new(study_id).project_insert
+      projects.add(study_id,
+                   study_title: insert[:study_title],
+                   study_type: insert[:study_type],
+                   run: insert[:run],
+                   submission_id: insert[:submission_id],
+                   pubmed_id: insert[:pubmed_id],
+                   pmc_id: insert[:pmc_id],
+                   search_fulltext: insert[:fulltext])
+    end
     
   when "--debug"
     require "ap"
