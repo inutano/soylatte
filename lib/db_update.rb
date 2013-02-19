@@ -56,11 +56,27 @@ def create_db(db_path)
 end
 
 class DBupdate
+  config = YAML.load_file("../config.yaml")
+  @@accessions = config["accessions"]
+  @@xml_base = config["sra_xml_base"]
+  @@taxon_table = config["taxon_table"]
+  
   def initialize(id)
     @id = id
+    @acc = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`
+    @acc_head = @acc.slice(0..5)
   end
   
   def sample_insert
+    xml = File.join(@@xml_base, @acc_head, @acc, @acc + ".sample.xml")
+    parser = SRAMetadataParser::Sample.new(@id, xml)
+    sample_description = parser.sample_description
+    taxon_id = parser.taxon_id
+    scientific_name = `grep #{@@taxon_table} | cut -d ',' -f 2`.chomp
+    
+    { sample_description: sample_description,
+      taxon_id: taxon_id,
+      scientific_name: scientific_name }
   end
   
   def run_insert
@@ -80,10 +96,13 @@ if __FILE__ == $0
   case ARGV.first
   when "--up"
     create_db(db_path)
+  
   when "--update"
     Groonga::Database.open(db_path)
     
     accessions = config["sra_accessions"]
+    run_members = config["sra_run_members"]
+
     studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
     
     projects = Groonga["Projects"]
@@ -95,6 +114,7 @@ if __FILE__ == $0
     samples = Groonga["Samples"]
     samples_not_recorded = Parallel.map(not_recorded) do |study_id|
       # studyid => [sampleid, ..]
+      `grep #{study_id} #{run_members} | cut -f 4 | sort -u`.split("\n")
     end
     
     Parallel.each(samples_not_recorded.flatten) do |sample_id|
@@ -109,6 +129,7 @@ if __FILE__ == $0
     runs = Groonga["Runs"]
     runs_not_recorded = Parallel.map(not_recorded) do |study_id|
       # studyid => [runid, ..]
+      `grep #{study_id} #{run_members} | cut -f 1 | sort -u`.split("\n")
     end
     
     Parallel.each(runs_not_recorded.flatten) do |run_id|
