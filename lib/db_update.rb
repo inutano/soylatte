@@ -3,9 +3,16 @@
 require "groonga"
 require "yaml"
 require "parallel"
+require "open-uri"
+
+require File.expand_path(File.dirname(__FILE__)) + "/sra_metadata_parser"
+require File.expand_path(File.dirname(__FILE__)) + "/pubmed_metadata_parser"
+require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
+
+require "ap"
 
 def create_db(db_path)
-  Gronnga::Database.create(:path => db_path)
+  Groonga::Database.create(:path => db_path)
   
   Groonga::Schema.define do |schema|
     schema.create_table("Samples", :type => :hash) do |table|
@@ -29,7 +36,7 @@ def create_db(db_path)
       table.reference("run", "Runs", type: :vector)
       table.short_text("submission_id", type: :vector)
       table.uint16("pubmed_id", type: :vector)
-      tbale.uint16("pmc_id", type: :vector)
+      table.uint16("pmc_id", type: :vector)
       table.text("search_fulltext")
     end
     
@@ -50,13 +57,13 @@ def create_db(db_path)
       default_tokenizer: "TokenBigram"
     )
     schema.change_table("Index_text") do |table|
-      table.index("Projcets.search_fulltext")
+      table.index("Projects.search_fulltext")
     end
   end
 end
 
 class DBupdate
-  def load_file(config_path)
+  def self.load_file(config_path)
     config = YAML.load_file(config_path)
     @@accessions = config["sra_accessions"]
     @@run_members = config["sra_run_members"]
@@ -81,7 +88,7 @@ class DBupdate
   end
   
   def sample_insert
-    xml = get_xml_path(@id, sample)
+    xml = get_xml_path(@id, "sample")
     parser = SRAMetadataParser::Sample.new(@id, xml)
     sample_description = parser.sample_description
     taxon_id = parser.taxon_id
@@ -94,8 +101,8 @@ class DBupdate
   end
   
   def run_insert
-    experiment_id = `grep -m 1 #{@id} #{@@run_members} | cut -f 2`.chomp    
-    xml = get_xml_path(experiment_id, experiment)
+    experiment_id = `grep -m 1 #{@id} #{@@run_members} | cut -f 2`.chomp
+    xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadata::Experiment.new(experiment_id, xml)
     instrument = parser.instrument_model
     
@@ -107,7 +114,7 @@ class DBupdate
   end
   
   def project_insert
-    xml = get_xml_path(@id, study)
+    xml = get_xml_path(@id, "study")
     parser = SRAMetadataParser::Study.new(@id, xml)
     study_title = parser.study_title
     study_type = parser.study_type
@@ -184,7 +191,8 @@ end
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
-  config_path = "../config.yaml"
+  #config_path = "../config.yaml"
+  config_path = "./config.yaml"
   config = YAML.load_file(config_path)
   db_path = ARGV[1] || config["db_path"]
   
@@ -198,7 +206,7 @@ if __FILE__ == $0
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
 
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")[0..9]
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -211,6 +219,8 @@ if __FILE__ == $0
       # studyid => [sampleid, ..]
       `grep #{study_id} #{run_members} | cut -f 4 | sort -u`.split("\n")
     end
+    
+    DBupdate.load_file(config_path)
     
     Parallel.each(samples_not_recorded.flatten) do |sample_id|
       insert = DBupdate.new(sample_id).sample_insert
