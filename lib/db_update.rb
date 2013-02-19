@@ -56,22 +56,34 @@ def create_db(db_path)
 end
 
 class DBupdate
-  config = YAML.load_file("../config.yaml")
-  @@accessions = config["accessions"]
-  @@xml_base = config["sra_xml_base"]
-  @@taxon_table = config["taxon_table"]
+  def load_file(config_path)
+    config = YAML.load_file(config_path)
+    @@accessions = config["sra_accessions"]
+    @@run_members = config["sra_run_members"]
+    @@xml_base = config["sra_xml_base"]
+    @@taxon_table = config["taxon_table"]
+    @@pmc_ids = config["PMC-ids"]
+    
+    publication = config["publication"]
+    @@json = open(publication){|f| JSON.load(f) }["ResultSet"]["Result"]
+  end
   
   def initialize(id)
     @id = id
-    @acc = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`
-    @acc_head = @acc.slice(0..5)
+  end
+  
+  def get_xml_path(id, type)
+    acc = `grep -m 1 '^#{id}' #{@@accessions} | cut -f 2`.chomp
+    acc_head = acc.slice(0..5)
+    File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
   end
   
   def sample_insert
-    xml = File.join(@@xml_base, @acc_head, @acc, @acc + ".sample.xml")
+    xml = get_xml_path(@id, sample)
     parser = SRAMetadataParser::Sample.new(@id, xml)
     sample_description = parser.sample_description
     taxon_id = parser.taxon_id
+    
     scientific_name = `grep #{@@taxon_table} | cut -d ',' -f 2`.chomp
     
     { sample_description: sample_description,
@@ -80,9 +92,42 @@ class DBupdate
   end
   
   def run_insert
+    experiment_id = `grep -m 1 #{@id} #{@@run_members} | cut -f 2`.chomp    
+    xml = get_xml_path(experiment_id, experiment)
+    parser = SRAMetadata::Experiment.new(experiment_id, xml)
+    instrument = parser.instrument_model
+    
+    sample = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
+    
+    { experiment_id: experiment_id,
+      instrument: instrument,
+      sample: sample }
   end
   
   def project_insert
+    xml = get_xml_path(@id, study)
+    parser = SRAMetadataParser::Study.new(@id, xml)
+    study_title = parser.study_title
+    study_type = parser.study_type
+    
+    run = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
+    
+    submission_id = acc
+    pubmed_id = @@json.select{|n| n["sra_id"] == acc }.map{|n| n["pmid"] }
+    pmc_id_array = pubmed_id.map do |pmid|
+      `grep -m 1 #{pmid} #{@@pmc_ids} | cut -d ',' -f 8`.chomp
+    end
+    pmc_id = pmc_id_array.uniq.compact
+    
+    fulltext = ":)"
+    
+    { study_title: study_title,
+      study_type: study_type,
+      run: run,
+      submission_id: submission_id,
+      pubmed_id: pubmed_id,
+      pmc_id: pmc_id,
+      fulltext: fulltext }
   end
 end
 
