@@ -66,6 +66,8 @@ class DBupdate
     
     publication = config["publication"]
     @@json = open(publication){|f| JSON.load(f) }["ResultSet"]["Result"]
+
+    @@eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
   end
   
   def initialize(id)
@@ -119,15 +121,63 @@ class DBupdate
     end
     pmc_id = pmc_id_array.uniq.compact
     
-    fulltext = ":)"
-    
     { study_title: study_title,
       study_type: study_type,
       run: run,
       submission_id: submission_id,
       pubmed_id: pubmed_id,
-      pmc_id: pmc_id,
-      fulltext: fulltext }
+      pmc_id: pmc_id }
+  end
+  
+  def experiment_description
+    xml = get_xml_path(@id, experiment)
+    parser = SRAMetadataParser::Experiment.new(@id, xml)
+
+    [ parser.title,
+      parser.design_description,
+      parser.library_construction_protocol ].join("\s")
+  end
+  
+  def project_description
+    xml = get_xml_path(@id, study)
+    parser = SRAMetadataParser::Study.new(@id, xml)
+    
+    [ parser.center_name, 
+      parser.center_project_name,
+      parser.study_abstract,
+      parser.study_description ].join("\s")
+  end
+  
+  def pubmed_description
+    xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
+    parser = PubMedMetadataParser.new(xml)
+    
+    [ @id,
+      parser.journal_title,
+      parser.article_title,
+      parser.abstract,
+      parser.affiliation,
+      parser.authors.values,
+      parser.chemicals.map{|n| n[:name_of_substance] },
+      parser.mesh_terms.values.compact ]
+  end
+  
+  def pmc_description
+    xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
+    parser = PMCMetadataParser.new(xml)
+    
+    body = parser.body.compact.map do |section|
+      if section.has_key?(:subsec)
+        [section[:sec_title], section[:subsec].values]
+      else
+        section.values
+      end
+    end
+    
+    [ @id,
+      body,
+      parser.ref_journal_list.map{|n| n.values },
+      parser.cited_by.map{|n| n.values } ]
   end
 end
 
@@ -194,8 +244,26 @@ if __FILE__ == $0
                    run: insert[:run],
                    submission_id: insert[:submission_id],
                    pubmed_id: insert[:pubmed_id],
-                   pmc_id: insert[:pmc_id],
-                   search_fulltext: insert[:fulltext])
+                   pmc_id: insert[:pmc_id])
+    end
+    
+    Parallel.each(not_recorded) do |study_id|
+      insert = []
+      
+      record = projects[study_id]
+      insert << record.study_title
+      
+      sample_records = record.run.map{|r| r.sample }.flatten.uniq
+      insert << sample_records.map{|r| r.sample_description }.uniq
+      
+      experiment_ids = record.run.map{|r| r.experiment_id }.uniq
+      insert << experiment_ids.map{|id| DBupdate.new(id).experiment_description }
+      
+      insert << DBupdate.new(study_id).project_description
+      insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
+      insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
+      
+      record[:search_fulltext] = insert.flatten.join("\s")
     end
     
   when "--debug"
