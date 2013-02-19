@@ -36,7 +36,7 @@ def create_db(db_path)
       table.reference("run", "Runs", type: :vector)
       table.short_text("submission_id", type: :vector)
       table.uint16("pubmed_id", type: :vector)
-      table.uint16("pmc_id", type: :vector)
+      table.short_text("pmc_id", type: :vector)
       table.text("search_fulltext")
     end
     
@@ -93,7 +93,7 @@ class DBupdate
     sample_description = parser.sample_description
     taxon_id = parser.taxon_id
     
-    scientific_name = `grep #{@@taxon_table} | cut -d ',' -f 2`.chomp
+    scientific_name = `grep -m 1 '^#{taxon_id}' #{@@taxon_table} | cut -d ',' -f 2`.chomp
     
     { sample_description: sample_description,
       taxon_id: taxon_id,
@@ -101,9 +101,9 @@ class DBupdate
   end
   
   def run_insert
-    experiment_id = `grep -m 1 #{@id} #{@@run_members} | cut -f 2`.chomp
+    experiment_id = `grep -m 1 '^#{@id}' #{@@run_members} | cut -f 3`.chomp
     xml = get_xml_path(experiment_id, "experiment")
-    parser = SRAMetadata::Experiment.new(experiment_id, xml)
+    parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
     instrument = parser.instrument_model
     
     sample = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
@@ -119,12 +119,12 @@ class DBupdate
     study_title = parser.study_title
     study_type = parser.study_type
     
-    run = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
+    run = `grep '#{@id}' #{@@run_members} | cut -f 1 | sort -u`.split("\n")
     
-    submission_id = acc
-    pubmed_id = @@json.select{|n| n["sra_id"] == acc }.map{|n| n["pmid"] }
+    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
+    pubmed_id = @@json.select{|n| n["sra_id"] == submission_id }.map{|n| n["pmid"] }
     pmc_id_array = pubmed_id.map do |pmid|
-      `grep -m 1 #{pmid} #{@@pmc_ids} | cut -d ',' -f 8`.chomp
+      `grep -m 1 #{pmid} #{@@pmc_ids} | cut -d ',' -f 9`.chomp
     end
     pmc_id = pmc_id_array.uniq.compact
     
@@ -137,7 +137,7 @@ class DBupdate
   end
   
   def experiment_description
-    xml = get_xml_path(@id, experiment)
+    xml = get_xml_path(@id, "experiment")
     parser = SRAMetadataParser::Experiment.new(@id, xml)
 
     [ parser.title,
@@ -146,7 +146,7 @@ class DBupdate
   end
   
   def project_description
-    xml = get_xml_path(@id, study)
+    xml = get_xml_path(@id, "study")
     parser = SRAMetadataParser::Study.new(@id, xml)
     
     [ parser.center_name, 
@@ -156,35 +156,39 @@ class DBupdate
   end
   
   def pubmed_description
-    xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
-    parser = PubMedMetadataParser.new(xml)
-    
-    [ @id,
-      parser.journal_title,
-      parser.article_title,
-      parser.abstract,
-      parser.affiliation,
-      parser.authors.values,
-      parser.chemicals.map{|n| n[:name_of_substance] },
-      parser.mesh_terms.values.compact ]
+    if @id
+      xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
+      parser = PubMedMetadataParser.new(xml)
+      
+      [ @id,
+        parser.journal_title,
+        parser.article_title,
+        parser.abstract,
+        parser.affiliation,
+        parser.authors.map{|n| n.values.compact },
+        parser.chemicals.map{|n| n[:name_of_substance] },
+        parser.mesh_terms.map{|n| n.values.compact } ]
+    end
   end
   
   def pmc_description
-    xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
-    parser = PMCMetadataParser.new(xml)
-    
-    body = parser.body.compact.map do |section|
-      if section.has_key?(:subsec)
-        [section[:sec_title], section[:subsec].values]
-      else
-        section.values
+    if @id
+      xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
+      parser = PMCMetadataParser.new(xml)
+      
+      body = parser.body.compact.map do |section|
+        if section.has_key?(:subsec)
+          [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
+        else
+          section.values
+        end
       end
-    end
     
-    [ @id,
-      body,
-      parser.ref_journal_list.map{|n| n.values },
-      parser.cited_by.map{|n| n.values } ]
+      [ @id,
+        body,
+        parser.ref_journal_list.map{|n| n.values },
+        parser.cited_by.map{|n| n.values } ]
+    end
   end
 end
 
@@ -223,11 +227,13 @@ if __FILE__ == $0
     DBupdate.load_file(config_path)
     
     Parallel.each(samples_not_recorded.flatten) do |sample_id|
-      insert = DBupdate.new(sample_id).sample_insert
-      samples.add(sample_id,
-                  sample_description: insert[:sample_description],
-                  taxon_id: insert[:taxon_id],
-                  scientific_name: insert[:scientific_name])
+      if !samples[sample_id]
+        insert = DBupdate.new(sample_id).sample_insert
+        samples.add(sample_id,
+                    sample_description: insert[:sample_description],
+                    taxon_id: insert[:taxon_id],
+                    scientific_name: insert[:scientific_name])
+      end
     end
     
     # UPDATE RUN
@@ -238,11 +244,13 @@ if __FILE__ == $0
     end
     
     Parallel.each(runs_not_recorded.flatten) do |run_id|
-      insert = DBupdate.new(run_id).run_insert
-      runs.add(run_id,
-               experiment_id: insert[:experiment_id],
-               instrument: insert[:instrument],
-               sample: insert[:sample])
+      if !runs[run_id]
+        insert = DBupdate.new(run_id).run_insert
+        runs.add(run_id,
+                 experiment_id: insert[:experiment_id],
+                 instrument: insert[:instrument],
+                 sample: insert[:sample])
+      end
     end
     
     # UPDATE PROJECT
@@ -257,6 +265,7 @@ if __FILE__ == $0
                    pmc_id: insert[:pmc_id])
     end
     
+    # UPDATE FULLTEXT SEARCH FIELD
     Parallel.each(not_recorded) do |study_id|
       insert = []
       
@@ -285,7 +294,7 @@ if __FILE__ == $0
     projects = Groonga["Projects"]
     
     query = "genome"
-    ap projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
+    ap projects.select{|r| r.search_fulltext =~ query }.map{|n| n["_key"] }
     
     ap samples.size
     ap runs.size
