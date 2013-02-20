@@ -49,6 +49,14 @@ class Database
   def projects_size
     @projects.size
   end
+
+  def runs_size
+    @runs.size
+  end
+
+  def samples_size
+    @samples.size
+  end
   
   def filter_species(species)
     if !species or species.empty?
@@ -65,7 +73,7 @@ class Database
       project_records = run_id_list.map do |run_id|
         @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
       end
-      project_records.flatten.uniq.size
+      project_records.flatten.uniq
     end
   end
   
@@ -84,7 +92,7 @@ class Database
       study_records = described_types.map do |study_type|
         @projects.select{|r| r.study_type == study_type }.map{|r| r["_key"] }
       end
-      study_records.flatten.uniq.size
+      study_records.flatten.uniq
     end
   end
   
@@ -98,15 +106,15 @@ class Database
       project_records = run_id_list.map do |run_id|
         @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
       end
-      project_records.flatten.uniq.size
+      project_records.flatten.uniq
     end
   end
   
   def filter_result(species, type, instrument)
     total = self.projects_size
-    num_species = self.filter_species(species)
-    num_type = self.filter_type(type)
-    num_instrument = self.filter_instrument(instrument)
+    num_species = self.filter_species(species).size
+    num_type = self.filter_type(type).size
+    num_instrument = self.filter_instrument(instrument).size
     
     ratio_species = ((num_species / total.to_f) * 100).round(2)
     ratio_type = ((num_type / total.to_f) * 100).round(2)
@@ -116,6 +124,13 @@ class Database
       species: [num_species, ratio_species],
       type: [num_type, ratio_type],
       instrument: [num_instrument, ratio_instrument] }
+  end
+  
+  def search(query, condition)
+    f_species = self.filter_species(species)
+    f_type = self.filter_type(type)
+    f_instrument = self.filter_instrument(instrument)
+    filtered = f_species & f_type & f_instrument
   end
   
   def project_report(id)
@@ -129,6 +144,8 @@ if __FILE__ == $0
   ap db.instruments
   ap db.species
   ap db.filter_result("Homo sapiens", "Genome", "Illumina Genome Analyzer")
+  ap db.runs_size
+  ap db.samples_size
 end
   
   
