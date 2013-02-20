@@ -84,6 +84,10 @@ class DBupdate
     raise NameError if acc !~ /^(S|E|D)RA\d{6}$/
     acc_head = acc.slice(0..5)
     File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
+  rescue NameError
+    ap @id
+    ap id
+    exit
   end
   
   def sample_insert
@@ -176,7 +180,7 @@ class DBupdate
                 parser.authors.map{|n| n.values.compact },
                 parser.chemicals.map{|n| n[:name_of_substance] },
                 parser.mesh_terms.map{|n| n.values.compact } ]
-      array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
+      array.flatten.compact.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
     end
   end
   
@@ -197,7 +201,7 @@ class DBupdate
                 body,
                 parser.ref_journal_list.map{|n| n.values },
                 parser.cited_by.map{|n| n.values } ]
-      array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
+      array.flatten.compact.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
     end
   end
 end
