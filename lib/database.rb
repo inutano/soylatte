@@ -114,8 +114,8 @@ class Database
     
     { total: total,
       species: [num_species, ratio_species],
-      type: [num_species, ratio_type],
-      instrument: [num_species, ratio_instrument] }
+      type: [num_type, ratio_type],
+      instrument: [num_instrument, ratio_instrument] }
   end
   
   def project_report(id)
