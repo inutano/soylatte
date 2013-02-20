@@ -26,15 +26,20 @@ class DBupdate
         table.short_text("study_id")
         table.short_text("submisssion_id")
         table.reference("sample", "Samples", type: :vector)
+        table.index("Runs.sample")
       end
     
       schema.create_table("Projects", type: :hash) do |table|
         table.short_text("study_title")
         table.short_text("study_type")
         table.reference("run", "Runs", type: :vector)
+        table.index("Projects.run")
         table.short_text("submission_id", type: :vector)
+        table.index("Projects.submission_id")
         table.uint16("pubmed_id", type: :vector)
+        table.index("Projects.pubmed_id")
         table.short_text("pmc_id", type: :vector)
+        table.index("Projects.pmc_id")
         table.text("search_fulltext")
       end
     
