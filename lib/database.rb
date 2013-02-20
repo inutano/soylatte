@@ -46,19 +46,23 @@ class Database
     @samples.map{|r| r.scientific_name }.uniq.compact
   end
   
+  def projects_size
+    @projects.size
+  end
+  
   def filter_species(species)
-    sample_id_records = @samples.select{|r| r.scientific_name == species }
-    sample_id_list = sample_id_records.map{|r| r["_key"] }
+    sample_records = @samples.select{|r| r.scientific_name == species }
+    sample_id_list = sample_records.map{|r| r["_key"] }
     
-    run_id_records = sample_id_list.map do |sample_id|
+    run_records = sample_id_list.map do |sample_id|
       @runs.select{|r| r.sample =~ sample_id }.map{|r| r["_key"] }
     end
-    run_id_list = run_id_records.flatten.uniq
+    run_id_list = run_records.flatten.uniq
     
-    project_id_records = run_id_list.map do |run_id|
+    project_records = run_id_list.map do |run_id|
       @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
     end
-    project_id_records.flatten.uniq.size
+    project_records.flatten.uniq.size
   end
   
   def filter_type(type) # type: Genome, etc. 
@@ -70,18 +74,36 @@ class Database
             "Other" => ["Other","Pooled Clone Sequencing","Forensic or Paleo-genomics","Synthetic Genomics"] }
 
     described_types = ref[type]
-    study_id_records = described_types.map do |study_type|
+    study_records = described_types.map do |study_type|
       @projects.select{|r| r.study_type == study_type }.map{|r| r["_key"] }
     end
-    study_id_records.flatten.uniq.size
+    study_records.flatten.uniq.size
   end
   
+  def filter_instrument(instrument)
+    run_records = @runs.select{|r| r.instrument == instrument }
+    run_id_list = run_records.map{|r| r["_key"] }
+    
+    project_records = run_id_list.map do |run_id|
+      @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
+    end
+    project_records.flatten.uniq.size
+  end
   
   def filter_result(species, type, instrument)
-    species_hit = @samples.select{|r| r.scientific_name == species }
-    species_hit.map do |sample_record|
-      @runs.select{|r| r.sample =~ sample_record["_key"] }.map{|r| r["_key"]}
-    end
+    total = self.projects_size
+    num_species = self.filter_species(species)
+    num_type = self.filter_type(type)
+    num_instrument = self.filter_instrument(instrument)
+    
+    ratio_species = ((num_species / total.to_f) * 100).round(2)
+    ratio_type = ((num_type / total.to_f) * 100).round(2)
+    ratio_instrument = ((num_instrument / total.to_f) * 100).round(2)
+    
+    { total: total,
+      species: [num_species, ratio_species],
+      type: [num_species, ratio_type],
+      instrument: [num_species, ratio_instrument] }
   end
 end
 
@@ -90,7 +112,7 @@ if __FILE__ == $0
   db = Database.instance
   ap db.instruments
   ap db.species
-  ap db.filter_result("Homo sapiens", "Whole Genome Sequencing", "Illumina Genome Analyzer")
+  ap db.filter_result("Homo sapiens", "Genome", "Illumina Genome Analyzer")
 end
   
   
