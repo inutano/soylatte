@@ -59,9 +59,9 @@ get "/soy_style.css" do
 end
 
 get "/" do
-  db = Database.instance
-  @instruments = db.instruments
-  @species = JSON.dump(db.species)
+  m = Database.instance
+  @instruments = m.instruments
+  @species = JSON.dump(m.species)
   haml :index
 end
 
@@ -79,19 +79,19 @@ get "/filter" do
   @type = params[:type]
   @instrument = params[:instrument]
   
-  db = Database.instance
-  @filter_result = db.filter_result(@species, @type, @instrument)
+  m = Database.instance
+  @filter_result = m.filter_result(@species, @type, @instrument)
   haml :filter
 end
 
 post "/search" do
-  @condition = { scientific_name: params[:species],
-                 study_type: type_ref(params[:type]),
-                 instrument: params[:instrument] }
-
   @query = query_filter(params[:search_query])
   if @query
-    @result = ProjectDB.instance.search_fulltext(@query, @condition)
+    m = Database.instance
+    @result = m.search(@query,
+                       species: params[:species],
+                       type: params[:type],
+                       instrument: params[:instrument])
     if @result.empty?
       redirect to("/not_found")
     else
@@ -103,7 +103,8 @@ post "/search" do
 end
 
 get %r{/view/((S|E|D)RP\d{6})} do |id, db|
-  @report = ProjectReport.new(id).report
+  m = Database.instance
+  @report = m.project_report(id)
   haml :view_project
 end
 
@@ -144,9 +145,9 @@ get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
 end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
-  run_report = RunReport.new(id)
-  if run_report.parser
-    @report = run_report.report
+  m = Database.instance
+  @run_report = m.sample_report(id)
+  if @run_report
     haml :view_run
   else
     redirect to("/not_found")
@@ -162,7 +163,8 @@ get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fna
 end
 
 not_found do
-  @instruments = ProjectDB.instance.instruments
-  @organisms = JSON.dump(ProjectDB.instance.scientific_names)
+  m = Database.instance
+  @instruments = m.instruments
+  @species = JSON.dump(m.species)
   haml :not_found
 end
