@@ -46,10 +46,41 @@ class Database
     @samples.map{|r| r.scientific_name }.uniq.compact
   end
   
+  def filter_species(species)
+    sample_id_records = @samples.select{|r| r.scientific_name == species }
+    sample_id_list = sample_id_records.map{|r| r["_key"] }
+    
+    run_id_records = sample_id_list.map do |sample_id|
+      @runs.select{|r| r.sample =~ sample_id }.map{|r| r["_key"] }
+    end
+    run_id_list = run_id_records.flatten.uniq
+    
+    project_id_records = run_id_list.map do |run_id|
+      @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
+    end
+    project_id_records.flatten.uniq.size
+  end
+  
+  def filter_type(type) # type: Genome, etc. 
+    ref = { "Genome" => ["Whole Genome Sequencing","Resequencing","Population Genomics","Exome Sequencing"],
+            "Transcriptome" => ["Transcriptome Analysis","RNASeq"],
+            "Epigenome" => ["Epigenetics","Gene Regulation Study"],
+            "Metagenome" => ["Metagenomics"],
+            "Cancer Genome" => ["Cancer Genomics"],
+            "Other" => ["Other","Pooled Clone Sequencing","Forensic or Paleo-genomics","Synthetic Genomics"] }
+
+    described_types = ref[type]
+    study_id_records = described_types.map do |study_type|
+      @projects.select{|r| r.study_type == study_type }.map{|r| r["_key"] }
+    end
+    study_id_records.flatten.uniq.size
+  end
+  
+  
   def filter_result(species, type, instrument)
     species_hit = @samples.select{|r| r.scientific_name == species }
     species_hit.map do |sample_record|
-      @runs.select("sample:@#{sample_record["_key"]}")
+      @runs.select{|r| r.sample =~ sample_record["_key"] }.map{|r| r["_key"]}
     end
   end
 end
