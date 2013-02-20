@@ -122,8 +122,13 @@ class DBupdate
     
     run = `grep '#{@id}' #{@@run_members} | cut -f 1 | sort -u`.split("\n")
     
-    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2`.chomp
-    pubmed_id = @@json.select{|n| n["sra_id"] == submission_id }.map{|n| n["pmid"] }
+    submission_id = `grep '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.split("\n")
+    
+    pub_info = @@json.select do |row|
+      submission_id.include?(row["sra_id"])
+    end
+    pubmed_id = pub_info.map{|row| row["pmid"] }
+    
     pmc_id_array = pubmed_id.map do |pmid|
       `grep -m 1 #{pmid} #{@@pmc_ids} | cut -d ',' -f 9`.chomp
     end
@@ -141,19 +146,21 @@ class DBupdate
     xml = get_xml_path(@id, "experiment")
     parser = SRAMetadataParser::Experiment.new(@id, xml)
 
-    [ parser.title,
-      parser.design_description,
-      parser.library_construction_protocol ].join("\s")
+    array = [ parser.title,
+              parser.design_description,
+              parser.library_construction_protocol ]
+    array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
   end
   
   def project_description
     xml = get_xml_path(@id, "study")
     parser = SRAMetadataParser::Study.new(@id, xml)
     
-    [ parser.center_name, 
-      parser.center_project_name,
-      parser.study_abstract,
-      parser.study_description ].join("\s")
+    array = [ parser.center_name, 
+              parser.center_project_name,
+              parser.study_abstract,
+              parser.study_description ]
+    array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
   end
   
   def pubmed_description
@@ -161,14 +168,15 @@ class DBupdate
       xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
       parser = PubMedMetadataParser.new(xml)
       
-      [ @id,
-        parser.journal_title,
-        parser.article_title,
-        parser.abstract,
-        parser.affiliation,
-        parser.authors.map{|n| n.values.compact },
-        parser.chemicals.map{|n| n[:name_of_substance] },
-        parser.mesh_terms.map{|n| n.values.compact } ]
+      array = [ @id,
+                parser.journal_title,
+                parser.article_title,
+                parser.abstract,
+                parser.affiliation,
+                parser.authors.map{|n| n.values.compact },
+                parser.chemicals.map{|n| n[:name_of_substance] },
+                parser.mesh_terms.map{|n| n.values.compact } ]
+      array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
     end
   end
   
@@ -185,10 +193,11 @@ class DBupdate
         end
       end
     
-      [ @id,
-        body,
-        parser.ref_journal_list.map{|n| n.values },
-        parser.cited_by.map{|n| n.values } ]
+      array = [ @id,
+                body,
+                parser.ref_journal_list.map{|n| n.values },
+                parser.cited_by.map{|n| n.values } ]
+      array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
     end
   end
 end
