@@ -2,14 +2,11 @@
 
 require "groonga"
 require "yaml"
-require "parallel"
 require "open-uri"
 
-require File.expand_path(File.dirname(__FILE__)) + "/lib_db_update"
 require File.expand_path(File.dirname(__FILE__)) + "/sra_metadata_parser"
 require File.expand_path(File.dirname(__FILE__)) + "/pubmed_metadata_parser"
 require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
-
 
 class DBupdate
   def self.create_db(db_path)
@@ -87,11 +84,6 @@ class DBupdate
     raise NameError if acc !~ /^(S|E|D)RA\d{6}$/
     acc_head = acc.slice(0..5)
     File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
-  rescue => e
-    ap "get xml path error"
-    ap e
-    ap id
-    exit
   end
   
   def sample_insert
@@ -105,16 +97,8 @@ class DBupdate
     { sample_description: sample_description,
       taxon_id: taxon_id,
       scientific_name: scientific_name }
-
   rescue NameError
-    { sample_description: nil,
-      taxon_id: nil,
-      scientific_name: nil }
-  rescue => e
-    ap "sample insert error " 
-    ap e
-    ap @id
-    exit
+    nil
   end
   
   def run_insert
@@ -128,11 +112,6 @@ class DBupdate
     { experiment_id: experiment_id,
       instrument: instrument,
       sample: sample }
-  rescue => e
-    ap "run insert error " 
-    ap e
-    ap @id
-    exit
   end
   
   def project_insert
@@ -156,11 +135,6 @@ class DBupdate
       submission_id: submission_id,
       pubmed_id: pubmed_id,
       pmc_id: pmc_id }
-  rescue => e
-    ap "project insert error " 
-    ap e
-    ap @id
-    exit
   end
   
   def experiment_description
@@ -170,11 +144,6 @@ class DBupdate
     [ parser.title,
       parser.design_description,
       parser.library_construction_protocol ].join("\s")
-  rescue => e
-    ap "exp desc error " 
-    ap e
-    ap @id
-    exit
   end
   
   def project_description
@@ -185,11 +154,6 @@ class DBupdate
       parser.center_project_name,
       parser.study_abstract,
       parser.study_description ].join("\s")
-  rescue => e
-    ap "project desc error " 
-    ap e
-    ap @id
-    exit
   end
   
   def pubmed_description
@@ -206,11 +170,6 @@ class DBupdate
         parser.chemicals.map{|n| n[:name_of_substance] },
         parser.mesh_terms.map{|n| n.values.compact } ]
     end
-  rescue => e
-    ap "pubmed desc error " 
-    ap e
-    ap @id
-    exit
   end
   
   def pmc_description
@@ -231,10 +190,5 @@ class DBupdate
         parser.ref_journal_list.map{|n| n.values },
         parser.cited_by.map{|n| n.values } ]
     end
-  rescue => e
-    ap "pmc desc error " 
-    ap e
-    ap @id
-    exit
   end
 end
