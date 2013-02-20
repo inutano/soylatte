@@ -116,7 +116,10 @@ if __FILE__ == $0
     projects = Groonga["Projects"]
     
     query = "genome"
-    ap projects.select{|r| r.search_fulltext =~ query }.map{|n| n["_key"] }
+    hit = projects.select{|r| r.search_fulltext =~ query }
+    ap hit.map{|n| n["_key"] }
+    
+    ap projects["ERP000230"].submission_id
     
     ap samples.size
     ap runs.size
