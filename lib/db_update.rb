@@ -23,6 +23,7 @@ if __FILE__ == $0
   
   when "--update"
     Groonga::Database.open(db_path)
+    DBupdate.load_file(config_path)
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
@@ -35,32 +36,36 @@ if __FILE__ == $0
     end
     
     # UPDATE SAMPLE
-    samples = Groonga["Samples"]
     samples_not_recorded = Parallel.map(not_recorded) do |study_id|
-      # studyid => [sampleid, ..]
       `grep #{study_id} #{run_members} | cut -f 4 | sort -u`.split("\n")
     end
+    sample_id_list = samples_not_recorded.flatten.uniq.select do |id|
+      id =~ /^(S|E|D)RS\d{6}$/
+    end
     
-    DBupdate.load_file(config_path)
-    
-    Parallel.each(samples_not_recorded.flatten.compact) do |sample_id|
+    samples = Groonga["Samples"]
+    Parallel.each(sample_id_list) do |sample_id|
       if !samples[sample_id]
         insert = DBupdate.new(sample_id).sample_insert
-        samples.add(sample_id,
-                    sample_description: insert[:sample_description],
-                    taxon_id: insert[:taxon_id],
-                    scientific_name: insert[:scientific_name])
+        if insert
+          samples.add(sample_id,
+                      sample_description: insert[:sample_description],
+                      taxon_id: insert[:taxon_id],
+                      scientific_name: insert[:scientific_name])
+        end
       end
     end
     
     # UPDATE RUN
-    runs = Groonga["Runs"]
     runs_not_recorded = Parallel.map(not_recorded) do |study_id|
-      # studyid => [runid, ..]
       `grep #{study_id} #{run_members} | cut -f 1 | sort -u`.split("\n")
     end
+    run_id_list = runs_not_recorded.flatten.uniq.select do |id|
+      id =~ /^(S|E|D)RR\d{6}$/
+    end
     
-    Parallel.each(runs_not_recorded.flatten) do |run_id|
+    runs = Groonga["Runs"]
+    Parallel.each(run_id_list) do |run_id|
       if !runs[run_id]
         insert = DBupdate.new(run_id).run_insert
         runs.add(run_id,
