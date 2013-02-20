@@ -7,9 +7,7 @@ require "yaml"
 require "json"
 require "uri"
 
-require "./lib/project_database"
-require "./lib/project_report"
-require "./lib/run_report"
+require "./database.rb"
 
 require "ap"
 
@@ -61,33 +59,28 @@ get "/soy_style.css" do
 end
 
 get "/" do
-  @instruments = ProjectDB.instance.instruments
-  @organisms = JSON.dump(ProjectDB.instance.scientific_names)
+  db = Database.instance
+  @instruments = db.instruments
+  @species = JSON.dump(db.species)
   haml :index
 end
 
 post "/filter" do
-  scientific_name = params[:species]
+  species = params[:species]
   study_type = params[:study_type]
   instrument = params[:platform]
-  options = "species=#{scientific_name}&type=#{study_type}&instrument=#{instrument}"
+  options = "species=#{species}&type=#{study_type}&instrument=#{instrument}"
   encoded = URI.encode(options)
   redirect to("/filter?#{encoded}")
-end  
+end
 
 get "/filter" do
-  @scientific_name = params[:species]
+  @species = params[:species]
   @type = params[:type]
   @instrument = params[:instrument]
   
-  taxonid = ProjectDB.instance.name2taxonid(@scientific_name) if !@scientific_name.empty?
-  study_type = type_ref(@type)
-  
-  @condition = { taxonid: taxonid,
-                 study_type: study_type,
-                 instrument: @instrument }
-  @total_number = ProjectDB.instance.size
-  @result = ProjectDB.instance.filter(@condition)
+  db = Database.instance
+  @filter_result = db.filter_result(@species, @type, @instrument)
   haml :filter
 end
 
