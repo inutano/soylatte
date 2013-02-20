@@ -117,6 +117,10 @@ class Database
       type: [num_species, ratio_type],
       instrument: [num_species, ratio_instrument] }
   end
+  
+  def project_report(id)
+    
+  end
 end
 
 if __FILE__ == $0
