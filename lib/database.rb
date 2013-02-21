@@ -47,11 +47,11 @@ class Database
   end
   
   def projects_size
-    @projects.size
+    @projects.records.select{|r| r["_key"] =~ /^.RP/ }.size
   end
 
   def runs_size
-    @runs.size
+    @runs.records.select{|r| r["_key"] =~ /^.RR/ }.size
   end
 
   def samples_size
