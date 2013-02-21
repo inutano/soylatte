@@ -7,7 +7,7 @@ require "yaml"
 require "json"
 require "uri"
 
-require "./database.rb"
+require "./lib/database.rb"
 
 require "ap"
 
@@ -27,16 +27,6 @@ def query_filter(query)
     end
     valid_query
   end
-end
-
-def type_ref(type)
-  ref = { "Genome" => 1,
-          "Transcriptome" => 2,
-          "Epigenome" => 3,
-          "Metagenome" => 4,
-          "Cancer Genomics" => 5,
-          "Other" => 0 }
-  ref[type]
 end
 
 set :haml, :format => :html5
@@ -86,20 +76,16 @@ end
 
 post "/search" do
   @query = query_filter(params[:search_query])
-  if @query
-    m = Database.instance
-    @result = m.search(@query,
-                       species: params[:species],
-                       type: params[:type],
-                       instrument: params[:instrument])
-    if @result.empty?
-      redirect to("/not_found")
-    else
-      haml :search
-    end
-  else
-    redirect to("/not_found")
-  end
+  redirect to("/not_found") if !@query
+  
+  m = Database.instance
+  @result = m.search(@query,
+                     species: params[:species],
+                     type: params[:type],
+                     instrument: params[:instrument])
+
+  redirect to("/not_found") if @result.empty?
+  haml :search
 end
 
 get %r{/view/((S|E|D)RP\d{6})} do |id, db|
@@ -147,11 +133,8 @@ end
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
   m = Database.instance
   @run_report = m.run_report(id)
-  if @run_report
-    haml :view_run
-  else
-    redirect to("/not_found")
-  end
+  redirect to("/not_found") if !@run_report
+  haml :view_run
 end
 
 get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fname|

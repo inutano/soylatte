@@ -13,10 +13,10 @@ class Database
   include Singleton
   attr_reader :grndb
   
-  #config = "/Users/inutano/project/soylatte/config.yaml"
+  config_path = "/Users/inutano/project/soylatte/config.yaml"
+  @@config = YAML.load_file(config_path)
   #@@db_path = YAML.load_file(config)["project_db_path"]
-  @@config = YAML.load_file("./config.yaml")
-  @@db_path = "./test_db/test.db"
+  @@db_path = "/Users/inutano/project/soylatte/lib/test_db/test.db"
   
   def initialize
     connect_db
@@ -43,6 +43,10 @@ class Database
     @samples ||= Groonga["Samples"]
   end
   
+  def type
+    @projects.map{|r| r.study_type }.uniq.compact.sort
+  end
+
   def instruments
     @runs.map{|r| r.instrument }.uniq.compact.sort
   end
@@ -50,7 +54,7 @@ class Database
   def species
     @samples.map{|r| r.scientific_name }.uniq.compact
   end
-  
+    
   def projects_size
     @projects.size
   end
@@ -127,30 +131,31 @@ class Database
     filter_species = self.filter_species(condition[:species])
     filter_type = self.filter_type(condition[:type])
     filter_instrument = self.filter_instrument(condition[:instrument])
-    hit & filter_species & filter_type & filter_instrument
+    hit_id = hit & filter_species & filter_type & filter_instrument
+    hit_id.map{|id| @project[id] }
   end
   
-  def summary(id)
-    p_record = @projects[id]
+  def summary(study_id)
+    p_record = @projects[study_id]
     r_record = p_record.run
     s_record = r_record.map{|r| r.sample }
     
-    { study_id: id,
+    { study_id: study_id,
       study_title: p_record.study_title,
       type: p_record.study_type,
       species: s_record.map{|r| r.map{|s| s.scientific_name } }.flatten.uniq,
       instrument: r_record.map{|r| r.instrument }.uniq }
   end
   
-  def paper(id)
-    p_record = @projects[id]
+  def paper(study_id)
+    p_record = @projects[study_id]
     pmid_array = p_record.pubmed_id
     eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
     pmid_array.map do |pmid|
       arg = "&db=pubmed&id=#{pmid}"
       pm_parser = PubMedMetadataParser.new(open(eutil_base + arg).read)
       pmcid = pm_parser.pmcid
-      { pmid: pmid,
+      { pubmed_id: pmid,
         journal: pm_parser.journal_title,
         title: pm_parser.article_title,
         abstract: pm_parser.abstract,
@@ -169,7 +174,7 @@ class Database
       body = pmc_parser.body.compact
       methods = body.select{|s| s[:sec_title] =~ /methods/i }
       results = body.select{|s| s[:sec_title] =~ /results/i }
-      { pmcid: pmcid,
+      { pmc_id: pmcid,
         methods: methods,
         results: results,
         reference: pmc_parser.ref_journal_list,
@@ -177,14 +182,14 @@ class Database
     end
   end
   
-  def run_table(id)
-    p_record = @projects[id]
+  def run_table(study_id)
+    p_record = @projects[study_id]
     r_record = p_record.run
     r_record.map do |run|
-      { runid: run["_key"],
-        expid: run.experiment_id,
-        subid: run.submission_id,
-        sampleid: run.sample.map{|r| r["_key"] },
+      { run_id: run["_key"],
+        experiment_id: run.experiment_id,
+        submission_id: run.submission_id,
+        sample_id: run.sample.map{|r| r["_key"] },
         study_type: p_record.study_type,
         instrument: run.instrument,
         lib_layout: run.library_layout,
@@ -193,12 +198,12 @@ class Database
     end
   end
   
-  def read_profile(runid)
-    path = File.join(@@config["fqc_path"], runid.slice(0..5), runid)
-    Dir.entries(path).select{|f| f =~ /#{runid}/ }.map do |read|
+  def read_profile(run_id)
+    path = File.join(@@config["fqc_path"], run_id.slice(0..5), run_id)
+    Dir.entries(path).select{|f| f =~ /#{run_id}/ }.map do |read|
       data_path = File.join(path, read, "fastqc_data.txt")
       qc_parser = FastQCParser.new(data_path)
-      { read: read.sub(/_fastqc$/,""),
+      { read_id: read.sub(/_fastqc$/,""),
         total_seq: qc_parser.total_sequences,
         seq_length: qc_parser.sequence_length }
     end
@@ -206,8 +211,8 @@ class Database
     nil
   end
   
-  def sample_table(id)
-    p_record = @projects[id]
+  def sample_table(study_id)
+    p_record = @projects[study_id]
     s_record = p_record.run.map{|r| r.sample.map{|s| s["_key"] }}
     s_record.flatten.uniq.map do |sid|
       { sample_id: sid,
@@ -216,11 +221,11 @@ class Database
     end
   end
   
-  def project_report(id)
-    { summary: self.summary(id),
-      paper: self.paper(id),
-      run_table: self.run_table(id),
-      sample_table: self.sample_table(id) }
+  def project_report(study_id)
+    { summary: self.summary(study_id),
+      paper: self.paper(study_id),
+      run_table: self.run_table(study_id),
+      sample_table: self.sample_table(study_id) }
   end
   
   def run_report(read_id)
