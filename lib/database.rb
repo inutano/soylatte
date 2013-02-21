@@ -118,16 +118,30 @@ class Database
   end
   
   def search(query, condition)
-    project_hit = @projects.select{|r| r.search_fulltext =~ query }
-    project_id = project_hit.map{|r| r["_key"] }
+    hit = @projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
     filter_species = self.filter_species(condition[:species])
     filter_type = self.filter_type(condition[:type])
     filter_instrument = self.filter_instrument(condition[:instrument])
-    project_id & filter_species & filter_type & filter_instrument
+    hit & filter_species & filter_type & filter_instrument
+  end
+  
+  def summary(id)
+    p_record = @projects[id]
+    r_record = p_record.run
+    s_record = r_record.map{|r| r.sample }
+    
+    { study_id: id,
+      study_title: p_record.study_title,
+      type: p_record.study_type,
+      species: s_record.map{|r| r.map{|s| s.scientific_name } }.flatten.uniq,
+      instrument: r_record.map{|r| r.instrument }.uniq }
   end
   
   def project_report(id)
-    
+    { summary: self.summary(id),
+      paper: self.paper(id),
+      run_table: self.run_table(id),
+      sample_table: self.sample_table(id) }
   end
 end
 
@@ -140,6 +154,7 @@ if __FILE__ == $0
   ap db.search(ARGV.first, species: "Homo sapiens", type: "Genome", instrument: "Illumina Genome Analyzer")
   ap db.runs_size
   ap db.samples_size
+  ap db.summary("DRP000001")
 end
   
   
