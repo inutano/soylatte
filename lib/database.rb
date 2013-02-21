@@ -222,6 +222,24 @@ class Database
       run_table: self.run_table(id),
       sample_table: self.sample_table(id) }
   end
+  
+  def run_report(read_id)
+    run_id = read_id.slice(0..8)
+    head = run_id.slice(0..5)
+    fpath = File.join(@@config["fqc_path"], head, runid, read_id + "_fastqc", "fastqc_data.txt")
+    if File.exist?(fpath)
+      parser = FastQCParser.new(fpath)
+      { read_id: read_id,
+        file_type: parser.file_type,
+        encoding: parser.encoding,
+        total_sequences: parser.total_sequences,
+        filtered_sequences: parser.filtered_sequences,
+        sequence_length: parser.sequence_length,
+        percent_gc: parser.percent_gc,
+        overrepresented_sequences: parser.overrepresented_sequences,
+        kmer_content: parser.kmer_content }
+    end
+  end
 end
 
 if __FILE__ == $0

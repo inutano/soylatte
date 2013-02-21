@@ -146,7 +146,7 @@ end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
   m = Database.instance
-  @run_report = m.sample_report(id)
+  @run_report = m.run_report(id)
   if @run_report
     haml :view_run
   else
