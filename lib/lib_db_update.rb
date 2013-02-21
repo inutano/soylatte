@@ -18,6 +18,7 @@ class DBupdate
         table.uint16("taxon_id")
         table.short_text("scientific_name")
         table.short_text("submission_id")
+        table.index("Runs.sample")
       end
     
       schema.create_table("Runs", type: :hash) do |table|
@@ -27,8 +28,9 @@ class DBupdate
         table.short_text("submisssion_id")
         table.reference("sample", "Samples", type: :vector)
         table.index("Runs.sample")
+        table.index("Projects.run")
       end
-    
+      
       schema.create_table("Projects", type: :hash) do |table|
         table.short_text("study_title")
         table.short_text("study_type")
