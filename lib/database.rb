@@ -137,6 +137,41 @@ class Database
       instrument: r_record.map{|r| r.instrument }.uniq }
   end
   
+  def paper(id)
+    p_record = @projects[id]
+    pmid_array = p_record.pubmed_id
+    eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
+    pmid_array.map do |pmid|
+      arg = "&db=pubmed&id=#{pmid}"
+      pm_parser = PubMedMetadataParser.new(open(eutil_base + arg).read)
+      pmcid = pm_parser.pmcid
+      { pmid: pmid,
+        journal: pm_parser.journal_title,
+        title: pm_parser.article_title,
+        abstract: pm_parser.abstract,
+        affiliation: pm_parser.affiliation,
+        authors: pm_parser.authors.map{|a| a.values.join("\s") },
+        date: pm_parser.date_created.values.join("/"),
+        pmc: self.pmc(pmcid) }
+    end
+  end
+  
+  def pmc(pmcid)
+    if pmcid
+      eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
+      arg = "db=pmc&id=#{pmcid}"
+      pmc_parser = PMCMetadataParser.new(open(eutil_base + arg).read)
+      body = pmc_parser.body.compact
+      methods = body.select{|s| s[:sec_title] =~ /methods/i }
+      results = body.select{|s| s[:sec_title] =~ /results/i }
+      { pmcid: pmcid,
+        methods: methods,
+        results: results,
+        reference: pmc_parser.ref_journal_list,
+        cited_by: pmc_parser.cited_by }
+    end
+  end
+  
   def project_report(id)
     { summary: self.summary(id),
       paper: self.paper(id),
