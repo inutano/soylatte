@@ -12,8 +12,7 @@ require "ap"
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
-  #config_path = "../config.yaml"
-  config_path = "./config.yaml"
+  config_path = "../config.yaml"
   config = YAML.load_file(config_path)
   db_path = ARGV[1] || config["db_path"]
   

@@ -15,7 +15,7 @@ class Database
   
   config_path = "/Users/inutano/project/soylatte/config.yaml"
   @@config = YAML.load_file(config_path)
-  #@@db_path = YAML.load_file(config)["project_db_path"]
+  #@@db_path = YAML.load_file(config)["db_path"]
   @@db_path = "/Users/inutano/project/soylatte/lib/test_db/test.db"
   
   def initialize
@@ -69,7 +69,7 @@ class Database
 
   def filter_species(species)
     if !species or species.empty?
-      self.projects_size
+      @projects.map{|r| r["_key"] }
     else
       @projects.select{|r| r.run.sample.scientific_name =~ species }.map{|r| r["_key"] }
     end
@@ -77,13 +77,13 @@ class Database
   
   def filter_type(type) # type: Genome, etc.
     if !type or type.empty?
-      self.projects_size
+      @projects.map{|r| r["_key"] }
     else
       ref = { "Genome" => ["Whole Genome Sequencing","Resequencing","Population Genomics","Exome Sequencing"],
               "Transcriptome" => ["Transcriptome Analysis","RNASeq"],
               "Epigenome" => ["Epigenetics","Gene Regulation Study"],
               "Metagenome" => ["Metagenomics"],
-              "Cancer Genome" => ["Cancer Genomics"],
+              "Cancer Genomics" => ["Cancer Genomics"],
               "Other" => ["Other","Pooled Clone Sequencing","Forensic or Paleo-genomics","Synthetic Genomics"] }
   
       described_types = ref[type]
@@ -96,7 +96,7 @@ class Database
   
   def filter_instrument(instrument)
     if !instrument or instrument.empty?
-      self.projects_size
+      @projects.map{|r| r["_key"] }
     else
       @projects.select{|r| r.run.instrument =~ instrument }.map{|r| r["_key"] }
     end
@@ -132,7 +132,7 @@ class Database
     filter_type = self.filter_type(condition[:type])
     filter_instrument = self.filter_instrument(condition[:instrument])
     hit_id = hit & filter_species & filter_type & filter_instrument
-    hit_id.map{|id| @project[id] }
+    hit_id.map{|id| @projects[id] }
   end
   
   def summary(study_id)
@@ -193,7 +193,7 @@ class Database
         study_type: p_record.study_type,
         instrument: run.instrument,
         lib_layout: run.library_layout,
-        organism: run.sample.map{|r| r.scientific_name }.uniq,
+        species: run.sample.map{|r| r.scientific_name }.uniq,
         read_profile: self.read_profile(run["_key"]) }
     end
   end

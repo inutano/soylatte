@@ -2,9 +2,8 @@
 !!!
 %html
   %head
-    %title= @report[:general][:study_title]
+    %title= @report[:summary][:study_title]
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
@@ -46,7 +45,7 @@
           Project Summary
         %hr
         
-        %p.lead= @report[:general][:study_title]
+        %p.lead= @report[:summary][:study_title]
         %table.table.table-hover
           %thead
             %tr
@@ -55,9 +54,9 @@
               %th sequencing platform
           %tbody
             %tr
-              %td= @report[:general][:study_type]
-              %td= @report[:general][:scientific_name]
-              %td= @report[:general][:instrument]
+              %td= @report[:summary][:study_type]
+              %td= @report[:summary][:species].join(", ")
+              %td= @report[:summary][:instrument].join(", ")
             
       - if @report[:paper]
         - @report[:paper].each do |paper|
@@ -78,11 +77,11 @@
               %span.paper_linkout
                 - pm_base = "http://www.ncbi.nlm.nih.gov/pubmed/"
                 - pmc_base = "http://www.ncbi.nlm.nih.gov/pmc/articles/"
-                %a.btn{ :href => pm_base + paper[:pmid] }
+                %a.btn{ :href => pm_base + paper[:pubmed_id] }
                   %i.icon-file
                   PubMed
                 - if paper[:pmc]
-                  %a.btn{ :href => pmc_base + paper[:pmc][:pmcid] }
+                  %a.btn{ :href => pmc_base + paper[:pmc][:pmc_id] }
                     %i.icon-book
                     PMC
             
@@ -155,10 +154,10 @@
 
         .data_retrieve
           %span.data_retrieve
-            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=run&retmode=tsv" }
+            %a.btn{ :href => "/data/#{@report[:summary][:studyid]}?type=run&retmode=tsv" }
               %i.icon-file
                 TSV
-            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=run&retmode=json" }
+            %a.btn{ :href => "/data/#{@report[:summary][:studyid]}?type=run&retmode=json" }
               %i.icon-file
                 JSON
 
@@ -177,19 +176,19 @@
           
           %tbody            
             - @report[:run_table].each do |row|
-              - subid = row[:subid]
-              - expid = row[:expid]
-              - runid = row[:runid]
+              - subid = row[:submission_id]
+              - expid = row[:experiment_id]
+              - runid = row[:run_id]
               - ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
               - ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
               - ncbi_base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra"
               - if !row[:read_profile]
                 %tr
                   %td
-                    %a{ :href => "/view/#{runid}" }= runid
-                  %td= row[:sampleid]
+                    %a{ :href => "/view/#{run_id}" }= run_id
+                  %td= row[:sample_id].join(", ")
                   %td= row[:study_type]
-                  %td= row[:organism]
+                  %td= row[:species].join(", ")
                   %td= row[:instrument]
                   %td= row[:lib_layout]
                   %td no data
@@ -211,10 +210,10 @@
                 - row[:read_profile].each do |read|
                   %tr
                     %td
-                      %a{ :href => "/view/#{read[:read]}" }= read[:read]
-                    %td= row[:sampleid]
+                      %a{ :href => "/view/#{read[:read_id]}" }= read[:read_id]
+                    %td= row[:sample_id].join(", ")
                     %td= row[:study_type]
-                    %td= row[:organism]
+                    %td= row[:species].join(", ")
                     %td= row[:instrument]
                     %td= row[:lib_layout]
                     %td= read[:total_seq]
@@ -240,19 +239,19 @@
 
         .data_retrieve
           %span.data_retrieve
-            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=sample&retmode=tsv" }
+            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?type=sample&retmode=tsv" }
               %i.icon-file
                 TSV
-            %a.btn{ :href => "/data/#{@report[:general][:studyid]}?type=sample&retmode=json" }
+            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?type=sample&retmode=json" }
               %i.icon-file
                 JSON
 
         %table.table.table-hover
           %thead
             %tr
-              %th sample id
-              %th sample description
-              %th run id
+              %th Sample ID
+              %th Sample Description
+              %th Run ID
           
           %tbody
             - sample_table = @report[:sample_table]
@@ -262,9 +261,9 @@
             - sample_table.each do |row|
               - desc = row[:sample_description]
               %tr
-                %td= row[:sampleid]
+                %td= row[:sample_id]
                 %td= desc.split("\s").map{|w| uniq_words.include?(w) ? "<span class='highlight'>#{w}<\/span>" : w }.join("\s")
-                %td= row[:runid].join(", ")
+                %td= row[:run_id_list].join(", ")
   
       %section
         %h2 
@@ -273,7 +272,7 @@
         %hr
   
         %ul
-          - studyid = @report[:general][:studyid]
+          - studyid = @report[:summary][:study_id]
           %li
             %a{ :href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=" + studyid }
               DRASearch - DDBJ/DRA

@@ -4,7 +4,6 @@
   %head
     %title Filtering Result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    // %link{:rel => :stylesheet, :href => "http://floating-fog-3562.heroku.com/fontin_sans.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "/soy_style.css", :type => "text/css"}
@@ -51,13 +50,13 @@
           .span7
             %p.lead Requested filtering condition
             %hr
-            %p= [@scientific_name, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
-            %p.count= "#{@result[:mix][:size]}/#{@total_number}, #{@result[:mix][:percent]}%"
+            %p= [@species, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
+            %p.count= "#{@result[:mix][0]}/#{@total_number}, #{@result[:mix][1]}%"
             .progress
-              .bar{ :style => "width: #{@result[:mix][:percent]}%;" }
+              .bar{ :style => "width: #{@result[:mix][1]}%;" }
           .span5.filtersearch
             %p.lead Fulltext search
-            - post_option = "species=#{@scientific_name}&type=#{@type}&instrument=#{@instrument}"
+            - post_option = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
             %form.search{ :name => "search", :action => "/search?#{post_option}", :method => "POST" }
               %label Search with this condition
               %input.input-large.search-query{ :type => "text", :name => "search_query" }
@@ -69,24 +68,24 @@
           .span4
             %p.lead Sample Organism
             %hr
-            %p= @scientific_name.empty? ? "All" : @scientific_name
-            %p.count= "#{@result[:taxonid][:size]}/#{@total_number}, #{@result[:taxonid][:percent]}%"
+            %p= @species.empty? ? "All" : @species
+            %p.count= "#{@result[:species][0]}/#{@total_number}, #{@result[:species][1]}%"
             .progress
-              .bar{ :style => "width: #{@result[:taxonid][:percent]}%;" }
+              .bar{ :style => "width: #{@result[:species][1]}%;" }
           .span4
             %p.lead Study Type
             %hr
             %p= @type.empty? ? "All" : @type
-            %p.count= "#{@result[:study_type][:size]}/#{@total_number}, #{@result[:study_type][:percent]}%"
+            %p.count= "#{@result[:type][0]}/#{@total_number}, #{@result[:type][1]}%"
             .progress
-              .bar{ :style => "width: #{@result[:study_type][:percent]}%;" }
+              .bar{ :style => "width: #{@result[:type][1]}%;" }
           .span4
             %p.lead Sequencing Platform
             %hr
             %p= @instrument.empty? ? "All" : @instrument
-            %p.count= "#{@result[:instrument][:size]}/#{@total_number}, #{@result[:instrument][:percent]}%"
+            %p.count= "#{@result[:instrument][0]}/#{@total_number}, #{@result[:instrument][1]}%"
             .progress
-              .bar{ :style => "width: #{@result[:instrument][:percent]}%;" }
+              .bar{ :style => "width: #{@result[:instrument][1]}%;" }
         
       %footer
         powered by
