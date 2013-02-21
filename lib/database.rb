@@ -7,6 +7,7 @@ require "open-uri"
 
 require File.expand_path(File.dirname(__FILE__)) + "/pubmed_metadata_parser"
 require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
+require File.expand_path(File.dirname(__FILE__)) + "/fastqc_result_parser"
 
 class Database
   include Singleton
@@ -14,7 +15,7 @@ class Database
   
   #config = "/Users/inutano/project/soylatte/config.yaml"
   #@@db_path = YAML.load_file(config)["project_db_path"]
-  config = "./config.yaml"
+  @@config = YAML.load_file("./config.yaml")
   @@db_path = "./test_db/test.db"
   
   def initialize
@@ -176,6 +177,45 @@ class Database
     end
   end
   
+  def run_table(id)
+    p_record = @projects[id]
+    r_record = p_record.run
+    r_record.map do |run|
+      { runid: run["_key"],
+        expid: run.experiment_id,
+        subid: run.submission_id,
+        sampleid: run.sample.map{|r| r["_key"] },
+        study_type: p_record.study_type,
+        instrument: run.instrument,
+        lib_layout: run.library_layout,
+        organism: run.sample.map{|r| r.scientific_name }.uniq,
+        read_profile: self.read_profile(run["_key"]) }
+    end
+  end
+  
+  def read_profile(runid)
+    path = File.join(@@config["fqc_path"], runid.slice(0..5), runid)
+    Dir.entries(path).select{|f| f =~ /#{runid}/ }.map do |read|
+      data_path = File.join(path, read, "fastqc_data.txt")
+      qc_parser = FastQCParser.new(data_path)
+      { read: read.sub(/_fastqc$/,""),
+        total_seq: qc_parser.total_sequences,
+        seq_length: qc_parser.sequence_length }
+    end
+  rescue Errno::ENOENT
+    nil
+  end
+  
+  def sample_table(id)
+    p_record = @projects[id]
+    s_record = p_record.run.map{|r| r.sample.map{|s| s["_key"] }}
+    s_record.flatten.uniq.map do |sid|
+      { sample_id: sid,
+        sample_description: @samples[sid].sample_description,
+        run_id_list: @runs.select{|r| r.sample =~ sid }.map{|r| r["_key"] } }
+    end
+  end
+  
   def project_report(id)
     { summary: self.summary(id),
       paper: self.paper(id),
@@ -194,7 +234,9 @@ if __FILE__ == $0
   ap db.runs_size
   ap db.samples_size
   ap db.summary("DRP000001")
-  ap db.paper("DRP000001")
+  #ap db.paper("DRP000001")
+  ap db.run_table("DRP000001")
+  ap db.sample_table("DRP000001")
 end
   
   
