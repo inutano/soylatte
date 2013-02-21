@@ -23,8 +23,8 @@ class DBupdate
       schema.create_table("Runs", type: :hash) do |table|
         table.short_text("experiment_id")
         table.short_text("instrument")
-        table.short_text("study_id")
-        table.short_text("submisssion_id")
+        table.short_text("library_layout")
+        table.short_text("submission_id")
         table.reference("sample", "Samples", type: :vector)
       end
       
@@ -87,6 +87,10 @@ class DBupdate
     @id = id
   end
   
+  def clean_text(text)
+    text.delete("\t\n").gsub(/\s+/,"\s").chomp
+  end
+  
   def get_xml_path(id, type)
     acc = `grep -m 1 '^#{id}' #{@@accessions} | cut -f 2`.chomp
     raise NameError if acc !~ /^(S|E|D)RA\d{6}$/
@@ -106,7 +110,7 @@ class DBupdate
     
     scientific_name = `grep -m 1 '^#{taxon_id}' #{@@taxon_table} | cut -d ',' -f 2`.chomp
     
-    { sample_description: sample_description,
+    { sample_description: clean_text(sample_description),
       taxon_id: taxon_id,
       scientific_name: scientific_name }
   rescue NameError, Errno::ENOENT
@@ -119,10 +123,13 @@ class DBupdate
     experiment_id = `grep -m 1 '^#{@id}' #{@@run_members} | cut -f 3`.chomp
     xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
-    instrument = parser.instrument_model
+   
+    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.chomp
         
     { experiment_id: experiment_id,
-      instrument: instrument,
+      instrument: parser.instrument_model,
+      library_layout: parser.library_layout,
+      submission_id: submission_id,
       sample: sample }
   end
   
@@ -146,7 +153,7 @@ class DBupdate
     end
     pmc_id = pmc_id_array.uniq.compact
     
-    { study_title: study_title,
+    { study_title: clean_text(study_title),
       study_type: study_type,
       run: run,
       submission_id: submission_id,
@@ -161,7 +168,7 @@ class DBupdate
     array = [ parser.title,
               parser.design_description,
               parser.library_construction_protocol ]
-    array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
+    array.map{|d| clean_text(d) }.join("\s")
   end
   
   def project_description
@@ -172,7 +179,7 @@ class DBupdate
               parser.center_project_name,
               parser.study_abstract,
               parser.study_description ]
-    array.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
+    array.map{|d| clean_text(d) }.join("\s")
   end
   
   def pubmed_description
@@ -188,7 +195,7 @@ class DBupdate
                 parser.authors.map{|n| n.values.compact },
                 parser.chemicals.map{|n| n[:name_of_substance] },
                 parser.mesh_terms.map{|n| n.values.compact } ]
-      array.flatten.compact.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
+      array.flatten.compact.map{|d| clean_text(d) }.join("\s")
     end
   end
   
@@ -209,7 +216,7 @@ class DBupdate
                 body,
                 parser.ref_journal_list.map{|n| n.values },
                 parser.cited_by.map{|n| n.values } ]
-      array.flatten.compact.map{|d| d.delete("\t\n").gsub(/\s+/,"\s").chomp }.join("\s")
+      array.flatten.compact.map{|d| clean_text(d) }.join("\s")
     end
   end
 end
