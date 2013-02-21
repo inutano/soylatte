@@ -106,18 +106,18 @@ class DBupdate
     { sample_description: sample_description,
       taxon_id: taxon_id,
       scientific_name: scientific_name }
-  rescue NameError
+  rescue NameError, Errno::ENOENT
     nil
   end
   
   def run_insert
+    sample = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
+
     experiment_id = `grep -m 1 '^#{@id}' #{@@run_members} | cut -f 3`.chomp
     xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
     instrument = parser.instrument_model
-    
-    sample = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
-    
+        
     { experiment_id: experiment_id,
       instrument: instrument,
       sample: sample }
