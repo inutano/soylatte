@@ -47,37 +47,26 @@ class Database
   end
   
   def projects_size
-    @projects.records.select{|r| r["_key"] =~ /^.RP/ }.size
+    @projects.size
   end
 
   def runs_size
-    @runs.records.select{|r| r["_key"] =~ /^.RR/ }.size
+    @runs.size
   end
 
   def samples_size
     @samples.size
   end
-  
+
   def filter_species(species)
     if !species or species.empty?
       self.projects_size
     else
-      sample_records = @samples.select{|r| r.scientific_name == species }
-      sample_id_list = sample_records.map{|r| r["_key"] }
-      
-      run_records = sample_id_list.map do |sample_id|
-        @runs.select{|r| r.sample =~ sample_id }.map{|r| r["_key"] }
-      end
-      run_id_list = run_records.flatten.uniq
-      
-      project_records = run_id_list.map do |run_id|
-        @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
-      end
-      project_records.flatten.uniq
+      @projects.select{|r| r.run.sample.scientific_name =~ species }.map{|r| r["_key"] }
     end
   end
   
-  def filter_type(type) # type: Genome, etc. 
+  def filter_type(type) # type: Genome, etc.
     if !type or type.empty?
       self.projects_size
     else
@@ -100,13 +89,7 @@ class Database
     if !instrument or instrument.empty?
       self.projects_size
     else
-      run_records = @runs.select{|r| r.instrument == instrument }
-      run_id_list = run_records.map{|r| r["_key"] }
-      
-      project_records = run_id_list.map do |run_id|
-        @projects.select{|r| r.run =~ run_id }.map{|r| r["_key"] }
-      end
-      project_records.flatten.uniq
+      @projects.select{|r| r.run.instrument =~ instrument }.map{|r| r["_key"] }
     end
   end
   
