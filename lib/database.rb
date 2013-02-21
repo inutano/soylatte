@@ -111,26 +111,36 @@ class Database
   end
   
   def filter_result(species, type, instrument)
+    filter_species = self.filter_species(species)
+    filter_type = self.filter_type(type)
+    filter_instrument = self.filter_instrument(instrument)
+    mix = filter_species & filter_type & filter_instrument
+    
     total = self.projects_size
-    num_species = self.filter_species(species).size
-    num_type = self.filter_type(type).size
-    num_instrument = self.filter_instrument(instrument).size
+    num_species = filter_species.size
+    num_type = filter_type.size
+    num_instrument = filter_instrument.size
+    num_mix = mix.size
     
     ratio_species = ((num_species / total.to_f) * 100).round(2)
     ratio_type = ((num_type / total.to_f) * 100).round(2)
     ratio_instrument = ((num_instrument / total.to_f) * 100).round(2)
+    ratio_mix = ((num_mix / total.to_f) * 100).round(2)
     
     { total: total,
+      mix: [num_mix, ratio_mix],
       species: [num_species, ratio_species],
       type: [num_type, ratio_type],
       instrument: [num_instrument, ratio_instrument] }
   end
   
   def search(query, condition)
-    f_species = self.filter_species(species)
-    f_type = self.filter_type(type)
-    f_instrument = self.filter_instrument(instrument)
-    filtered = f_species & f_type & f_instrument
+    project_hit = @projects.select{|r| r.search_fulltext =~ query }
+    project_id = project_hit.map{|r| r["_key"] }
+    filter_species = self.filter_species(condition[:species])
+    filter_type = self.filter_type(condition[:type])
+    filter_instrument = self.filter_instrument(condition[:instrument])
+    project_id & filter_species & filter_type & filter_instrument
   end
   
   def project_report(id)
@@ -144,6 +154,7 @@ if __FILE__ == $0
   ap db.instruments
   ap db.species
   ap db.filter_result("Homo sapiens", "Genome", "Illumina Genome Analyzer")
+  ap db.search(ARGV.first, species: "Homo sapiens", type: "Genome", instrument: "Illumina Genome Analyzer")
   ap db.runs_size
   ap db.samples_size
 end
