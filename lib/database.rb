@@ -3,6 +3,10 @@
 require "singleton"
 require "yaml"
 require "groonga"
+require "open-uri"
+
+require File.expand_path(File.dirname(__FILE__)) + "/pubmed_metadata_parser"
+require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
 
 class Database
   include Singleton
@@ -14,10 +18,10 @@ class Database
   @@db_path = "./test_db/test.db"
   
   def initialize
-    open
+    connect_db
   end
   
-  def open
+  def connect_db
     if !@grndb || @grndb.closed?
       @grndb = Groonga::Database.open(@@db_path)
       @projects = self.projects
@@ -159,7 +163,7 @@ class Database
   def pmc(pmcid)
     if pmcid
       eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
-      arg = "db=pmc&id=#{pmcid}"
+      arg = "&db=pmc&id=#{pmcid}"
       pmc_parser = PMCMetadataParser.new(open(eutil_base + arg).read)
       body = pmc_parser.body.compact
       methods = body.select{|s| s[:sec_title] =~ /methods/i }
@@ -190,6 +194,7 @@ if __FILE__ == $0
   ap db.runs_size
   ap db.samples_size
   ap db.summary("DRP000001")
+  ap db.paper("DRP000001")
 end
   
   
