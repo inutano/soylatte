@@ -240,7 +240,7 @@ class Database
   def run_report(read_id)
     run_id = read_id.slice(0..8)
     head = run_id.slice(0..5)
-    fpath = File.join(@@config["fqc_path"], head, runid, read_id + "_fastqc", "fastqc_data.txt")
+    fpath = File.join(@@config["fqc_path"], head, run_id, read_id + "_fastqc", "fastqc_data.txt")
     if File.exist?(fpath)
       parser = FastQCParser.new(fpath)
       { read_id: read_id,
@@ -269,7 +269,7 @@ if __FILE__ == $0
   #ap db.paper("DRP000001")
   ap db.run_table("DRP000001")
   ap db.sample_table("DRP000001")
-  ap db.sample_table("DRP000008")
+  ap db.project_report("DRP000008")
 end
   
   

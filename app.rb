@@ -133,8 +133,8 @@ end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
   m = Database.instance
-  @run_report = m.run_report(id)
-  redirect to("/not_found") if !@run_report
+  @report = m.run_report(id)
+  redirect to("/not_found") if !@report
   haml :view_run
 end
 
