@@ -85,7 +85,8 @@
             project: Soylatte
       
       %section
-        %p.lead= "Search query: " + @query
+        - show_query = @query.empty? ? "undefined" : @query
+        %p.lead= "Search query: " + show_query
         %hr
         
         %h4= @result.size.to_s + " of records"
@@ -124,7 +125,7 @@
               - else
                 %tr
                   %td
-                    %a{ :href => "/view/#{projectid}"}= projectid
+                    %a{ :href => "/view/#{study_id}"}= study_id
                   %td= record.study_title
                   %td= record.study_type
                   %td= record.run.map{|r| r.instrument }.uniq.join(", ")
