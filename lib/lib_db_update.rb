@@ -119,16 +119,21 @@ class DBupdate
   
   def run_insert
     sample = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
+    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.chomp
 
     experiment_id = `grep -m 1 '^#{@id}' #{@@run_members} | cut -f 3`.chomp
     xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
-   
-    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.chomp
-        
+    
     { experiment_id: experiment_id,
       instrument: parser.instrument_model,
       library_layout: parser.library_layout,
+      submission_id: submission_id,
+      sample: sample }
+  rescue NameError
+    { experiment_id: experiment_id,
+      instrument: nil,
+      library_layout: nil,
       submission_id: submission_id,
       sample: sample }
   end
@@ -169,6 +174,8 @@ class DBupdate
               parser.design_description,
               parser.library_construction_protocol ]
     array.map{|d| clean_text(d) }.join("\s")
+  rescue NameError
+    nil
   end
   
   def project_description
