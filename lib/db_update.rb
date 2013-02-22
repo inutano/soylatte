@@ -26,8 +26,8 @@ if __FILE__ == $0
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
-
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")[0..499]
+    
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
