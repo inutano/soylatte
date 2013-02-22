@@ -27,7 +27,7 @@ if __FILE__ == $0
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
 
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")[0..99]
+    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")[0..499]
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -53,10 +53,12 @@ if __FILE__ == $0
       inserts.each do |insert_set|
         sample_id = insert_set[0]
         insert = insert_set[1]
-        samples.add(sample_id,
-                    sample_description: insert[:sample_description],
-                    taxon_id: insert[:taxon_id],
-                    scientific_name: insert[:scientific_name])
+        if insert
+          samples.add(sample_id,
+                      sample_description: insert[:sample_description],
+                      taxon_id: insert[:taxon_id],
+                      scientific_name: insert[:scientific_name])
+        end
       end
     end
     
