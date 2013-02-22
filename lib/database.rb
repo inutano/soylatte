@@ -126,13 +126,22 @@ class Database
       instrument: [num_instrument, ratio_instrument] }
   end
   
-  def search(query, condition)
-    hit = @projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
+  def filtered_records(condition)
+    # return array of study id meets the condition
     filter_species = self.filter_species(condition[:species])
     filter_type = self.filter_type(condition[:type])
     filter_instrument = self.filter_instrument(condition[:instrument])
-    hit_id = hit & filter_species & filter_type & filter_instrument
-    hit_id.map{|id| @projects[id] }
+    filter_species & filter_type & filter_instrument
+  end
+  
+  def search(query, condition)
+    hit = @projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
+    filtered = self.filtered_records(condition)
+    if query.empty?
+      filtered.map{|id| @projects[id] }
+    else
+      (hit_id & filtered).map{|id| @projects[id] }
+    end
   end
   
   def summary(study_id)
@@ -260,6 +269,7 @@ if __FILE__ == $0
   #ap db.paper("DRP000001")
   ap db.run_table("DRP000001")
   ap db.sample_table("DRP000001")
+  ap db.sample_table("DRP000008")
 end
   
   
