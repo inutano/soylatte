@@ -140,7 +140,7 @@ class Database
     if query.empty?
       filtered.map{|id| @projects[id] }
     else
-      (hit_id & filtered).map{|id| @projects[id] }
+      (hit & filtered).map{|id| @projects[id] }
     end
   end
   
@@ -261,15 +261,18 @@ if __FILE__ == $0
   db = Database.instance
   ap db.instruments
   ap db.species
-  ap db.filter_result("Homo sapiens", "Genome", "Illumina Genome Analyzer")
-  ap db.search(ARGV.first, species: "Homo sapiens", type: "Genome", instrument: "Illumina Genome Analyzer")
   ap db.runs_size
   ap db.samples_size
-  ap db.summary("DRP000001")
-  #ap db.paper("DRP000001")
-  ap db.run_table("DRP000001")
-  ap db.sample_table("DRP000001")
-  ap db.project_report("DRP000008")
+  ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
+  ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
+  
+  query = ARGV.first
+  if query =~ /(S|E|D)RP\d{6}/
+    ap db.summary("DRP000001")
+  elsif query
+    ap ARGV.first + " , Homo sapiens, Transcriptome, Illumina GA"
+    ap db.search(ARGV.first, species: "Homo sapiens", type: "Transcriptome", instrument: "Illumina Genome Analyzer")
+  end
 end
   
   
