@@ -23,6 +23,8 @@ def query_filter(query)
   if size == 0
     ""
   elsif size > 140 || size < 2
+    nil
+  else
     valid_query = query.force_encoding("utf-8")
     invalid_char.each do |char|
       valid_query.gsub!(char, "")
@@ -78,12 +80,12 @@ end
 
 post "/search" do
   @query = query_filter(params[:search_query])
+  redirect to("/not_found") if !@query
   m = Database.instance
   @result = m.search(@query,
                      species: params[:species],
                      type: params[:type],
                      instrument: params[:instrument])
-  redirect to("/not_found") if !@query
   redirect to("/not_found") if @result.empty?
   haml :search
 end
