@@ -47,6 +47,7 @@
     
       %section
         .row
+          - post_option = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
           .span7
             %p.lead Requested filtering condition
             %hr
@@ -54,9 +55,12 @@
             %p.count= "#{@result[:mix][0]}/#{@total_number}, #{@result[:mix][1]}%"
             .progress
               .bar{ :style => "width: #{@result[:mix][1]}%;" }
+            %span.view-all
+              %form.search{ :name => "view-all", :action => "/search?#{post_option}&search_query=", :method => "POST" }
+                %button.btn{ :type => "submit" }
+                  view all
           .span5.filtersearch
             %p.lead Fulltext search
-            - post_option = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
             %form.search{ :name => "search", :action => "/search?#{post_option}", :method => "POST" }
               %label Search with this condition
               %input.input-large.search-query{ :type => "text", :name => "search_query" }
