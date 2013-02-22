@@ -49,12 +49,12 @@
         %table.table.table-hover
           %thead
             %tr
-              %th study type
-              %th sample organism
-              %th sequencing platform
+              %th Study Type
+              %th Sample Organism
+              %th Sequencing Platform
           %tbody
             %tr
-              %td= @report[:summary][:study_type]
+              %td= @report[:summary][:type]
               %td= @report[:summary][:species].join(", ")
               %td= @report[:summary][:instrument].join(", ")
             
@@ -255,14 +255,18 @@
           
           %tbody
             - sample_table = @report[:sample_table]
-            - min_sentences = sample_table.map{|n| n ? n[:sample_description].split("\s") : n }.uniq.compact
+            - description_array = sample_table.map{|n| n[:sample_description] }.compact
+            - min_sentences = description_array.map{|n| n.split("\s") }.uniq
             - bag_of_words = min_sentences.size == 1 ? [] : min_sentences.flatten
             - uniq_words = bag_of_words.group_by{|i| i }.select{|k,v| v.size == 1 }.keys
             - sample_table.each do |row|
               - desc = row[:sample_description]
               %tr
                 %td= row[:sample_id]
-                %td= desc.split("\s").map{|w| uniq_words.include?(w) ? "<span class='highlight'>#{w}<\/span>" : w }.join("\s")
+                - if desc
+                  %td= desc.split("\s").map{|w| uniq_words.include?(w) ? "<span class='highlight'>#{w}<\/span>" : w }.join("\s")
+                - else
+                  %td= desc
                 %td= row[:run_id_list].join(", ")
   
       %section
