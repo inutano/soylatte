@@ -77,8 +77,7 @@ get "/filter" do
 end
 
 post "/search" do
-  #@query = query_filter(params[:search_query])
-  @query = params[:search_query]
+  @query = query_filter(params[:search_query])
   m = Database.instance
   @result = m.search(@query,
                      species: params[:species],
