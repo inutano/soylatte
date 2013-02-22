@@ -43,15 +43,20 @@ if __FILE__ == $0
     end
     
     samples = Groonga["Samples"]
-    Parallel.each(sample_id_list) do |sample_id|
-      if !samples[sample_id]
-        insert = DBupdate.new(sample_id).sample_insert
-        if insert
-          samples.add(sample_id,
-                      sample_description: insert[:sample_description],
-                      taxon_id: insert[:taxon_id],
-                      scientific_name: insert[:scientific_name])
-        end
+    while !sample_id_list.empty?
+      sample_in_progress = sample_id_list.shift(20).select{|id| !samples[id] }
+      
+      inserts = Parallel.map(sample_in_progress) do |sample_id|
+        [sample_id, DBupdate.new(sample_id).sample_insert]
+      end
+      
+      inserts.each do |insert_set|
+        sample_id = insert_set[0]
+        insert = insert_set[1]
+        samples.add(sample_id,
+                    sample_description: insert[:sample_description],
+                    taxon_id: insert[:taxon_id],
+                    scientific_name: insert[:scientific_name])
       end
     end
     
@@ -64,9 +69,16 @@ if __FILE__ == $0
     end
     
     runs = Groonga["Runs"]
-    Parallel.each(run_id_list) do |run_id|
-      if !runs[run_id]
-        insert = DBupdate.new(run_id).run_insert
+    while !run_id_list.empty?
+      run_in_progress = run_id_list.shift(20).select{|id| !runs[id] }
+      
+      inserts = Parallel.map(run_in_progress) do |run_id|
+        [run_id, DBupdate.new(run_id).run_insert]
+      end
+      
+      inserts.each do |insert_set|
+        run_id = insert_set[0]
+        insert = insert_set[1]
         runs.add(run_id,
                  experiment_id: insert[:experiment_id],
                  instrument: insert[:instrument],
@@ -77,35 +89,56 @@ if __FILE__ == $0
     end
     
     # UPDATE PROJECT
-    Parallel.each(not_recorded) do |study_id|
-      insert = DBupdate.new(study_id).project_insert
-      projects.add(study_id,
-                   study_title: insert[:study_title],
-                   study_type: insert[:study_type],
-                   run: insert[:run],
-                   submission_id: insert[:submission_id],
-                   pubmed_id: insert[:pubmed_id],
-                   pmc_id: insert[:pmc_id])
+    study_id_list = not_recorded
+    while !study_id_list.empty?
+      study_in_progress = study_id_list.shift(20).select{|id| !projects[id] }
+      inserts = Parallel.map(study_in_progress) do |study_id|
+        [study_id, DBupdate.new(study_id).project_insert]
+      end
+      inserts.each do |insert_set|
+        study_id = insert_set[0]
+        insert = insert_set[1]
+        projects.add(study_id,
+                     study_title: insert[:study_title],
+                     study_type: insert[:study_type],
+                     run: insert[:run],
+                     submission_id: insert[:submission_id],
+                     pubmed_id: insert[:pubmed_id],
+                     pmc_id: insert[:pmc_id])
+      end
     end
     
     # UPDATE FULLTEXT SEARCH FIELD
-    Parallel.each(not_recorded) do |study_id|
-      insert = []
+    text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
+    while !text_not_recorded.empty?
+      study_in_progress = text_not_recorded.shift(20)
       
-      record = projects[study_id]
-      insert << record.study_title
+      inserts = Parallel.map(study_in_progress) do |study_id|
+        insert = []
+        record = projects[study_id]
+
+        insert << record.study_title
+        
+        sample_records = record.run.map{|r| r.sample }.flatten.uniq
+        insert << sample_records.map{|r| r.sample_description }.uniq
       
-      sample_records = record.run.map{|r| r.sample }.flatten.uniq
-      insert << sample_records.map{|r| r.sample_description }.uniq
+        experiment_ids = record.run.map{|r| r.experiment_id }.uniq
+        insert << experiment_ids.map{|id| DBupdate.new(id).experiment_description }
       
-      experiment_ids = record.run.map{|r| r.experiment_id }.uniq
-      insert << experiment_ids.map{|id| DBupdate.new(id).experiment_description }
+        insert << DBupdate.new(study_id).project_description
+        insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
+        insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
+        
+        [study_id, insert.flatten.join("\s")]
+      end
       
-      insert << DBupdate.new(study_id).project_description
-      insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
-      insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
-      
-      record[:search_fulltext] = insert.flatten.join("\s")
+      inserts.each do |insert_set|
+        study_id = insert_set[0]
+        full_text = insert_set[1]
+        
+        record = projects[study_id]
+        record[:search_fulltext] = full_text
+      end
     end
     
   when "--debug"
