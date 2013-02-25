@@ -162,7 +162,7 @@ class Database
   def search_with_id(id)
     if id
       record = self.convert_to_study_id(id)
-      if record && record.size > 1
+      if record && record.size >= 1
         record.first["_key"]
       end
     end
