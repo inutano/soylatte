@@ -103,6 +103,8 @@ class DBupdate
   end
   
   def sample_insert
+    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.chomp
+
     xml = get_xml_path(@id, "sample")
     parser = SRAMetadataParser::Sample.new(@id, xml)
     sample_description = parser.sample_description
@@ -110,11 +112,15 @@ class DBupdate
     
     scientific_name = `grep -m 1 '^#{taxon_id}' #{@@taxon_table} | cut -d ',' -f 2`.chomp
     
-    { sample_description: clean_text(sample_description),
+    { submission_id: submission_id,
+      sample_description: clean_text(sample_description),
       taxon_id: taxon_id,
       scientific_name: scientific_name }
   rescue NameError, Errno::ENOENT
-    nil
+    { submission_id: submission_id,
+      sample_description: nil,
+      taxon_id: nil,
+      scientific_name: nil }
   end
   
   def run_insert
@@ -130,7 +136,7 @@ class DBupdate
       library_layout: parser.library_layout,
       submission_id: submission_id,
       sample: sample }
-  rescue NameError
+  rescue NameError, Errno::ENOENT
     { experiment_id: experiment_id,
       instrument: nil,
       library_layout: nil,
@@ -174,7 +180,7 @@ class DBupdate
               parser.design_description,
               parser.library_construction_protocol ]
     array.map{|d| clean_text(d) }.join("\s")
-  rescue NameError
+  rescue NameError, Errno::ENOENT
     nil
   end
   

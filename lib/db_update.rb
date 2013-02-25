@@ -121,11 +121,11 @@ if __FILE__ == $0
 
         insert << record.study_title
         
-        sample_records = record.run.map{|r| r.sample }.flatten.uniq
-        insert << sample_records.map{|r| r.sample_description }.uniq
-      
+        sample_records = record.run.map{|r| r.sample }.flatten
+        insert << sample_records.compact.map{|r| r.sample_description }.uniq
+        
         experiment_ids = record.run.map{|r| r.experiment_id }.uniq
-        insert << experiment_ids.map{|id| DBupdate.new(id).experiment_description }
+        insert << experiment_ids.compact.map{|id| DBupdate.new(id).experiment_description }
       
         insert << DBupdate.new(study_id).project_description
         insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
