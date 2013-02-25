@@ -144,6 +144,30 @@ class Database
     end
   end
   
+  def convert_to_study_id(id)
+    case id.slice(2,1)
+    when "P"
+      id
+    when "A"
+      @projects.select{|r| r.submission_id =~ id }
+    when "X"
+      @projects.select{|r| r.run.experiment_id =~ id }
+    when "S"
+      @projects.select{|r| r.run.sample.key =~ id }
+    when "R"
+      @projects.select{|r| r.run.key =~ id }
+    end
+  end
+  
+  def search_with_id(id)
+    if id
+      record = self.convert_to_study_id(id)
+      if record && record.size > 1
+        record.first["_key"]
+      end
+    end
+  end
+  
   def summary(study_id)
     p_record = @projects[study_id]
     r_record = p_record.run
@@ -253,6 +277,10 @@ class Database
         overrepresented_sequences: parser.overrepresented_sequences,
         kmer_content: parser.kmer_content }
     end
+  end
+  
+  def description
+    @projects.map{|r| r.search_fulltext }
   end
 end
 

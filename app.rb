@@ -78,7 +78,7 @@ get "/filter" do
   haml :filter
 end
 
-post "/search" do
+post "/oldsearch" do
   @query = query_filter(params[:search_query])
   redirect to("/not_found") if !@query
   m = Database.instance
@@ -88,6 +88,24 @@ post "/search" do
                      instrument: params[:instrument])
   redirect to("/not_found") if @result.empty?
   haml :search
+end
+
+post "/search" do
+  m = Database.instance
+  @query = query_filter(params[:search_query])
+  if !@query
+    redirect to("/not_found")
+  elsif @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
+    study_id = m.search_with_id(@query)
+    redirect to("/view/#{study_id}")
+  else
+    @result = m.search(@query,
+                       species: params[:species],
+                       type: params[:type],
+                       instrument: params[:instrument])
+    redirect to("/not_found") if @result.empty?
+    haml :search
+  end
 end
 
 get %r{/view/((S|E|D)RP\d{6})} do |id, db|
