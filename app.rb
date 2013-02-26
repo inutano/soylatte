@@ -78,18 +78,6 @@ get "/filter" do
   haml :filter
 end
 
-post "/oldsearch" do
-  @query = query_filter(params[:search_query])
-  redirect to("/not_found") if !@query
-  m = Database.instance
-  @result = m.search(@query,
-                     species: params[:species],
-                     type: params[:type],
-                     instrument: params[:instrument])
-  redirect to("/not_found") if @result.empty?
-  haml :search
-end
-
 post "/search" do
   m = Database.instance
   @query = query_filter(params[:search_query])
@@ -117,37 +105,11 @@ end
 get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
   dtype = params[:type]
   retmode = params[:retmode]
-  case idtype
-  when "P"
-    report = ProjectReport.new(id).report
-    case dtype
-    when "run"
-      run_table = report[:run_table]
-      case retmode
-      when "tsv"
-        run_table.map{|n| n.values.join("\t") }.join("\n")
-      when "json"
-        JSON.dump(run_table.map{|n| n.values })
-      else
-        redirect to("/not_found")
-      end
-    when "sample"
-      sample_table = report[:sample_table]
-      case retmode
-      when "tsv"
-        sample_table.map{|n| n.values.join("\t") }.join("\n")
-      when "json"
-        JSON.dump(sample_table.map{|n| n.values })
-      else
-        redirect to("/not_found")
-      end
-    else
-      redirect to("/not_found")
-    end
-  #when "R"
-  else
-    redirect to("/not_found")
-  end
+  
+  m = Database.instance
+  result = m.data_retrieve(id, :retmode => retmode, :dtype => dtype)
+  redirect to ("/not_found") if result
+  result
 end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|

@@ -279,8 +279,116 @@ class Database
     end
   end
   
-  def description
-    @projects.map{|r| r.search_fulltext }
+  def download_link(subid, expid, runid)
+    ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
+    ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
+    ncbi_base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra"
+    { dra_fastq: File.join(ddbj_base, "fastq", subid.slice(0..5), subid, expid),
+      dra_sra: File.join(ddbj_base, "sralite/ByExp/litesra", expid.slice(0..2), expid.slice(0..5), expid),
+      ena_fastq: File.join(ebi_base, runid.slice(0..5), runid),
+      ncbi_sra: File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid) }
+  end
+  
+  def export_run(id)
+    run_table = self.run_table(id)
+    result = run_table.map do |row|
+      subid = row[:submission_id]
+      expid = row[:experiment_id]
+      runid = row[:run_id]
+      if row[:read_profile]
+        row[:read_profile].map do |read|
+          { sample_id: row[:sample_id],
+            species: row[:species],
+            experiment_id: expid,
+            instrument: row[:instrument],
+            library_layout: row[:lib_layout],
+            study_type: row[:study_type],
+            run_id: read[:read_id],
+            total_seq: read[:total_seq],
+            seq_length: read[:seq_length],
+            download: self.download_link(subid, expid, runid) }
+        end
+      else
+        { sample_id: row[:sample_id],
+          species: row[:species],
+          experiment_id: expid,
+          instrument: row[:instrument],
+          library_layout: row[:lib_layout],
+          study_type: row[:study_type],
+          run_id: runid,
+          download: self.download_link(subid, expid, runid) }
+      end
+    end
+    result.flatten
+  end
+  
+  def export_run_tsv(id)
+    run_table = self.export_run(id)
+    result = run_table.map do |row|
+      [ row[:run_id],
+        row[:sample_id].join(", "),
+        row[:experiment_id],
+        row[:study_type],
+        row[:species].join(", "),
+        row[:instrument],
+        row[:library_layout],
+        row[:total_seq],
+        row[:seq_length],
+        row[:download][:dra_fastq],
+        row[:download][:dra_sra],
+        row[:download][:ena_fastq],
+        row[:download][:ncbi_sra] ]
+    end
+    header = [ "Run ID",
+               "Sample ID",
+               "Experiment ID",
+               "Study Type",
+               "Sample Organism",
+               "Sequencing Instrument",
+               "Library Layout",
+               "Total Number of Sequence",
+               "Sequence Length",
+               "Download DDBJ/FASTQ",
+               "Download DDBJ/SRA",
+               "Download ENA/FASTQ",
+               "Download NCBI/SRA" ]
+    ([header] + result).map{|row| row.join("\t") }.join("\n")
+  end
+  
+  def export_sample_tsv(id)
+    table = self.sample_table(id)
+    array = table.map do |row|
+              [ row[:sample_id],
+                row[:sample_description],
+                row[:run_id_list].join(", ") ]
+            end
+    header = [ "Sample ID", "Sample Description", "Run ID"]
+    ([header] + array).map{|row| row.join("\t") }.join("\n")
+  end
+  
+  def data_retrieve(id, option)
+    idtype = id.slice(2,1)
+    dtype = option[:dtype]
+    retmode = option[:retmode]
+    case idtype
+    when "P"
+      case dtype
+      when "run"
+        case retmode
+        when "json"
+          JSON.dump(self.export_run(id))
+        when "tsv"
+          self.export_run_tsv(id)
+        end
+      when "sample"
+        case retmode
+        when "json"
+          JSON.dump(self.sample_table(id))
+        when "tsv"
+          self.export_sample_tsv(id)
+        end
+      end
+    end
   end
 end
 
@@ -294,11 +402,16 @@ if __FILE__ == $0
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
   
+  ap db.data_retrieve("DRP000001", dtype: "run", retmode: "json")
+  puts db.data_retrieve("DRP000001", dtype: "run", retmode: "tsv")
+  ap db.data_retrieve("DRP000001", dtype: "sample", retmode: "json")
+  puts db.data_retrieve("DRP000001", dtype: "sample", retmode: "tsv")
+    
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
     ap db.summary("DRP000001")
   elsif query
-    ap ARGV.first + " , Homo sapiens, Transcriptome, Illumina GA"
+    ap ARGV.first + ", Homo sapiens, Transcriptome, Illumina GA"
     ap db.search(ARGV.first, species: "Homo sapiens", type: "Transcriptome", instrument: "Illumina Genome Analyzer")
   end
 end

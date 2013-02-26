@@ -154,10 +154,10 @@
 
         .data_retrieve
           %span.data_retrieve
-            %a.btn{ :href => "/data/#{@report[:summary][:studyid]}?type=run&retmode=tsv" }
+            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=run&retmode=tsv" }
               %i.icon-file
                 TSV
-            %a.btn{ :href => "/data/#{@report[:summary][:studyid]}?type=run&retmode=json" }
+            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=run&retmode=json" }
               %i.icon-file
                 JSON
 
@@ -239,10 +239,10 @@
 
         .data_retrieve
           %span.data_retrieve
-            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?type=sample&retmode=tsv" }
+            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=sample&retmode=tsv" }
               %i.icon-file
                 TSV
-            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?type=sample&retmode=json" }
+            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=sample&retmode=json" }
               %i.icon-file
                 JSON
 
