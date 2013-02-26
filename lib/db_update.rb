@@ -85,6 +85,9 @@ if __FILE__ == $0
                  experiment_id: insert[:experiment_id],
                  instrument: insert[:instrument],
                  library_layout: insert[:library_layout],
+                 library_orientation: insert[:library_orientation],
+                 library_nominal_length: insert[:library_nominal_length],
+                 library_nominal_sdev: insert[:library_nominal_sdev],
                  submission_id: insert[:submission_id],
                  sample: insert[:sample])
       end

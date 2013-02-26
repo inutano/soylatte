@@ -24,6 +24,9 @@ class DBupdate
         table.short_text("experiment_id")
         table.short_text("instrument")
         table.short_text("library_layout")
+        table.short_text("library_orientation")
+        table.short_text("library_nominal_length")
+        table.short_text("library_nominal_sdev")
         table.short_text("submission_id")
         table.reference("sample", "Samples", type: :vector)
       end
@@ -134,6 +137,9 @@ class DBupdate
     { experiment_id: experiment_id,
       instrument: parser.instrument_model,
       library_layout: parser.library_layout,
+      library_orientation: parser.library_orientation,
+      library_nominal_length: parser.library_nominal_length,
+      library_nominal_sdev: parser.library_nominal_sdev,
       submission_id: submission_id,
       sample: sample }
   rescue NameError, Errno::ENOENT
