@@ -99,13 +99,19 @@ get %r{/view/((S|E|D)RP\d{6})} do |id, db|
 end
 
 get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
-  dtype = params[:type]
+  dtype = params[:dtype]
   retmode = params[:retmode]
-  
   m = Database.instance
   result = m.data_retrieve(id, :retmode => retmode, :dtype => dtype)
-  redirect to ("/not_found") if result
-  result
+  redirect to("/not_found") if !result
+  case retmode
+  when "tsv"
+    content_type "text/tab-separated-values"
+    result
+  when "json"
+    content_type "application/json"
+    result
+  end
 end
 
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
