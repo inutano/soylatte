@@ -48,10 +48,6 @@ get "/style.css" do
   sass :style
 end
 
-get "/soy_style.css" do
-  sass :soy_style
-end
-
 get "/" do
   m = Database.instance
   @instruments = m.instruments
