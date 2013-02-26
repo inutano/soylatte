@@ -144,7 +144,7 @@ class Database
     end
   end
   
-  def convert_to_study_id(id)
+  def convert_to_study_record(id)
     case id.slice(2,1)
     when "P"
       id
@@ -159,9 +159,11 @@ class Database
     end
   end
   
-  def search_with_id(id)
-    if id
-      record = self.convert_to_study_id(id)
+  def convert_to_study_id(id)
+    if id =~ /^.RP/
+      id
+    else
+      record = self.convert_to_study_record(id)
       if record && record.size >= 1
         record.first["_key"]
       end

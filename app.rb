@@ -84,7 +84,7 @@ post "/search" do
   if !@query
     redirect to("/not_found")
   elsif @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
-    study_id = m.search_with_id(@query)
+    study_id = m.convert_to_study_id(@query)
     redirect to("/view/#{study_id}")
   else
     @result = m.search(@query,
