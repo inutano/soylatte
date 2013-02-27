@@ -74,12 +74,17 @@ get "/filter" do
   haml :filter
 end
 
+get "/data/filter" do
+  m = Database.instance
+  result = m.filter_result(params[:species], params[:type], params[:instrument])
+  content_type = "application/json"
+  JSON.dump(result)
+end
+
 post "/search" do
   m = Database.instance
   @query = query_filter(params[:search_query])
-  if !@query
-    redirect to("/not_found")
-  elsif @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
+  if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
     study_id = m.convert_to_study_id(@query)
     redirect to("/view/#{study_id}")
   else
@@ -87,8 +92,23 @@ post "/search" do
                        species: params[:species],
                        type: params[:type],
                        instrument: params[:instrument])
-    redirect to("/not_found") if @result.empty?
+    redirect to("/not_found") if !@result
     haml :search
+  end
+end
+
+get "/data/search" do
+  m = Database.instance
+  query = query_filter(params[:search_query])
+  result = m.search(query,
+                    species: params[:species],
+                    type: params[:type],
+                    instrument: params[:instrument])
+  if !result
+    status 404
+  else
+    content_type "application/json"
+    JSON.dump(result)
   end
 end
 

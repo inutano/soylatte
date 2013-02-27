@@ -120,10 +120,10 @@ class Database
     ratio_mix = ((num_mix / total.to_f) * 100).round(2)
     
     { total: total,
-      mix: [num_mix, ratio_mix],
-      species: [num_species, ratio_species],
-      type: [num_type, ratio_type],
-      instrument: [num_instrument, ratio_instrument] }
+      mix: { count: num_mix, ratio: ratio_mix },
+      species: { count: num_species, ratio: ratio_species },
+      type: { count: num_type, ratio: ratio_type },
+      instrument: { count: num_instrument, ratio: ratio_instrument} }
   end
   
   def filtered_records(condition)
@@ -135,12 +135,25 @@ class Database
   end
   
   def search(query, condition)
-    hit = @projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
     filtered = self.filtered_records(condition)
-    if query.empty?
-      filtered.map{|id| @projects[id] }
-    else
-      (hit & filtered).map{|id| @projects[id] }
+    if query
+      if query.empty?
+        filtered.map{|id| @projects[id] }
+      else
+        hit = @projects.select{|r| r.search_fulltext =~ query }.map{|r| r["_key"] }
+        result = (hit & filtered).map{|id| @projects[id] }
+        if !result.empty?
+          result
+        end
+      end
+    end
+  end
+  
+  def search_api(query, condition)
+    result = self.search(query, condition)
+    if result
+      result.map do |record|
+      end
     end
   end
   

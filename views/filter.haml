@@ -52,9 +52,9 @@
             %p.lead Requested filtering condition
             %hr
             %p= [@species, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
-            %p.count= "#{@result[:mix][0]}/#{@result[:total]}, #{@result[:mix][1]}%"
+            %p.count= "#{@result[:mix][:count]}/#{@result[:total]}, #{@result[:mix][:ratio]}%"
             .progress
-              .bar{ :style => "width: #{@result[:mix][1]}%;" }
+              .bar{ :style => "width: #{@result[:mix][:ratio]}%;" }
             %span.view-all
               %form.search{ :name => "view-all", :action => "/search?#{post_option}&search_query=", :method => "POST" }
                 %button.btn{ :type => "submit" }
@@ -73,23 +73,23 @@
             %p.lead Sample Organism
             %hr
             %p= @species.empty? ? "All" : @species
-            %p.count= "#{@result[:species][0]}/#{@result[:total]}, #{@result[:species][1]}%"
+            %p.count= "#{@result[:species][:count]}/#{@result[:total]}, #{@result[:species][:ratio]}%"
             .progress
-              .bar{ :style => "width: #{@result[:species][1]}%;" }
+              .bar{ :style => "width: #{@result[:species][:ratio]}%;" }
           .span4
             %p.lead Study Type
             %hr
             %p= @type.empty? ? "All" : @type
-            %p.count= "#{@result[:type][0]}/#{@result[:total]}, #{@result[:type][1]}%"
+            %p.count= "#{@result[:type][:count]}/#{@result[:total]}, #{@result[:type][:ratio]}%"
             .progress
-              .bar{ :style => "width: #{@result[:type][1]}%;" }
+              .bar{ :style => "width: #{@result[:type][:ratio]}%;" }
           .span4
             %p.lead Sequencing Platform
             %hr
             %p= @instrument.empty? ? "All" : @instrument
-            %p.count= "#{@result[:instrument][0]}/#{@result[:total]}, #{@result[:instrument][1]}%"
+            %p.count= "#{@result[:instrument][:count]}/#{@result[:total]}, #{@result[:instrument][:ratio]}%"
             .progress
-              .bar{ :style => "width: #{@result[:instrument][1]}%;" }
+              .bar{ :style => "width: #{@result[:instrument][:ratio]}%;" }
         
       %footer
         powered by
