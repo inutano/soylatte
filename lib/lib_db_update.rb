@@ -14,6 +14,7 @@ class DBupdate
   
     Groonga::Schema.define do |schema|
       schema.create_table("Samples", :type => :hash) do |table|
+        table.short_text("sample_title")
         table.text("sample_description")
         table.uint16("taxon_id")
         table.short_text("scientific_name")
@@ -110,20 +111,19 @@ class DBupdate
 
     xml = get_xml_path(@id, "sample")
     parser = SRAMetadataParser::Sample.new(@id, xml)
+    sample_title = parser.title
     sample_description = parser.sample_description
     taxon_id = parser.taxon_id
     
     scientific_name = `grep -m 1 '^#{taxon_id}' #{@@taxon_table} | cut -d ',' -f 2`.chomp
     
     { submission_id: submission_id,
+      sample_title: sample_title,
       sample_description: clean_text(sample_description),
       taxon_id: taxon_id,
       scientific_name: scientific_name }
   rescue NameError, Errno::ENOENT
-    { submission_id: submission_id,
-      sample_description: nil,
-      taxon_id: nil,
-      scientific_name: nil }
+    { submission_id: submission_id }
   end
   
   def run_insert
@@ -144,8 +144,6 @@ class DBupdate
       sample: sample }
   rescue NameError, Errno::ENOENT
     { experiment_id: experiment_id,
-      instrument: nil,
-      library_layout: nil,
       submission_id: submission_id,
       sample: sample }
   end
@@ -160,9 +158,7 @@ class DBupdate
     
     submission_id = `grep '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.split("\n")
     
-    pub_info = @@json.select do |row|
-      submission_id.include?(row["sra_id"])
-    end
+    pub_info = @@json.select{|row| submission_id.include?(row["sra_id"]) }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     
     pmc_id_array = pubmed_id.map do |pmid|

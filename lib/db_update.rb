@@ -55,6 +55,7 @@ if __FILE__ == $0
         insert = insert_set[1]
         if insert
           samples.add(sample_id,
+                      sample_title: insert[:sample_title],
                       sample_description: insert[:sample_description],
                       taxon_id: insert[:taxon_id],
                       scientific_name: insert[:scientific_name])
