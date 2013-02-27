@@ -100,10 +100,10 @@ end
 get "/data/search" do
   m = Database.instance
   query = query_filter(params[:search_query])
-  result = m.search(query,
-                    species: params[:species],
-                    type: params[:type],
-                    instrument: params[:instrument])
+  result = m.search_api(query,
+                        species: params[:species],
+                        type: params[:type],
+                        instrument: params[:instrument])
   if !result
     status 404
   else

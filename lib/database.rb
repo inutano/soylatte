@@ -153,6 +153,17 @@ class Database
     result = self.search(query, condition)
     if result
       result.map do |record|
+        { study_id: record["_key"],
+          study_title: record.study_title,
+          study_type: record.study_type,
+          experiment_id: record.run.map{|r| r.experiment_id }.uniq.compact,
+          sequencing_instrument: record.run.map{|r| r.instrument }.uniq.compact,
+          sample_id: record.run.map{|rr| rr.sample.map{|r| r["_key"] } }.flatten.uniq.compact,
+          sample_organism: record.run.map{|rr| rr.sample.map{|r| r.scientific_name } }.flatten.uniq.compact,
+          run_id: record.run.map{|r| r["_key"] }.uniq.compact,
+          submission_id: record.submission_id,
+          pubmed_id: record.pubmed_id,
+          pmc_id: record.pmc_id }
       end
     end
   end
@@ -416,6 +427,8 @@ if __FILE__ == $0
   ap db.samples_size
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
+
+  ap db.search_api('gene', species: "Homo sapiens", type: "Transcriptome", instrument: "Illumina Genome Analyzer")
   
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
