@@ -99,7 +99,7 @@ end
 
 get "/data/search" do
   m = Database.instance
-  query = query_filter(params[:search_query])
+  query = query_filter(params[:query])
   result = m.search_api(query,
                         species: params[:species],
                         type: params[:type],
