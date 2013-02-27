@@ -241,7 +241,16 @@
                   %td= row[:study_type]
                   %td= row[:species].join(", ")
                   %td= row[:instrument]
-                  %td= row[:lib_layout]
+                  %td
+                    - if row[:lib_layout] == "PAIRED"
+                      - orient = "library orientation: #{row[:library_orientation]}"
+                      - nlength = "nominal length: #{row[:library_nominal_length]}"
+                      - nsdev = "nominal sdev: #{row[:library_nominal_sdev]}"
+                      - content = [orient, nlength, nsdev].join(", ")
+                      %a.button{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
+                        = row[:lib_layout]
+                    - else
+                      = row[:lib_layout]
                   %td no data
                   %td no data
                   %td
@@ -268,7 +277,16 @@
                     %td= row[:study_type]
                     %td= row[:species].join(", ")
                     %td= row[:instrument]
-                    %td= row[:lib_layout]
+                    %td
+                      - if row[:lib_layout] == "PAIRED"
+                        - orient = "library orientation: #{row[:library_orientation]}"
+                        - nlength = "nominal length: #{row[:library_nominal_length]}"
+                        - nsdev = "nominal sdev: #{row[:library_nominal_sdev]}"
+                        - content = [orient, nlength, nsdev].join(", ")
+                        %a.library.button{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
+                          = row[:lib_layout]
+                      - else
+                        = row[:lib_layout]
                     %td= read[:total_seq]
                     %td= read[:seq_length]
                     %td
@@ -283,6 +301,12 @@
                             %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
                           %li
                             %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
+              :javascript
+                $("a.library").popover({
+                  'selector': '',
+                  'placement': 'right'
+                });
+                    
                             
       %section
         %h2 
@@ -306,6 +330,7 @@
           %thead
             %tr
               %th Sample ID
+              %th Sample Title
               %th Sample Description
               %th Run ID
           
@@ -319,6 +344,7 @@
               - desc = row[:sample_description]
               %tr{ :id => row[:sample_id] }
                 %td= row[:sample_id]
+                %td= row[:sample_title]
                 - if desc
                   %td= desc.split("\s").map{|w| uniq_words.include?(w) ? "<span class='highlight'>#{w}<\/span>" : w }.join("\s")
                 - else
@@ -326,7 +352,7 @@
                 %td= row[:run_id_list].join(", ")
   
       %section
-        %h2 
+        %h2
           %i.icon-share.icon-large
           Linkout/Resources
         %hr
