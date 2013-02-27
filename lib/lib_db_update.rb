@@ -42,7 +42,12 @@ class DBupdate
         table.text("search_fulltext")
       end
             
-      schema.create_table("Index_hash", type: :hash) do |table|
+      schema.create_table("Index_text",
+        type: :patricia_trie,
+        key_normalize: true,
+        default_tokenizer: "TokenBigram"
+      )
+      schema.change_table("Index_text") do |table|
         table.index("Samples.taxon_id")
         table.index("Samples.scientific_name")
         table.index("Runs.instrument")
@@ -51,14 +56,6 @@ class DBupdate
         table.index("Projects.submission_id")
         table.index("Projects.pubmed_id")
         table.index("Projects.pmc_id")
-      end
-    
-      schema.create_table("Index_text",
-        type: :patricia_trie,
-        key_normalize: true,
-        default_tokenizer: "TokenBigram"
-      )
-      schema.change_table("Index_text") do |table|
         table.index("Projects.search_fulltext")
       end
       
