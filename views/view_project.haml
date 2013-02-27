@@ -184,6 +184,9 @@
                               %p= section_results[:sec_text].join("\n")
                               
                 %h3 Cited by
+                - num_cb = pmc[:cited_by].size
+                - publication_s = num_cb == 1 ? " publication cites" : " publications cite"
+                %h4= num_cb.to_s + publication_s + " this article"
                 %ol
                 - pmc[:cited_by].each do |citedby|
                   %li
@@ -205,8 +208,8 @@
                 JSON
         
         - num_runs = @report[:run_table].size
-        - sssssr = num_runs == 1 ? " of Sequencing" : " of Sequencings"
-        %h4= num_runs.to_s + sssssr + " (Based on Run ID)"
+        - sequencing_s = num_runs == 1 ? " of Sequencing" : " of Sequencings"
+        %h4= num_runs.to_s + sequencing_s + " (Based on Run ID)"
         %table.table.table-hover.tablesorter#runList
           %thead
             %tr
@@ -297,8 +300,8 @@
                 JSON
         
         - num_samples = @report[:sample_table].size
-        - ssssss = num_samples == 1 ? " Sample" : "Samples"
-        %h4= num_samples.to_s + ssssss
+        - sample_s = num_samples == 1 ? " Sample" : "Samples"
+        %h4= num_samples.to_s + sample_s
         %table.table.table-hover.tablesorter#sampleList
           %thead
             %tr
