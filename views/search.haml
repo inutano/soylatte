@@ -111,7 +111,7 @@
                   %td= record.study_title
                   %td= record.study_type
                   %td= record.run.map{|r| r.instrument }.uniq.join(", ")
-                  %td= record.run.map{|r| r.sample.map{|s| s.scientific_name } }.flatten.uniq.join(", ")
+                  %td= record.run.map{|r| r.sample.map{|s| s ? s.scientific_name : s } }.flatten.uniq.compact.join(", ")
                   %td= record.run.size.to_s
                   %td
                     - record.pubmed_id.map do |pmid|
