@@ -126,6 +126,37 @@ class Database
       instrument: { count: num_instrument, ratio: ratio_instrument} }
   end
   
+  def donuts_profile(species, type, instrument)
+    h = self.filter_result(species, type, instrument)
+    total = h[:total]
+
+    hm = h[:mix]
+    hmc = hm[:count]
+    cond_m = { "Stat" => { "num" => hmc.to_s, "per" => hm[:ratio].to_s },
+               "matched" => hmc.to_s,
+               "unmatched" => (total - hmc).to_s }
+    
+    hs = h[:species]
+    hsc = hs[:count]
+    cond_s = { "Stat" => { "num" => hsc.to_s, "per" => hs[:ratio].to_s },
+               "matched" => hsc.to_s,
+               "unmatched" => (total - hsc).to_s }
+    
+    ht = h[:type]
+    htc = ht[:count]
+    cond_t = { "Stat" => { "num" => htc.to_s, "per" => ht[:ratio].to_s },
+               "matched" => htc.to_s,
+               "unmatched" => (total - htc).to_s }
+    
+    hi = h[:instrument]
+    hic = hi[:count]
+    cond_i = { "Stat" => { "num" => hic.to_s, "per" => hi[:ratio].to_s },
+               "matched" => hic.to_s,
+               "unmatched" => (total - hic).to_s }
+
+    [cond_m, cond_s, cond_t, cond_i]
+  end
+  
   def filtered_records(condition)
     # return array of study id meets the condition
     filter_species = self.filter_species(condition[:species])
@@ -428,8 +459,6 @@ if __FILE__ == $0
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
 
-  ap db.search_api('gene', species: "Homo sapiens", type: "Transcriptome", instrument: "Illumina Genome Analyzer")
-  
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
     ap db.summary("DRP000001")

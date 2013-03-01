@@ -71,7 +71,21 @@ get "/filter" do
   
   m = Database.instance
   @result = m.filter_result(@species, @type, @instrument)
+  ap @result
+
+  options = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
+  @request_option = URI.encode(options)
+
   haml :filter
+end
+
+get "/donuts" do
+  species = params[:species]
+  type = params[:type]
+  instrument = params[:instrument]
+  content_type = "application/json"
+  m = Database.instance
+  JSON.dump(m.donuts_profile(species, type, instrument))
 end
 
 get "/data/filter" do

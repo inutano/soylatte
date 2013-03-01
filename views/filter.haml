@@ -7,11 +7,12 @@
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "/style.css", :type => "text/css"}
+    %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+    %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
+    %script{ :src => "http://d3js.org/d3.v3.min.js" }
   
   %body
     .container
-      %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
-      %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
       .navbar.navbar-fixed-top
         .navbar-inner
           .container
@@ -51,14 +52,13 @@
           .span7
             %p.lead Requested filtering condition
             %hr
-            %p= [@species, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
-            %p.count= "#{@result[:mix][:count]}/#{@result[:total]}, #{@result[:mix][:ratio]}%"
-            .progress
-              .bar{ :style => "width: #{@result[:mix][:ratio]}%;" }
-            %span.view-all
-              %form.search{ :name => "view-all", :action => "/search?#{post_option}&search_query=", :method => "POST" }
-                %button.btn{ :type => "submit" }
-                  view all
+            %ul.inline
+              %li= [@species, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
+              %li
+                %form.search{ :name => "view-all", :action => "/search?#{post_option}&search_query=", :method => "POST" }
+                  %button.btn{ :type => "submit" }
+                    view all
+            .donut
           .span5.filtersearch
             %p.lead Fulltext search
             %form.search{ :name => "search", :action => "/search?#{post_option}", :method => "POST" }
@@ -73,24 +73,67 @@
             %p.lead Sample Organism
             %hr
             %p= @species.empty? ? "All" : @species
-            %p.count= "#{@result[:species][:count]}/#{@result[:total]}, #{@result[:species][:ratio]}%"
-            .progress
-              .bar{ :style => "width: #{@result[:species][:ratio]}%;" }
+            .donut
           .span4
             %p.lead Study Type
             %hr
             %p= @type.empty? ? "All" : @type
-            %p.count= "#{@result[:type][:count]}/#{@result[:total]}, #{@result[:type][:ratio]}%"
-            .progress
-              .bar{ :style => "width: #{@result[:type][:ratio]}%;" }
+            .donut
           .span4
             %p.lead Sequencing Platform
             %hr
             %p= @instrument.empty? ? "All" : @instrument
-            %p.count= "#{@result[:instrument][:count]}/#{@result[:total]}, #{@result[:instrument][:ratio]}%"
-            .progress
-              .bar{ :style => "width: #{@result[:instrument][:ratio]}%;" }
+            .donut
         
+      :javascript
+        var radius = 120;
+
+        var color = d3.scale.ordinal()
+            .range(["LightSkyBlue", "LightGray"]);
+
+        var arc = d3.svg.arc()
+            .outerRadius(radius)
+            .innerRadius(radius - 50);
+
+        var pie = d3.layout.pie()
+            .sort(null)
+            .value(function(d){ return d.count })
+        
+        d3.json("/donuts?#{@request_option}", function(error, data) {
+          color.domain(d3.keys(data[0]).filter(function(key){ return key !== "Stat"; }));
+            
+          data.forEach(function(d){
+            d.status = color.domain().map(function(name){
+              return {name: name, count: +d[name]};
+            });
+          });
+          
+          var svg = d3.select("body").selectAll(".donut")
+              .data(data)
+              .append("svg")
+              .attr("width", radius * 2)
+              .attr("height", radius * 2)
+            .append("g")
+              .attr("transform", "translate(" + radius + "," + radius + ")");
+        
+          svg.selectAll(".arc")
+              .data(function(d){ return pie(d.status); })
+            .enter().append("path")
+              .attr("class", "arc")
+              .attr("d", arc)
+              .style("fill", function(d) { return color(d.data.name); });
+          
+          svg.append("text")
+            .attr("dy", ".05em")
+            .style("text-anchor", "middle")
+            .text(function(d) { return d.Stat.num + " projects"; });
+
+          svg.append("text")
+            .attr("dy", "1.05em")
+            .style("text-anchor", "middle")
+            .text(function(d) { return d.Stat.per + "%"; });
+        });
+      
       %footer
         powered by
         %a{ :href => "http://dbcls.rois.ac.jp/en" }
