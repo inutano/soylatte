@@ -9,8 +9,6 @@ require "uri"
 
 require "./lib/database.rb"
 
-require "ap"
-
 def logging(query)
   logfile = settings.config["logfile"]
   log = Time.now.to_s + "\t" + query
@@ -71,7 +69,6 @@ get "/filter" do
   
   m = Database.instance
   @result = m.filter_result(@species, @type, @instrument)
-  ap @result
 
   options = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
   @request_option = URI.encode(options)
@@ -106,7 +103,7 @@ post "/search" do
                        species: params[:species],
                        type: params[:type],
                        instrument: params[:instrument])
-    redirect to("/not_found") if !@result
+    status 404 if !@result
     haml :search
   end
 end
@@ -137,7 +134,7 @@ get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
   retmode = params[:retmode]
   m = Database.instance
   result = m.data_retrieve(id, :retmode => retmode, :dtype => dtype)
-  redirect to("/not_found") if !result
+  status 404 if !result
   case retmode
   when "tsv"
     content_type "text/tab-separated-values"
@@ -151,7 +148,7 @@ end
 get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
   m = Database.instance
   @report = m.run_report(id)
-  redirect to("/not_found") if !@report
+  status 404 if !@report
   haml :view_run
 end
 
