@@ -56,7 +56,7 @@
                 .controls
                   %input.input-large.search-query#typeSpecies{ :type => "text", :name => "species", :placeholder => "Type scientific name" }
                   :javascript
-                    var organismList = #{@organisms};
+                    var organismList = #{@species};
                     $('#typeSpecies').typeahead({source: organismList});
               .control-group
                 %label.control-label{ "for" => "study_type" } Study Type
