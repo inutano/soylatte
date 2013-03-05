@@ -10,8 +10,6 @@ require "uri"
 require "./lib/database.rb"
 
 class SoyLatte < Sinatra::Base
-  set :haml, :format => :html5, :escape_html => true
-  
   configure do
     set :config, YAML.load_file("./config.yaml")
   end
@@ -24,8 +22,8 @@ class SoyLatte < Sinatra::Base
     end
   end
   
-  get "/style.css" do
-    sass :style
+  get "/:source.css" do
+    sass params[:source].intern
   end
   
   get "/" do
