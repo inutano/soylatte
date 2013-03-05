@@ -83,7 +83,9 @@
         %p.lead= "Search query: " + show_query
         %hr
         
-        %h4= @result.size.to_s + " of records"
+        - result_size = @result.size
+        - project_s = @result.size == 1 ? " project" : " projects"
+        %h4= result_size.to_s + project_s
         %table.table.table-hover.tablesorter#projectList
           - study_type_ref = { 1 => "Genome",
                                2 => "Transcriptome",
@@ -123,7 +125,7 @@
                   %td= record.study_title
                   %td= record.study_type
                   %td= record.run.map{|r| r.instrument }.uniq.join(", ")
-                  %td= record.run.map{|r| r.sample.map{|s| s.scientific_name } }.flatten.uniq.join(", ")
+                  %td= record.run.map{|r| r.sample.map{|s| s ? s.scientific_name : s } }.flatten.uniq.compact.join(", ")
                   %td= record.run.size.to_s
                   %td no publication
           
