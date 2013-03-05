@@ -130,12 +130,12 @@ if __FILE__ == $0
         
         experiment_ids = record.run.map{|r| r.experiment_id }.uniq
         insert << experiment_ids.compact.map{|id| DBupdate.new(id).experiment_description }
-      
+        
         insert << DBupdate.new(study_id).project_description
         insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
         insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
         
-        [study_id, insert.flatten.join("\s")]
+        [study_id, insert.flatten.compact.join("\s")]
       end
       
       inserts.each do |insert_set|
