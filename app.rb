@@ -126,7 +126,7 @@ end
 get %r{/view/((S|E|D)RP\d{6})} do |id, db|
   m = Database.instance
   @report = m.project_report(id)
-  haml :view_project
+  haml :project
 end
 
 get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
@@ -149,7 +149,7 @@ get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
   m = Database.instance
   @report = m.run_report(id)
   status 404 if !@report
-  haml :view_run
+  haml :run
 end
 
 get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fname|
