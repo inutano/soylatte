@@ -15,8 +15,8 @@ class Database
   
   config_path = "/Users/inutano/project/soylatte/config.yaml"
   @@config = YAML.load_file(config_path)
-  #@@db_path = YAML.load_file(config)["db_path"]
-  @@db_path = "/Users/inutano/project/soylatte/lib/test_db/test.db"
+  @@db_path = @@config["db_path"]
+  #@@db_path = "/Users/inutano/project/soylatte/lib/test_db/test.db"
   
   def initialize
     connect_db
@@ -447,6 +447,10 @@ class Database
       end
     end
   end
+  
+  def description
+    @projects.map{|r| [r["_key"], r.search_fulltext]}.select{|a| !a[1] }.first(10)
+  end
 end
 
 if __FILE__ == $0
@@ -458,7 +462,9 @@ if __FILE__ == $0
   ap db.samples_size
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
-
+  
+  ap db.description
+  
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
     ap db.summary("DRP000001")
