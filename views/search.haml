@@ -110,7 +110,8 @@
                 %tr{ :class => "info" }
                   %td
                     %a{ :href => "/view/#{study_id}"}= study_id
-                  %td= record.study_title.gsub("_","\s")
+                  - title = record.study_title
+                  %td= title ? title.gsub("_","\s") : title
                   %td= record.study_type
                   %td= record.run.map{|r| r.instrument }.uniq.join(", ")
                   %td= record.run.map{|r| r.sample.map{|s| s ? s.scientific_name : s } }.flatten.uniq.compact.join(", ")
@@ -122,7 +123,8 @@
                 %tr
                   %td
                     %a{ :href => "/view/#{study_id}"}= study_id
-                  %td= record.study_title.gsub("_","\s")
+                  - title = record.study_title
+                  %td= title ? title.gsub("_","\s") : title
                   %td= record.study_type
                   %td= record.run.map{|r| r.instrument }.uniq.join(", ")
                   %td= record.run.map{|r| r.sample.map{|s| s ? s.scientific_name : s } }.flatten.uniq.compact.join(", ")

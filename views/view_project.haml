@@ -115,7 +115,7 @@
               %small= paper[:authors].join(", ")
               %small= paper[:journal] + ", " + paper[:date]
               %p= paper[:abstract]
-  
+            
             .paper_linkout
               %span.paper_linkout
                 - pm_base = "http://www.ncbi.nlm.nih.gov/pubmed/"
@@ -127,7 +127,7 @@
                   %a.btn{ :href => pmc_base + paper[:pmc][:pmc_id] }
                     %i.icon-book
                     PMC
-            
+                        
             - if paper[:pmc]
               - pmc = paper[:pmc]
               %section
