@@ -6,8 +6,7 @@ GEM
     diff-lcs (1.2.1)
     groonga (1.0.0)
       rroonga
-    haml (4.0.0)
-      tilt
+    haml (3.1.8)
     io-like (0.3.0)
     json (1.7.7)
     nokogiri (1.5.6)
@@ -41,7 +40,7 @@ PLATFORMS
 
 DEPENDENCIES
   groonga
-  haml
+  haml (~> 3.1)
   nokogiri
   rack-test
   rspec

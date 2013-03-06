@@ -1,7 +1,7 @@
 source :rubygems
 
 gem "sinatra"
-gem "haml"
+gem "haml", "~>3.1"
 gem "sass"
 gem "groonga"
 gem "nokogiri"
