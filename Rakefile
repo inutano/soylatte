@@ -68,6 +68,25 @@ namespace :setup do
       sh "rm -f taxdump.tar.gz"
     end
   end
+  
+  desc "Create configuration file"
+  task :config => "config.yaml" do
+    puts "Done."
+  end
+  
+  desc "Create config.yaml"
+  file "config.yaml" do |t|
+    dir = File.expand_path(File.dirname(__FILE__))
+    sh "echo 'logfile: \"#{dir}/log/query.log\"' >> #{t.name}"
+    sh "echo 'db_path: \"#{dir}/db/project.db\"' >> #{t.name}"
+    sh "echo 'sra_accessions: \"#{dir}/data/SRA_Accessions.tab\"' >> #{t.name}"
+    sh "echo 'sra_run_members: \"#{dir}/data/SRA_Run_Members.tab\"' >> #{t.name}"
+    sh "echo 'PMC-ids: \"#{dir}/data/PMC-ids.csv\"' >> #{t.name}"
+    sh "echo 'sra_xml_base: \"#{dir}/data/metadata_xml\"' >> #{t.name}"
+    sh "echo 'publication: \"#{dir}/data/publication.json\"' >> #{t.name}"
+    sh "echo 'taxon_table: \"#{dir}/data/taxon_table.csv\"' >> #{t.name}"
+    sh "echo 'fqc_path: \"#{dir}/data/fastqc\"' >> #{t.name}"
+  end
 end
 
 desc "About this Rakefile"
