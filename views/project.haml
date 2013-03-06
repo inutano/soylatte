@@ -4,15 +4,15 @@
   %head
     %title= @report[:summary][:study_title]
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/bootstrap/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/font-awesome/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "http://g86.dbcls.jp/~iNut/tablesorter/css/theme.bootstrap.css" }
+    %link{:rel => :stylesheet, :href => "/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "/css/theme.bootstrap.css" }
     %link{:rel => :stylesheet, :href => "/style.css", :type => "text/css"}
     
     %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
-    %script{ :src => "http://g86.dbcls.jp/~iNut/bootstrap/js/bootstrap.js" }
-    %script{ :src => "http://g86.dbcls.jp/~iNut/tablesorter/js/jquery.tablesorter.js" }
-    %script{ :src => "http://g86.dbcls.jp/~iNut/tablesorter/js/jquery.tablesorter.widgets.js" }
+    %script{ :src => "/js/bootstrap.min.js" }
+    %script{ :src => "/js/jquery.tablesorter.min.js" }
+    %script{ :src => "/js/jquery.tablesorter.widgets.min.js" }
     :javascript
       $(document).ready(function(){
         $.extend($.tablesorter.themes.bootstrap, {
