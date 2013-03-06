@@ -230,7 +230,5 @@ class DBupdate
                 parser.cited_by.map{|n| n.values } ]
       array.flatten.compact.map{|d| clean_text(d) }.join("\s")
     end
-  rescue RuntimeError
-    nil
   end
 end
