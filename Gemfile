@@ -1,10 +1,11 @@
 source :rubygems
 
 gem "sinatra"
-gem "haml", "~>3.1"
+gem "haml"
 gem "sass"
 gem "groonga"
 gem "nokogiri"
+gem "rack-protection"
 
 group :test do
   gem "rspec"

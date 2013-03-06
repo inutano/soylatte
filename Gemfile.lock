@@ -40,8 +40,9 @@ PLATFORMS
 
 DEPENDENCIES
   groonga
-  haml (~> 3.1)
+  haml
   nokogiri
+  rack-protection
   rack-test
   rspec
   sass
