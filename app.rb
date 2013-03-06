@@ -10,6 +10,9 @@ require "uri"
 require "./lib/database.rb"
 
 class SoyLatte < Sinatra::Base
+  set :haml, :format => :html5
+  set :haml, :escape_html => true
+
   configure do
     set :config, YAML.load_file("./config.yaml")
   end
