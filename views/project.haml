@@ -336,17 +336,25 @@
           
           %tbody
             - sample_table = @report[:sample_table]
+            
+            // # highlight uniq words in sample description
             - description_array = sample_table.map{|n| n[:sample_description] }.compact
             - min_sentences = description_array.map{|n| n.split("\s") }.uniq
             - bag_of_words = min_sentences.size == 1 ? [] : min_sentences.flatten
             - uniq_words = bag_of_words.group_by{|i| i }.select{|k,v| v.size == 1 }.keys
+            
             - sample_table.each do |row|
               - desc = row[:sample_description]
               %tr{ :id => row[:sample_id] }
                 %td= row[:sample_id]
                 %td= row[:sample_title]
                 - if desc
-                  %td= desc.split("\s").map{|w| uniq_words.include?(w) ? "<span class='highlight'>#{w}<\/span>" : w }.join("\s")
+                  %td
+                    - desc.split("\s").map do |w|
+                      - if uniq_words.include?(w)
+                        %span.highlight= w
+                      - else
+                        = w
                 - else
                   %td= desc
                 %td= row[:run_id_list].join(", ")
