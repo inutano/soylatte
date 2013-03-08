@@ -223,11 +223,14 @@ class DBupdate
           section.values
         end
       end
-    
-      array = [ @id,
-                body,
-                parser.ref_journal_list.map{|n| n.values },
-                parser.cited_by.map{|n| n.values } ]
+      
+      ref_journal_list = parser.ref_journal_list
+      title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
+      
+      cited_by = parser.cited_by
+      title_cited_by = cited_by.map{|n| n.values } if cited_by
+      
+      array = [ @id, body, title_ref_journal_list, title_cited_by ]
       array.flatten.compact.map{|d| clean_text(d) }.join("\s")
     end
   end
