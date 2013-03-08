@@ -16,7 +16,6 @@ class Database
   config_path = "/Users/inutano/project/soylatte/config.yaml"
   @@config = YAML.load_file(config_path)
   @@db_path = @@config["db_path"]
-  #@@db_path = "/Users/inutano/project/soylatte/lib/test_db/test.db"
   
   def initialize
     connect_db
