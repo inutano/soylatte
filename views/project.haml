@@ -243,9 +243,9 @@
                   %td= row[:instrument]
                   %td
                     - if row[:lib_layout] == "PAIRED"
-                      - orient = "library orientation: #{row[:library_orientation]}"
-                      - nlength = "nominal length: #{row[:library_nominal_length]}"
-                      - nsdev = "nominal sdev: #{row[:library_nominal_sdev]}"
+                      - orient = "library orientation: #{row[:lib_orientation]}"
+                      - nlength = "nominal length: #{row[:lib_nominal_length]}"
+                      - nsdev = "nominal sdev: #{row[:lib_nominal_sdev]}"
                       - content = [orient, nlength, nsdev].join(", ")
                       %a.button{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
                         = row[:lib_layout]
@@ -279,11 +279,11 @@
                     %td= row[:instrument]
                     %td
                       - if row[:lib_layout] == "PAIRED"
-                        - orient = "library orientation: #{row[:library_orientation]}"
-                        - nlength = "nominal length: #{row[:library_nominal_length]}"
-                        - nsdev = "nominal sdev: #{row[:library_nominal_sdev]}"
+                        - orient = "library orientation: #{row[:lib_orientation]}"
+                        - nlength = "nominal length: #{row[:lib_nominal_length]}"
+                        - nsdev = "nominal sdev: #{row[:lib_nominal_sdev]}"
                         - content = [orient, nlength, nsdev].join(", ")
-                        %a.library.button{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
+                        %a.library{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
                           = row[:lib_layout]
                       - else
                         = row[:lib_layout]
@@ -301,11 +301,11 @@
                             %a{ :href => "#{File.join(ebi_base, runid.slice(0..5), runid)}" } ENA/FASTQ
                           %li
                             %a{ :href => "#{File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid)}" } NCBI/SRALite
-              :javascript
-                $("a.library").popover({
-                  'selector': '',
-                  'placement': 'right'
-                });
+          :javascript
+            $("a.library").popover({
+              'selector': '',
+              'placement': 'right'
+            });
                     
                             
       %section
