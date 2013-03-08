@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 
+CurrentDir = File.expand_path(File.dirname(__FILE__))
+
 require "singleton"
 require "yaml"
 require "groonga"
 require "open-uri"
 
-require File.expand_path(File.dirname(__FILE__)) + "/pubmed_metadata_parser"
-require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
-require File.expand_path(File.dirname(__FILE__)) + "/fastqc_result_parser"
+require CurrentDir + "/pubmed_metadata_parser"
+require CurrentDir + "/pmc_metadata_parser"
+require CurrentDir + "/fastqc_result_parser"
 
 class Database
   include Singleton
   attr_reader :grndb
   
-  config_path = "/Users/inutano/project/soylatte/config.yaml"
+  config_path = File.join(CurrentDir, "/../config.yaml")
   @@config = YAML.load_file(config_path)
   @@db_path = @@config["db_path"]
   
