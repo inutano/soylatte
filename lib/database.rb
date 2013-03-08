@@ -355,39 +355,34 @@ class Database
       subid = row[:submission_id]
       expid = row[:experiment_id]
       runid = row[:run_id]
-      if row[:read_profile]
-        row[:read_profile].map do |read|
-          { sample_id: row[:sample_id],
-            species: row[:species],
-            experiment_id: expid,
-            instrument: row[:instrument],
-            library_layout: row[:lib_layout],
-            library_orientation: row[:lib_orientation],
-            library_nominal_length: row[:lib_nominal_length],
-            library_nominal_sdev: row[:lib_nominal_sdev],
-            study_type: row[:study_type],
-            run_id: read[:read_id],
-            total_seq: read[:total_seq],
-            seq_length: read[:seq_length],
-            download: self.download_link(subid, expid, runid) }
+      hash = { sample_id: row[:sample_id],
+               species: row[:species],
+               instrument: row[:instrument],
+               library_layout: row[:lib_layout],
+               library_orientation: row[:lib_orientation],
+               library_nominal_length: row[:lib_nominal_length],
+               library_nominal_sdev: row[:lib_nominal_sdev],
+               study_type: row[:study_type],
+               experiment_id: expid,
+               download: self.download_link(subid, expid, runid) }
+      
+      reads = row[:read_profile]
+      if reads
+        reads.map do |read|
+          h = hash.dup
+          h[:run_id] = read[:read_id]
+          h[:total_seq] = read[:total_seq]
+          h[:seq_length] = read[:seq_length]
+          h
         end
       else
-        { sample_id: row[:sample_id],
-          species: row[:species],
-          experiment_id: expid,
-          instrument: row[:instrument],
-          library_layout: row[:lib_layout],
-          library_orientation: row[:lib_orientation],
-          library_nominal_length: row[:lib_nominal_length],
-          library_nominal_sdev: row[:lib_nominal_sdev],
-          study_type: row[:study_type],
-          run_id: runid,
-          download: self.download_link(subid, expid, runid) }
+        hash[:run_id] = row[:run_id]
+        hash
       end
     end
     result.flatten
   end
-  
+
   def export_run_tsv(id)
     run_table = self.export_run(id)
     result = run_table.map do |row|
