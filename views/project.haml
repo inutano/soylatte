@@ -247,7 +247,7 @@
                       - nlength = "nominal length: #{row[:lib_nominal_length]}"
                       - nsdev = "nominal sdev: #{row[:lib_nominal_sdev]}"
                       - content = [orient, nlength, nsdev].join(", ")
-                      %a.button{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
+                      %a.library{ "data-toggle" => "popover", "data-original-title" => "Library Info", "data-content" => content }
                         = row[:lib_layout]
                     - else
                       = row[:lib_layout]
