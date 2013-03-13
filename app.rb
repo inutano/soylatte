@@ -48,7 +48,7 @@ class SoyLatte < Sinatra::Base
     instrument = params[:platform]
     options = "species=#{species}&type=#{study_type}&instrument=#{instrument}"
     encoded = URI.encode(options)
-    redirect to("/filter?#{encoded}")
+    redirect to("#{app_root}/filter?#{encoded}")
   end
   
   get "/filter" do
@@ -86,7 +86,7 @@ class SoyLatte < Sinatra::Base
     @query = params[:search_query]
     if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
       study_id = m.convert_to_study_id(@query)
-      redirect to("/view/#{study_id}")
+      redirect to("#{app_root}/view/#{study_id}")
     else
       @result = m.search(@query,
                          species: params[:species],
