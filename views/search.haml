@@ -4,15 +4,15 @@
   %head
     %title Search Result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/css/theme.bootstrap.css" }
-    %link{:rel => :stylesheet, :href => "/style.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/theme.bootstrap.css" }
+    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
     
     %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
-    %script{ :src => "/js/bootstrap.min.js" }
-    %script{ :src => "/js/jquery.tablesorter.min.js" }
-    %script{ :src => "/js/jquery.tablesorter.widgets.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.widgets.min.js" }
     :javascript
       $(document).ready(function(){
         $.extend($.tablesorter.themes.bootstrap, {
@@ -57,7 +57,7 @@
             .nav-collapse
               %ul.nav
                 %li
-                  %a{:href => "/soylatte"} Home
+                  %a{:href => "#{app_root}" } Home
                 %li
                   %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
                 %li
@@ -109,7 +109,7 @@
               - if !record.pubmed_id.empty?
                 %tr{ :class => "info" }
                   %td
-                    %a{ :href => "/view/#{study_id}"}= study_id
+                    %a{ :href => "#{app_root}/view/#{study_id}"}= study_id
                   - title = record.study_title
                   %td= title ? title.gsub("_","\s") : title
                   %td= record.study_type
@@ -122,7 +122,7 @@
               - else
                 %tr
                   %td
-                    %a{ :href => "/view/#{study_id}"}= study_id
+                    %a{ :href => "#{app_root}/view/#{study_id}"}= study_id
                   - title = record.study_title
                   %td= title ? title.gsub("_","\s") : title
                   %td= record.study_type

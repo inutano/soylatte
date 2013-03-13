@@ -4,12 +4,12 @@
   %head
     %title Filtering Result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/style.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
     %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
     %script{ :src => "http://d3js.org/d3.v3.min.js" }
-    %script{ :src => "/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
   
   %body
     .container
@@ -25,7 +25,7 @@
             .nav-collapse
               %ul.nav
                 %li
-                  %a{:href => "/soylatte"} Home
+                  %a{:href => "#{app_root}"} Home
                 %li
                   %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
                 %li
@@ -54,13 +54,13 @@
             %ul.inline
               %li= [@species, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
               %li
-                %form.search{ :name => "view-all", :action => "/search?#{post_option}&search_query=", :method => "POST" }
+                %form.search{ :name => "view-all", :action => "#{app_root}/search?#{post_option}&search_query=", :method => "POST" }
                   %button.btn{ :type => "submit" }
                     view all
             .donut
           .span5
             %p.lead Fulltext search
-            %form.search{ :name => "search", :action => "/search?#{post_option}", :method => "POST" }
+            %form.search{ :name => "search", :action => "#{app_root}/search?#{post_option}", :method => "POST" }
               %label Search with this condition
               %input.input-large.search-query{ :type => "text", :name => "search_query" }
               %button.btn{ :type => "submit" }
@@ -95,7 +95,7 @@
             .sort(null)
             .value(function(d){ return d.count })
         
-        d3.json("/donuts?#{@request_option}", function(error, data) {
+        d3.json("#{app_root}/donuts?#{@request_option}", function(error, data) {
           color.domain(d3.keys(data[0]).filter(function(key){ return key !== "Stat"; }));
             
           data.forEach(function(d){

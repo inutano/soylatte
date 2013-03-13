@@ -4,11 +4,11 @@
   %head
     %title Sequence Read  Detail: #{@report[:read_id]}
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/style.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
     %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
-    %script{ :src => "/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
   
   %body
     .container
@@ -24,7 +24,7 @@
             .nav-collapse
               %ul.nav
                 %li
-                  %a{:href => "/soylatte"} Home
+                  %a{:href => "#{app_root}" } Home
                 %li
                   %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
                 %li
@@ -67,7 +67,7 @@
           %i.icon-stethoscope.icon-large
           Sequence Quality Statistics
         %hr
-        - base = "/fastqc/img/#{@report[:read_id]}/"
+        - base = "#{app_root}/fastqc/img/#{@report[:read_id]}/"
         .row
           %ul.thumbnails
             %li.span3

@@ -4,15 +4,15 @@
   %head
     %title= @report[:summary][:study_title]
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "/css/theme.bootstrap.css" }
-    %link{:rel => :stylesheet, :href => "/style.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/theme.bootstrap.css" }
+    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
     
     %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
-    %script{ :src => "/js/bootstrap.min.js" }
-    %script{ :src => "/js/jquery.tablesorter.min.js" }
-    %script{ :src => "/js/jquery.tablesorter.widgets.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.widgets.min.js" }
     :javascript
       $(document).ready(function(){
         $.extend($.tablesorter.themes.bootstrap, {
@@ -67,7 +67,7 @@
             .nav-collapse
               %ul.nav
                 %li
-                  %a{:href => "/soylatte"} Home
+                  %a{:href => "#{app_root}" } Home
                 %li
                   %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
                 %li
@@ -200,10 +200,10 @@
 
         .data_retrieve
           %span.data_retrieve
-            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=run&retmode=tsv" }
+            %a.btn{ :href => "#{app_root}/data/#{@report[:summary][:study_id]}?dtype=run&retmode=tsv" }
               %i.icon-file
                 TSV
-            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=run&retmode=json" }
+            %a.btn{ :href => "#{app_root}/data/#{@report[:summary][:study_id]}?dtype=run&retmode=json" }
               %i.icon-file
                 JSON
         
@@ -234,7 +234,7 @@
               - if !row[:read_profile]
                 %tr
                   %td
-                    %a{ :href => "/view/#{runid}" }= runid
+                    %a{ :href => "#{app_root}/view/#{runid}" }= runid
                   %td
                     - row[:sample_id].each do |id|
                       %a{ :href => "##{id}" }= id
@@ -270,7 +270,7 @@
                 - row[:read_profile].each do |read|
                   %tr
                     %td
-                      %a{ :href => "/view/#{read[:read_id]}" }= read[:read_id]
+                      %a{ :href => "#{app_root}/view/#{read[:read_id]}" }= read[:read_id]
                     %td
                       - row[:sample_id].each do |id|
                         %a{ :href => "##{id}" }= id
@@ -316,10 +316,10 @@
 
         .data_retrieve
           %span.data_retrieve
-            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=sample&retmode=tsv" }
+            %a.btn{ :href => "#{app_root}/data/#{@report[:summary][:study_id]}?dtype=sample&retmode=tsv" }
               %i.icon-file
                 TSV
-            %a.btn{ :href => "/data/#{@report[:summary][:study_id]}?dtype=sample&retmode=json" }
+            %a.btn{ :href => "#{app_root}/data/#{@report[:summary][:study_id]}?dtype=sample&retmode=json" }
               %i.icon-file
                 JSON
         

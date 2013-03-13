@@ -17,6 +17,12 @@ class SoyLatte < Sinatra::Base
     set :config, YAML.load_file("./config.yaml")
   end
   
+  helpers do
+    def app_root
+      "#{env["rack.url_scheme"]}://#{env["HTTP_HOST"]}#{env["SCRIPT_NAME"]}"
+    end
+  end
+  
   before do
     query = params[:search_query]
     if query
