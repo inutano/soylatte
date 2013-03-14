@@ -134,7 +134,7 @@ class SoyLatte < Sinatra::Base
     end
   end
   
-  get %r{/view/((S|E|D)RR\d{6}(|_1|_2))} do |id, db, read|
+  get %r{/view/((S|E|D)RR\d{6}(|_1|_2))$} do |id, db, read|
     m = Database.instance
     @report = m.run_report(id)
     status 404 if !@report
