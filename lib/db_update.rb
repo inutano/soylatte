@@ -7,8 +7,6 @@ require "open-uri"
 
 require "./lib_db_update"
 
-require "ap"
-
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
@@ -85,6 +83,9 @@ if __FILE__ == $0
         runs.add(run_id,
                  experiment_id: insert[:experiment_id],
                  instrument: insert[:instrument],
+                 library_strategy: insert[:library_strategy],
+                 library_source: insert[:library_source],
+                 library_selection: insert[:library_selection],
                  library_layout: insert[:library_layout],
                  library_orientation: insert[:library_orientation],
                  library_nominal_length: insert[:library_nominal_length],
@@ -159,7 +160,7 @@ if __FILE__ == $0
     hit = projects.select{|r| r.search_fulltext =~ query }
     ap hit.map{|n| n["_key"] }
     
-    ap projects["ERP000230"].submission_id
+    #ap projects["ERP000230"].submission_id
     
     ap samples.size
     ap runs.size

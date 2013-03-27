@@ -23,11 +23,14 @@ class DBupdate
     
       schema.create_table("Runs", type: :hash) do |table|
         table.short_text("experiment_id")
-        table.short_text("instrument")
+        table.short_text("library_strategy")
+        table.short_text("library_source")
+        table.short_text("library_selection")
         table.short_text("library_layout")
         table.short_text("library_orientation")
         table.short_text("library_nominal_length")
         table.short_text("library_nominal_sdev")
+        table.short_text("instrument")
         table.short_text("submission_id")
         table.reference("sample", "Samples", type: :vector)
       end
@@ -133,6 +136,9 @@ class DBupdate
     
     { experiment_id: experiment_id,
       instrument: parser.instrument_model,
+      library_strategy: parser.library_stratedy,
+      library_source: parser.library_source,
+      library_selection: parser.library_selection,
       library_layout: parser.library_layout,
       library_orientation: parser.library_orientation,
       library_nominal_length: parser.library_nominal_length,
