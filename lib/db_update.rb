@@ -25,7 +25,7 @@ if __FILE__ == $0
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
     
-    studyids = `grep '^.RP' #{accessions} | grep 'live' | grep -v 'control' | cut -f 1`.split("\n")
+    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -34,7 +34,7 @@ if __FILE__ == $0
     
     # UPDATE SAMPLE
     samples_not_recorded = Parallel.map(not_recorded) do |study_id|
-      `grep #{study_id} #{run_members} | cut -f 4 | sort -u`.split("\n")
+      `awk -F '\t' '$5 == "#{study_id}" { print $4 }' #{run_members} | sort -u`.split("\n")
     end
     sample_id_list = samples_not_recorded.flatten.uniq.select do |id|
       id =~ /^(S|E|D)RS\d{6}$/
@@ -63,7 +63,7 @@ if __FILE__ == $0
     
     # UPDATE RUN
     runs_not_recorded = Parallel.map(not_recorded) do |study_id|
-      `grep #{study_id} #{run_members} | cut -f 1 | sort -u`.split("\n")
+      `awk -F '\t' '$5 == "#{study_id}" { print $1 }' #{run_members} | sort -u`.split("\n")
     end
     run_id_list = runs_not_recorded.flatten.uniq.select do |id|
       id =~ /^(S|E|D)RR\d{6}$/
