@@ -218,10 +218,9 @@ class DBupdate
   end
   
   def pmc_description
-    if @id
-      xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
-      parser = PMCMetadataParser.new(xml)
-      
+    xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
+    parser = PMCMetadataParser.new(xml)
+    if parser.is_available?
       body = parser.body.compact.map do |section|
         if section.has_key?(:subsec)
           [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
@@ -232,10 +231,10 @@ class DBupdate
       
       ref_journal_list = parser.ref_journal_list
       title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
-      
+    
       cited_by = parser.cited_by
       title_cited_by = cited_by.map{|n| n.values } if cited_by
-      
+    
       array = [ @id, body, title_ref_journal_list, title_cited_by ]
       array.flatten.compact.map{|d| clean_text(d) }.join("\s")
     end
