@@ -136,7 +136,7 @@ class DBupdate
     
     { experiment_id: experiment_id,
       instrument: parser.instrument_model,
-      library_strategy: parser.library_stratedy,
+      library_strategy: parser.library_strategy,
       library_source: parser.library_source,
       library_selection: parser.library_selection,
       library_layout: parser.library_layout,
