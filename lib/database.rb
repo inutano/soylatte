@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-CurrentDir = File.expand_path(File.dirname(__FILE__))
+FileLoc = File.expand_path(File.dirname(__FILE__))
 
 require "singleton"
 require "yaml"
 require "groonga"
 require "open-uri"
 
-require CurrentDir + "/pubmed_metadata_parser"
-require CurrentDir + "/pmc_metadata_parser"
-require CurrentDir + "/fastqc_result_parser"
+require FileLoc + "/pubmed_metadata_parser"
+require FileLoc + "/pmc_metadata_parser"
+require FileLoc + "/fastqc_result_parser"
 
 class Database
   include Singleton
   attr_reader :grndb
   
-  config_path = File.join(CurrentDir, "/../config.yaml")
+  config_path = File.join(FileLoc, "/../config.yaml")
   @@config = YAML.load_file(config_path)
   @@db_path = @@config["db_path"]
   
@@ -283,6 +283,9 @@ class Database
         sample_id: run.sample.map{|r| r["_key"] },
         study_type: p_record.study_type,
         instrument: run.instrument,
+        lib_strategy: run.library_strategy,
+        lib_source: run.library_source,
+        lib_selection: run.library_selection,
         lib_layout: run.library_layout,
         lib_orientation: run.library_orientation,
         lib_nominal_length: run.library_nominal_length,
@@ -359,6 +362,9 @@ class Database
       hash = { sample_id: row[:sample_id],
                species: row[:species],
                instrument: row[:instrument],
+               library_strategy: row[:lib_strategy],
+               library_source: row[:lib_source],
+               library_selection: row[:lib_selection],
                library_layout: row[:lib_layout],
                library_orientation: row[:lib_orientation],
                library_nominal_length: row[:lib_nominal_length],
@@ -393,6 +399,9 @@ class Database
         row[:study_type],
         row[:species].join(", "),
         row[:instrument],
+        row[:library_strategy],
+        row[:library_source],
+        row[:library_selection],
         row[:library_layout],
         row[:library_orientation],
         row[:library_nominal_length],
@@ -410,6 +419,9 @@ class Database
                "Study Type",
                "Sample Organism",
                "Sequencing Instrument",
+               "Library Strategy",
+               "Library Source",
+               "Library Selection",
                "Library Layout",
                "Library Orientation",
                "Library Nominal Length",
@@ -458,10 +470,6 @@ class Database
       end
     end
   end
-  
-  def description
-    @projects.map{|r| [r["_key"], r.search_fulltext]}.select{|a| !a[1] }.first(10)
-  end
 end
 
 if __FILE__ == $0
@@ -473,8 +481,6 @@ if __FILE__ == $0
   ap db.samples_size
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
-  
-  ap db.description
   
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
