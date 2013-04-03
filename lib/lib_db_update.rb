@@ -4,14 +4,16 @@ require "groonga"
 require "yaml"
 require "open-uri"
 
-require File.expand_path(File.dirname(__FILE__)) + "/sra_metadata_parser"
-require File.expand_path(File.dirname(__FILE__)) + "/pubmed_metadata_parser"
-require File.expand_path(File.dirname(__FILE__)) + "/pmc_metadata_parser"
+DirPath = File.expand_path(File.dirname(__FILE__))
+
+require DirPath + "/sra_metadata_parser"
+require DirPath + "/pubmed_metadata_parser"
+require DirPath + "/pmc_metadata_parser"
 
 class DBupdate
   def self.create_db(db_path)
     Groonga::Database.create(:path => db_path)
-  
+    
     Groonga::Schema.define do |schema|
       schema.create_table("Samples", :type => :hash) do |table|
         table.short_text("sample_title")
@@ -20,7 +22,7 @@ class DBupdate
         table.short_text("scientific_name")
         table.short_text("submission_id")
       end
-    
+      
       schema.create_table("Runs", type: :hash) do |table|
         table.short_text("experiment_id")
         table.short_text("library_strategy")
@@ -96,7 +98,7 @@ class DBupdate
   end
   
   def get_xml_path(id, type)
-    acc = `grep -m 1 '^#{id}' #{@@accessions} | cut -f 2`.chomp
+    acc = `awk -F '\t' '$1 == "#{id}" { print $2 }' #{@@accessions} | head -1`.chomp
     raise NameError if acc !~ /^(S|E|D)RA\d{6}$/
     acc_head = acc.slice(0..5)
     File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
@@ -107,7 +109,7 @@ class DBupdate
   end
   
   def sample_insert
-    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.chomp
+    submission_id = `awk -F '\t' '$1 == "#{@id}" { print $2 }' #{@@accessions} | head -1`.chomp
 
     xml = get_xml_path(@id, "sample")
     parser = SRAMetadataParser::Sample.new(@id, xml)
@@ -115,7 +117,7 @@ class DBupdate
     sample_description = parser.sample_description
     taxon_id = parser.taxon_id
     
-    scientific_name = `grep -m 1 '^#{taxon_id}' #{@@taxon_table} | cut -d ',' -f 2`.chomp
+    scientific_name = `awk -F ',' '$1 == "#{taxon_id}" { print $2 }' #{@@taxon_table} | head -1`.chomp
     
     { submission_id: submission_id,
       sample_title: sample_title,
@@ -127,10 +129,10 @@ class DBupdate
   end
   
   def run_insert
-    sample = `grep '^#{@id}' #{@@run_members} | cut -f 4 | sort -u`.split("\n")
-    submission_id = `grep -m 1 '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.chomp
-
-    experiment_id = `grep -m 1 '^#{@id}' #{@@run_members} | cut -f 3`.chomp
+    sample = `awk -F '\t' '$1 == "#{@id}" { print $4 }' #{@@run_members} | sort -u`.split("\n")
+    submission_id = `awk -F '\t' '$1 == "#{@id}" { print $2 }' #{@@accessions} | head -1`.chomp
+    experiment_id = `awk -F '\t' '$1 == "#{@id}" { print $3 }' #{@@run_members} | head -1`.chomp
+    
     xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
     
@@ -157,15 +159,15 @@ class DBupdate
     study_title = parser.study_title
     study_type = parser.study_type
     
-    run = `grep '#{@id}' #{@@run_members} | cut -f 1 | sort -u`.split("\n")
+    run = `awk -F '\t' '$5 == "#{@id}" { print $1 }' #{@@run_members} | sort -u`.split("\n")
     
-    submission_id = `grep '^#{@id}' #{@@accessions} | cut -f 2 | sort -u`.split("\n")
+    submission_id = `awk -F '\t' '$1 == "#{@id}" { print $2 }' #{@@accessions} | sort -u`.split("\n")
     
     pub_info = @@json.select{|row| submission_id.include?(row["sra_id"]) }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     
     pmc_id_array = pubmed_id.map do |pmid|
-      `grep -m 1 #{pmid} #{@@pmc_ids} | cut -d ',' -f 9`.chomp
+      `awk -F ',' '$10 == #{pmid} { print $9 }' #{@@pmc_ids} | head -1`.chomp
     end
     pmc_id = pmc_id_array.uniq.compact
     
@@ -199,7 +201,7 @@ class DBupdate
               parser.study_description ]
     array.map{|d| clean_text(d) }.join("\s")
   end
-  
+   
   def pubmed_description
     if @id
       xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
