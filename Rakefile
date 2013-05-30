@@ -62,7 +62,7 @@ namespace :setup do
       array = file.map{|l| l.split(",")[0..1].join(",") }
       open(t.name,"w"){|f| f.puts(array) }
       mv t.name, "data"
-      rm "./*.dmp"
+      rm %r{\.dmp$}
       rm "gc.prt"
       rm "readme.txt"
       rm "taxdump.tar.gz"
@@ -139,7 +139,7 @@ namespace :update do
     array = file.map{|l| l.split(",")[0..1].join(",") }
     open(t.name,"w"){|f| f.puts(array) }
     mv t.name, "data"
-    rm "./*.dmp"
+    rm %r{\.dmp$}
     rm "gc.prt"
     rm "readme.txt"
     rm "taxdump.tar.gz"
