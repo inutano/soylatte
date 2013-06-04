@@ -62,7 +62,7 @@ namespace :setup do
       array = file.map{|l| l.split(",")[0..1].join(",") }
       open(t.name,"w"){|f| f.puts(array) }
       mv t.name, "data"
-      rm %r{\.dmp$}
+      rm FileList["*.dmp"]
       rm "gc.prt"
       rm "readme.txt"
       rm "taxdump.tar.gz"
@@ -104,7 +104,15 @@ namespace :update do
   today = "_" + Time.now.strftime("%m%d")
   
   desc "Download SRA metadata table"
-  rule %r{SRA.+\.tab}  => "data/prev" do |t|
+  file "SRA_Accessions.tab" => "data/prev" do |t|
+    mv File.join("data", t.name), File.join("data/prev", t.name + today)
+    base_url = "ftp.ncbi.nlm.nih.gov/sra/reports/Metadata"
+    `lftp -c "open #{base_url} && pget -n 8 #{t.name}"`
+    mv t.name, "data"
+  end
+
+  desc "Download SRA metadata table"
+  file "SRA_Run_Members.tab" => "data/prev" do |t|
     mv File.join("data", t.name), File.join("data/prev", t.name + today)
     base_url = "ftp.ncbi.nlm.nih.gov/sra/reports/Metadata"
     `lftp -c "open #{base_url} && pget -n 8 #{t.name}"`
@@ -139,7 +147,7 @@ namespace :update do
     array = file.map{|l| l.split(",")[0..1].join(",") }
     open(t.name,"w"){|f| f.puts(array) }
     mv t.name, "data"
-    rm %r{\.dmp$}
+    rm FileList["*.dmp"]
     rm "gc.prt"
     rm "readme.txt"
     rm "taxdump.tar.gz"
