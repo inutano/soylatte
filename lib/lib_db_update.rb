@@ -242,3 +242,10 @@ class DBupdate
     end
   end
 end
+
+if __FILE__ == $0
+  require "ap"
+  DBupdate.load_file("../config.yaml")
+  id = "ERR013086"
+  ap DBupdate.new(id).run_insert
+end
