@@ -33,9 +33,15 @@ if __FILE__ == $0
     end
     
     # UPDATE SAMPLE
-    samples_not_recorded = Parallel.map(not_recorded) do |study_id|
-      `awk -F '\t' '$5 == "#{study_id}" { print $4 }' #{run_members} | sort -u`.split("\n")
+    study_sample_hash = {}
+    study_sample_raw = `awk -F '\t' '{ print $5 "\t" $4 }' #{run_members}`
+    study_sample_raw.split("\n").each do |line|
+      st_sa = line.split("\t")
+      study_sample_hash[st_sa[0]] ||= []
+      study_sample_hash[st_sa[0]] << st_sa[1]
     end
+    
+    samples_not_recorded = not_recorded.map{|study_id| study_sample_hash[study_id] }
     sample_id_list = samples_not_recorded.flatten.uniq.select do |id|
       id =~ /^(S|E|D)RS\d{6}$/
     end
@@ -62,9 +68,15 @@ if __FILE__ == $0
     end
     
     # UPDATE RUN
-    runs_not_recorded = Parallel.map(not_recorded) do |study_id|
-      `awk -F '\t' '$5 == "#{study_id}" { print $1 }' #{run_members} | sort -u`.split("\n")
+    study_run_hash = {}
+    study_run_raw = `awk -F '\t' '{ print $5 "\t" $1 }' #{run_members}`
+    study_run_raw.split("\n").each do |line|
+      st_ru = line.split("\t")
+      study_run_hash[st_ru[0]] ||= []
+      study_run_hash[st_ru[0]] << st_ru[1]
     end
+    
+    runs_not_recorded = not_recorded.map{|study_id| study_run_hash[study_id] }
     run_id_list = runs_not_recorded.flatten.uniq.select do |id|
       id =~ /^(S|E|D)RR\d{6}$/
     end
