@@ -77,15 +77,42 @@ class DBupdate
   def self.load_file(config_path)
     config = YAML.load_file(config_path)
     
-    @@accessions = config["sra_accessions"]
-    @@run_members = config["sra_run_members"]
-    @@xml_base = config["sra_xml_base"]
-    @@taxon_table = config["taxon_table"]
-    @@pmc_ids = config["PMC-ids"]
+    @@acc_hash = {} # any id => submissionid
+    acc_raw = `awk -F '\t' '$1 != "Accession" { print $1 "\t" $2 }' #{config["sra_accessions"]}`
+    acc_raw.split("\n").each do |line|
+      id_acc = line.split("\t")
+      @@acc_hash[id_acc[0]] = id_acc[1]
+    end
+    
+    @@run_hash = {} # runid => [ [expid, sampleid, studyid], .. ]
+    @@study_hash = {} # studyid => runid
+    run_raw = `awk -F '\t' '$1 != "Run" { print $1 "\t" $3 "\t" $4 "\t" $5 }' #{config["sra_run_members"]}`
+    run_raw.split("\n").each do |line|
+      id_acc = line.split("\t")
+      @@run_hash[id_acc[0]] ||= []
+      @@run_hash[id_acc[0]] << [id_acc[1], id_acc[2], id_acc[3]]
+      @@study_hash[id_acc[3]] ||= []
+      @@study_hash[id_acc[3]] << id_acc[0]
+    end
+    
+    @@taxon_hash = {}
+    taxon_raw = `awk -F ',' '{ print $1 "\t" $2 }' #{config["taxon_table"]}`
+    taxon_raw.split("\n").each do |line|
+      id_name = line.split("\t")
+      @@taxon_hash[id_name[0]] = id_name[1]
+    end
+    
+    @@pmc_hash = {}
+    pmc_ids_raw = `awk -F ',' '{ print $10 "\t" $9 }' #{config["PMC-ids"]}`
+    pmc_ids_raw.split("\n").each do |line|
+      pmid_pmcid = line.split("\t")
+      @@pmc_hash[pmid_pmcid[0]] = pmid_pmcid[1]
+    end
     
     publication = config["publication"]
     @@json = open(publication){|f| JSON.load(f) }["ResultSet"]["Result"]
-
+    
+    @@xml_base = config["sra_xml_base"]
     @@eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
   end
   
@@ -98,26 +125,20 @@ class DBupdate
   end
   
   def get_xml_path(id, type)
-    acc = `awk -F '\t' '$1 == "#{id}" { print $2 }' #{@@accessions} | head -1`.chomp
-    raise NameError if acc !~ /^(S|E|D)RA\d{6}$/
+    acc = @@acc_hash[id]
     acc_head = acc.slice(0..5)
     File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
-  rescue NameError
-    ap @id
-    ap id
-    exit
   end
   
   def sample_insert
-    submission_id = `awk -F '\t' '$1 == "#{@id}" { print $2 }' #{@@accessions} | head -1`.chomp
-
+    submission_id = @@acc_hash[@id]
     xml = get_xml_path(@id, "sample")
     parser = SRAMetadataParser::Sample.new(@id, xml)
     sample_title = parser.title
     sample_description = parser.sample_description
     taxon_id = parser.taxon_id
     
-    scientific_name = `awk -F ',' '$1 == "#{taxon_id}" { print $2 }' #{@@taxon_table} | head -1`.chomp
+    scientific_name = @@taxon_hash[taxon_id]
     
     { submission_id: submission_id,
       sample_title: sample_title,
@@ -129,9 +150,9 @@ class DBupdate
   end
   
   def run_insert
-    sample = `awk -F '\t' '$1 == "#{@id}" { print $4 }' #{@@run_members} | sort -u`.split("\n")
-    submission_id = `awk -F '\t' '$1 == "#{@id}" { print $2 }' #{@@accessions} | head -1`.chomp
-    experiment_id = `awk -F '\t' '$1 == "#{@id}" { print $3 }' #{@@run_members} | head -1`.chomp
+    sample = @@run_hash[@id].map{|a| a[1] }.uniq
+    submission_id = @@acc_hash[@id]
+    experiment_id = @@run_hash[@id].map{|a| a[0] }.uniq.first
     
     xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
@@ -159,17 +180,13 @@ class DBupdate
     study_title = parser.study_title
     study_type = parser.study_type
     
-    run = `awk -F '\t' '$5 == "#{@id}" { print $1 }' #{@@run_members} | sort -u`.split("\n")
+    run = @@study_hash[@id].uniq
     
-    submission_id = `awk -F '\t' '$1 == "#{@id}" { print $2 }' #{@@accessions} | sort -u`.split("\n")
+    submission_id = @@acc_hash[@id]
     
-    pub_info = @@json.select{|row| submission_id.include?(row["sra_id"]) }
+    pub_info = @@json.select{|row| submission_id == row["sra_id"] }
     pubmed_id = pub_info.map{|row| row["pmid"] }
-    
-    pmc_id_array = pubmed_id.map do |pmid|
-      `awk -F ',' '$10 == #{pmid} { print $9 }' #{@@pmc_ids} | head -1`.chomp
-    end
-    pmc_id = pmc_id_array.uniq.compact
+    pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
     
     { study_title: clean_text(study_title),
       study_type: study_type,
@@ -245,7 +262,9 @@ end
 
 if __FILE__ == $0
   require "ap"
+  ap "start loading file #{Time.now}"
   DBupdate.load_file("../config.yaml")
+  ap "finish loading file #{Time.now}"
   id = "ERR013086"
   ap DBupdate.new(id).run_insert
 end
