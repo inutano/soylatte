@@ -132,10 +132,10 @@ if __FILE__ == $0
     while !text_not_recorded.empty?
       study_in_progress = text_not_recorded.shift(20)
       
-      inserts = Parallel.map(study_in_progress) do |study_id|
+      insert_meta = Parallel.map(study_in_progress) do |study_id|
         insert = []
         record = projects[study_id]
-
+        
         insert << record.study_title
         
         sample_records = record.run.map{|r| r.sample }.flatten
@@ -145,18 +145,25 @@ if __FILE__ == $0
         insert << experiment_ids.compact.map{|id| DBupdate.new(id).experiment_description }
         
         insert << DBupdate.new(study_id).project_description
-        insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
-        insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
         
         [study_id, insert.flatten.compact.join("\s")]
       end
       
-      inserts.each do |insert_set|
+      insert_pubmed = {}
+      study_in_progress.each do |study_id|
+        insert_pubmed[study_id] ||= []
+        record = projects[study_id]
+        insert_pubmed[study_id] << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
+        insert_pubmed[study_id] << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
+      end
+      
+      insert_meta.each do |insert_set|
         study_id = insert_set[0]
         full_text = insert_set[1]
+        pubmed_text = insert_pubmed[study_id].flatten.compact.join("\s")
         
         record = projects[study_id]
-        record[:search_fulltext] = full_text
+        record[:search_fulltext] = [full_text, pubmed_text].join("\s")
       end
     end
     
