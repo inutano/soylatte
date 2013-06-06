@@ -48,7 +48,7 @@ if __FILE__ == $0
     
     samples = Groonga["Samples"]
     while !sample_id_list.empty?
-      sample_in_progress = sample_id_list.shift(20).select{|id| !samples[id] }
+      sample_in_progress = sample_id_list.shift(100).select{|id| !samples[id] }
       
       inserts = Parallel.map(sample_in_progress) do |sample_id|
         [sample_id, DBupdate.new(sample_id).sample_insert]
@@ -83,7 +83,7 @@ if __FILE__ == $0
     
     runs = Groonga["Runs"]
     while !run_id_list.empty?
-      run_in_progress = run_id_list.shift(20).select{|id| !runs[id] }
+      run_in_progress = run_id_list.shift(100).select{|id| !runs[id] }
       
       inserts = Parallel.map(run_in_progress) do |run_id|
         [run_id, DBupdate.new(run_id).run_insert]
@@ -110,7 +110,7 @@ if __FILE__ == $0
     # UPDATE PROJECT
     study_id_list = not_recorded
     while !study_id_list.empty?
-      study_in_progress = study_id_list.shift(20).select{|id| !projects[id] }
+      study_in_progress = study_id_list.shift(100).select{|id| !projects[id] }
       inserts = Parallel.map(study_in_progress) do |study_id|
         [study_id, DBupdate.new(study_id).project_insert]
       end
@@ -130,7 +130,7 @@ if __FILE__ == $0
     # UPDATE FULLTEXT SEARCH FIELD
     text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
     while !text_not_recorded.empty?
-      study_in_progress = text_not_recorded.shift(20)
+      study_in_progress = text_not_recorded.shift(100)
       
       insert_meta = Parallel.map(study_in_progress) do |study_id|
         insert = []
