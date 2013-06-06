@@ -41,16 +41,17 @@ if __FILE__ == $0
       study_sample_hash[st_sa[0]] << st_sa[1]
     end
     
+    samples = Groonga["Samples"]
+
     samples_not_recorded = not_recorded.map{|study_id| study_sample_hash[study_id] }
     sample_id_list = samples_not_recorded.flatten.uniq.select do |id|
-      id =~ /^(S|E|D)RS\d{6}$/
+      id =~ /^(S|E|D)RS\d{6}$/ && !samples[id]
     end
     
     processing_samples = sample_id_list.size.to_s
     sample_n = 0
-    samples = Groonga["Samples"]
     while !sample_id_list.empty?
-      sample_in_progress = sample_id_list.shift(100).select{|id| !samples[id] }
+      sample_in_progress = sample_id_list.shift(100)
       
       inserts = Parallel.map(sample_in_progress) do |sample_id|
         [sample_id, DBupdate.new(sample_id).sample_insert]
@@ -80,16 +81,17 @@ if __FILE__ == $0
       study_run_hash[st_ru[0]] << st_ru[1]
     end
     
+    runs = Groonga["Runs"]
+
     runs_not_recorded = not_recorded.map{|study_id| study_run_hash[study_id] }
     run_id_list = runs_not_recorded.flatten.uniq.select do |id|
-      id =~ /^(S|E|D)RR\d{6}$/
+      id =~ /^(S|E|D)RR\d{6}$/ && !runs[id]
     end
     
     processing_run = run_id_list.size.to_s
     run_n = 0
-    runs = Groonga["Runs"]
     while !run_id_list.empty?
-      run_in_progress = run_id_list.shift(100).select{|id| !runs[id] }
+      run_in_progress = run_id_list.shift(100)
       
       inserts = Parallel.map(run_in_progress) do |run_id|
         [run_id, DBupdate.new(run_id).run_insert]
@@ -120,7 +122,7 @@ if __FILE__ == $0
     processing_study = not_recorded.size.to_s
     study_n = 0
     while !study_id_list.empty?
-      study_in_progress = study_id_list.shift(100).select{|id| !projects[id] }
+      study_in_progress = study_id_list.shift(100)
       inserts = Parallel.map(study_in_progress) do |study_id|
         [study_id, DBupdate.new(study_id).project_insert]
       end
