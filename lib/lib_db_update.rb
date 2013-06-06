@@ -3,6 +3,7 @@
 require "groonga"
 require "yaml"
 require "open-uri"
+require "nokogiri"
 
 DirPath = File.expand_path(File.dirname(__FILE__))
 
@@ -234,6 +235,23 @@ class DBupdate
                 parser.mesh_terms.map{|n| n.values.compact } ]
       array.flatten.compact.map{|d| clean_text(d) }.join("\s")
     end
+  end
+  
+  def bulk_pubmed_description
+    xml = open(@@eutil_base + "db=pubmed&id=" + @id.join(",")).read
+    id_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
+      parser = PubMedMetadataParser.new(xml)
+      array = [ parser.pmid,
+                parser.journal_title,
+                parser.article_title,
+                parser.abstract,
+                parser.affiliation,
+                parser.authors.map{|n| n.values.compact },
+                parser.chemicals.map{|n| n[:name_of_substance] },
+                parser.mesh_terms.map{|n| n.values.compact } ]
+      [parser.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s")]
+    end
+    Hash[id_text.flatten]
   end
   
   def pmc_description
