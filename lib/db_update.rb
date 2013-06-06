@@ -46,6 +46,8 @@ if __FILE__ == $0
       id =~ /^(S|E|D)RS\d{6}$/
     end
     
+    processing_samples = sample_id_list.size.to_s
+    sample_n = 0
     samples = Groonga["Samples"]
     while !sample_id_list.empty?
       sample_in_progress = sample_id_list.shift(100).select{|id| !samples[id] }
@@ -65,6 +67,8 @@ if __FILE__ == $0
                       scientific_name: insert[:scientific_name])
         end
       end
+      sample_n += 100
+      puts "#{Time.now}\t#{sample_n.to_s}/#{processing_samples}"
     end
     
     # UPDATE RUN
@@ -81,6 +85,8 @@ if __FILE__ == $0
       id =~ /^(S|E|D)RR\d{6}$/
     end
     
+    processing_run = run_id_list.size.to_s
+    run_n = 0
     runs = Groonga["Runs"]
     while !run_id_list.empty?
       run_in_progress = run_id_list.shift(100).select{|id| !runs[id] }
@@ -105,10 +111,14 @@ if __FILE__ == $0
                  submission_id: insert[:submission_id],
                  sample: insert[:sample])
       end
+      run_n += 100
+      puts "#{Time.now}\t#{run_n.to_s}/#{processing_run}"
     end
     
     # UPDATE PROJECT
     study_id_list = not_recorded
+    processing_study = not_recorded.size.to_s
+    study_n = 0
     while !study_id_list.empty?
       study_in_progress = study_id_list.shift(100).select{|id| !projects[id] }
       inserts = Parallel.map(study_in_progress) do |study_id|
@@ -125,10 +135,14 @@ if __FILE__ == $0
                      pubmed_id: insert[:pubmed_id],
                      pmc_id: insert[:pmc_id])
       end
+      study_n += 100
+      puts "#{Time.now}\t#{study_n.to_s}/#{processing_study}"
     end
     
     # UPDATE FULLTEXT SEARCH FIELD
     text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
+    processing_text = text_not_recorded.size.to_s
+    text_n = 0
     while !text_not_recorded.empty?
       study_in_progress = text_not_recorded.shift(100)
       
@@ -165,6 +179,8 @@ if __FILE__ == $0
         record = projects[study_id]
         record[:search_fulltext] = [full_text, pubmed_text].join("\s")
       end
+      text_n += 100
+      puts "#{Time.now}\t#{text_n.to_s}/#{processing_text}"
     end
     
   when "--debug"
