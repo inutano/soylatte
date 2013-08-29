@@ -181,13 +181,12 @@ class DBupdate
     study_title = parser.study_title
     study_type = parser.study_type
     
-    run = @@study_hash[@id].uniq
-    
     submission_id = @@acc_hash[@id]
-    
     pub_info = @@json.select{|row| submission_id == row["sra_id"] }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
+
+    run = @@study_hash[@id]
     
     { study_title: clean_text(study_title),
       study_type: study_type,
