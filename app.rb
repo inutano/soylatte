@@ -82,6 +82,16 @@ class SoyLatte < Sinatra::Base
   end
   
   post "/search" do
+    species = params[:species]
+    study_type = params[:study_type]
+    instrument = params[:platform]
+    query = params[:search_query]
+    options = "species=#{species}&type=#{study_type}&instrument=#{instrument}&search_query=#{query}"
+    encoded = URI.encode(options)
+    redirect to("#{app_root}/search?#{encoded}")
+  end
+
+  get "/search" do
     m = Database.instance
     @query = params[:search_query]
     if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
