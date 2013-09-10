@@ -176,21 +176,26 @@ class DBupdate
   end
   
   def project_insert
-    xml = get_xml_path(@id, "study")
-    parser = SRAMetadataParser::Study.new(@id, xml)
-    study_title = parser.study_title
-    study_type = parser.study_type
-    
+    run = @@study_hash[@id]
+
     submission_id = @@acc_hash[@id]
     pub_info = @@json.select{|row| submission_id == row["sra_id"] }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
-
-    run = @@study_hash[@id]
     
+    xml = get_xml_path(@id, "study")
+    parser = SRAMetadataParser::Study.new(@id, xml)
+    study_title = parser.study_title
+    study_type = parser.study_type
+
     { study_title: clean_text(study_title),
       study_type: study_type,
       run: run,
+      submission_id: submission_id,
+      pubmed_id: pubmed_id,
+      pmc_id: pmc_id }
+  rescue NameError, Errno::ENOENT
+    { run: run,
       submission_id: submission_id,
       pubmed_id: pubmed_id,
       pmc_id: pmc_id }
