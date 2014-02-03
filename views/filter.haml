@@ -52,7 +52,7 @@
           .span7
             %p.lead Requested filtering condition
             %ul.inline
-              %li= [@species, @type, @instrument].delete_if{|n| n.empty? }.join(", ")
+              %li= [@species, @type, @instrument].delete_if{|n| !n or n.empty? }.join(", ")
               %li
                 %form.search{ :name => "view-all", :action => "#{app_root}/search?#{post_option}&search_query=", :method => "POST" }
                   %button.btn{ :type => "submit" }
@@ -70,15 +70,15 @@
         .row
           .span4
             %p.lead Sample Organism
-            %p= @species.empty? ? "All" : @species
+            %p= (!@species or @species.empty?) ? "All" : @species
             .donut
           .span4
             %p.lead Study Type
-            %p= @type.empty? ? "All" : @type
+            %p= (!@type or @type.empty?) ? "All" : @type
             .donut
           .span4
             %p.lead Sequencing Platform
-            %p= @instrument.empty? ? "All" : @instrument
+            %p= (!@instrument or @instrument.empty?) ? "All" : @instrument
             .donut
         
       :javascript
