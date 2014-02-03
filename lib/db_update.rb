@@ -53,7 +53,7 @@ if __FILE__ == $0
     while !sample_id_list.empty?
       sample_in_progress = sample_id_list.shift(50)
       
-      inserts = Parallel.map(sample_in_progress) do |sample_id|
+      inserts = Parallel.map(sample_in_progress, :in_threads => 16) do |sample_id|
         [sample_id, DBupdate.new(sample_id).sample_insert]
       end
       
@@ -93,7 +93,7 @@ if __FILE__ == $0
     while !run_id_list.empty?
       run_in_progress = run_id_list.shift(50)
       
-      inserts = Parallel.map(run_in_progress) do |run_id|
+      inserts = Parallel.map(run_in_progress, :in_threads => 16) do |run_id|
         [run_id, DBupdate.new(run_id).run_insert]
       end
       
@@ -123,7 +123,7 @@ if __FILE__ == $0
     study_n = 0
     while !study_id_list.empty?
       study_in_progress = study_id_list.shift(50)
-      inserts = Parallel.map(study_in_progress) do |study_id|
+      inserts = Parallel.map(study_in_progress, :in_threads => 16) do |study_id|
         [study_id, DBupdate.new(study_id).project_insert]
       end
       inserts.each do |insert_set|
@@ -148,7 +148,7 @@ if __FILE__ == $0
     while !text_not_recorded.empty?
       study_in_progress = text_not_recorded.shift(50)
       
-      insert_meta = Parallel.map(study_in_progress) do |study_id|
+      insert_meta = Parallel.map(study_in_progress, :in_threads => 16) do |study_id|
         insert = []
         record = projects[study_id]
         
