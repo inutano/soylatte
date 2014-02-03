@@ -222,6 +222,8 @@ class DBupdate
               parser.study_abstract,
               parser.study_description ]
     array.map{|d| clean_text(d) }.join("\s")
+  rescue NameError, Errno::ENOENT
+    nil
   end
    
   def pubmed_description
