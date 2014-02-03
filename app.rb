@@ -142,7 +142,7 @@ class SoyLatte < Sinatra::Base
                           type: params[:type],
                           instrument: params[:instrument])
     if !result
-      status 404
+      redirect "not_found", 404
     else
       content_type "application/json"
       JSON.dump(result)
@@ -174,7 +174,7 @@ class SoyLatte < Sinatra::Base
   get %r{/view/((S|E|D)RR\d{6}(|_1|_2))$} do |id, db, read|
     m = Database.instance
     @report = m.run_report(id)
-    status 404 if !@report
+    redirect "not_found", 404 if !@report
     haml :run
   end
   
