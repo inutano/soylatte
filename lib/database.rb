@@ -80,19 +80,35 @@ class Database
     if !type or type.empty?
       @projects.map{|r| r["_key"] }
     else
-      ref = { "Genome" => ["Whole Genome Sequencing","Resequencing","Population Genomics","Exome Sequencing"],
-              "Transcriptome" => ["Transcriptome Analysis","RNASeq"],
-              "Epigenome" => ["Epigenetics","Gene Regulation Study"],
-              "Metagenome" => ["Metagenomics"],
-              "Cancer Genomics" => ["Cancer Genomics"],
-              "Other" => ["Other","Pooled Clone Sequencing","Forensic or Paleo-genomics","Synthetic Genomics"] }
-  
-      described_types = ref[type]
-      study_records = described_types.map do |study_type|
+      study_records = described_types[type].map do |study_type|
         @projects.select{|r| r.study_type == study_type }.map{|r| r["_key"] }
       end
       study_records.flatten.uniq
     end
+  end
+  
+  def described_types
+    { "Genome" => ["Whole Genome Sequencing","Resequencing","Population Genomics","Exome Sequencing"],
+      "Transcriptome" => ["Transcriptome Analysis","RNASeq"],
+      "Epigenome" => ["Epigenetics","Gene Regulation Study"],
+      "Metagenome" => ["Metagenomics"],
+      "Cancer Genomics" => ["Cancer Genomics"],
+      "Other" => ["Other","Pooled Clone Sequencing","Forensic or Paleo-genomics","Synthetic Genomics"] }
+  end
+  
+  def type_described?(type)
+    described_types.has_key?(type)
+  end
+  
+  def type_simple(type)
+    # convert described types to simple categories by reversing described_types hash
+    rev = {}
+    described_types.each_pair do |k,v|
+      v.each do |type|
+        rev[type] = k
+      end
+    end
+    rev[type]
   end
   
   def filter_instrument(instrument)

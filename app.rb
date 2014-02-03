@@ -21,6 +21,15 @@ class SoyLatte < Sinatra::Base
     def app_root
       "#{env["rack.url_scheme"]}://#{env["HTTP_HOST"]}#{env["SCRIPT_NAME"]}"
     end
+    
+    def encode_url(opt = {})
+      species = opt[:species]
+      study_type = opt[:study_type]
+      instrument = opt[:platform]
+      query = params[:search_query]
+      options = "species=#{species}&type=#{study_type}&instrument=#{instrument}&search_query=#{query}"
+      URI.encode(options)
+    end
   end
   
   before do
@@ -43,11 +52,11 @@ class SoyLatte < Sinatra::Base
   end
   
   post "/filter" do
-    species = params[:species]
-    study_type = params[:study_type]
-    instrument = params[:platform]
-    options = "species=#{species}&type=#{study_type}&instrument=#{instrument}"
-    encoded = URI.encode(options)
+    encoded = encode_url(
+      species: params[:species],
+      study_type: params[:study_type],
+      instrument: params[:platform]
+    )
     redirect to("#{app_root}/filter?#{encoded}")
   end
   
@@ -57,8 +66,17 @@ class SoyLatte < Sinatra::Base
     @instrument = params[:instrument]
     
     m = Database.instance
+    if !m.type_described?(params[:type])
+      simple_type = m.type_simple(params[:type])
+      encoded = encode_url(
+      species: params[:species],
+      study_type: simple_type,
+      instrument: params[:platform],
+      )
+      redirect to("#{app_root}/filter?#{encoded}")
+    end
+    
     @result = m.filter_result(@species, @type, @instrument)
-  
     options = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
     @request_option = URI.encode(options)
   
@@ -82,12 +100,12 @@ class SoyLatte < Sinatra::Base
   end
   
   post "/search" do
-    species = params[:species]
-    study_type = params[:study_type]
-    instrument = params[:platform]
-    query = params[:search_query]
-    options = "species=#{species}&type=#{study_type}&instrument=#{instrument}&search_query=#{query}"
-    encoded = URI.encode(options)
+    encoded = encode_url(
+      species: params[:species],
+      study_type: params[:study_type],
+      instrument: params[:platform],
+      query: params[:search_query]
+    )
     redirect to("#{app_root}/search?#{encoded}")
   end
 
@@ -97,6 +115,15 @@ class SoyLatte < Sinatra::Base
     if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
       study_id = m.convert_to_study_id(@query)
       redirect to("#{app_root}/view/#{study_id}")
+    elsif !m.type_described?(params[:type])
+      simple_type = m.type_simple(params[:type])
+      encoded = encode_url(
+      species: params[:species],
+      study_type: simple_type,
+      instrument: params[:platform],
+      query: params[:search_query]        
+      )
+      redirect to("#{app_root}/search?#{encoded}")
     else
       @result = m.search(@query,
                          species: params[:species],
