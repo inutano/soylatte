@@ -104,7 +104,7 @@ class SoyLatte < Sinatra::Base
   post "/search" do
     encoded = encode_url(
       species: params[:species],
-      study_type: params[:study_type],
+      study_type: params[:type],
       instrument: params[:instrument],
       query: params[:search_query]
     )
