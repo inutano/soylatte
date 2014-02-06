@@ -61,9 +61,9 @@ class SoyLatte < Sinatra::Base
   end
   
   get "/filter" do
-    @species = params[:species]
-    @type = params[:type]
-    @instrument = params[:instrument]
+    @species = params[:species] || ""
+    @type = params[:type] || ""
+    @instrument = params[:instrument] || ""
     
     m = Database.instance
     if !m.type_described?(@type) && @type != ""
@@ -102,7 +102,7 @@ class SoyLatte < Sinatra::Base
   post "/search" do
     encoded = encode_url(
       species: params[:species],
-      study_type: params[:study_type],
+      study_type: params[:type],
       instrument: params[:instrument],
       query: params[:search_query]
     )
@@ -110,30 +110,31 @@ class SoyLatte < Sinatra::Base
   end
 
   get "/search" do
-    species = params[:species]
-    type = params[:type]
-    instrument = params[:instrument]
-    @query = params[:search_query]
+    @species = params[:species] || ""
+    @type = params[:type] || ""
+    @instrument = params[:instrument] || ""
     
     m = Database.instance
+    @query = params[:search_query] || ""
+    
     if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
       study_id = m.convert_to_study_id(@query)
       redirect to("#{app_root}/view/#{study_id}")
-    elsif !m.type_described?(type) && type != ""
-      simple_type = m.type_simple(type)
+    elsif !m.type_described?(@type) && @type != ""
+      simple_type = m.type_simple(@type)
       redirect "not_found", 404 if !simple_type
       encoded = encode_url(
-        species: params[:species],
+        species: @species,
         study_type: simple_type,
-        instrument: params[:instrument],
-        query: params[:search_query]
+        instrument: @instrument,
+        query: @query
       )
       redirect to("#{app_root}/search?#{encoded}")
     else
       @result = m.search(@query,
-                         species: species,
-                         type: type,
-                         instrument: instrument)
+                         species: @species,
+                         type: @type,
+                         instrument: @instrument)
       redirect "not_found", 404 if !@result
       haml :search
     end
