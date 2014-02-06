@@ -67,21 +67,19 @@ class SoyLatte < Sinatra::Base
     
     m = Database.instance
     if !m.type_described?(@type) && @type != ""
-      simple_type = m.type_simple(params[:type])
+      simple_type = m.type_simple(@type)
       redirect "not_found", 404 if !simple_type
       encoded = encode_url(
-        species: params[:species],
+        species: @species,
         study_type: simple_type,
-        instrument: params[:instrument],
+        instrument: @instrument,
       )
       redirect to("#{app_root}/filter?#{encoded}")
     end
     
     @result = m.filter_result(@species, @type, @instrument)
-    puts @result
     options = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
     @request_option = URI.encode(options)
-    
     haml :filter
   end
   
@@ -112,13 +110,17 @@ class SoyLatte < Sinatra::Base
   end
 
   get "/search" do
-    m = Database.instance
+    species = params[:species]
+    type = params[:type]
+    instrument = params[:instrument]
     @query = params[:search_query]
+    
+    m = Database.instance
     if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
       study_id = m.convert_to_study_id(@query)
       redirect to("#{app_root}/view/#{study_id}")
-    elsif !m.type_described?(params[:type]) && params[:type] != ""
-      simple_type = m.type_simple(params[:type])
+    elsif !m.type_described?(type) && type != ""
+      simple_type = m.type_simple(type)
       redirect "not_found", 404 if !simple_type
       encoded = encode_url(
         species: params[:species],
@@ -129,9 +131,9 @@ class SoyLatte < Sinatra::Base
       redirect to("#{app_root}/search?#{encoded}")
     else
       @result = m.search(@query,
-                         species: params[:species],
-                         type: params[:type],
-                         instrument: params[:instrument])
+                         species: species,
+                         type: type,
+                         instrument: instrument)
       redirect "not_found", 404 if !@result
       haml :search
     end
