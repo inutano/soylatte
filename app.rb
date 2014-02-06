@@ -25,7 +25,7 @@ class SoyLatte < Sinatra::Base
     def encode_url(opt = {})
       species = opt[:species]
       study_type = opt[:study_type]
-      instrument = opt[:platform]
+      instrument = opt[:instrument]
       query = params[:search_query]
       options = "species=#{species}&type=#{study_type}&instrument=#{instrument}&search_query=#{query}"
       URI.encode(options)
@@ -55,7 +55,7 @@ class SoyLatte < Sinatra::Base
     encoded = encode_url(
       species: params[:species],
       study_type: params[:study_type],
-      instrument: params[:platform]
+      instrument: params[:instrument]
     )
     redirect to("#{app_root}/filter?#{encoded}")
   end
@@ -72,7 +72,7 @@ class SoyLatte < Sinatra::Base
       encoded = encode_url(
         species: params[:species],
         study_type: simple_type,
-        instrument: params[:platform],
+        instrument: params[:instrument],
       )
       redirect to("#{app_root}/filter?#{encoded}")
     end
@@ -105,7 +105,7 @@ class SoyLatte < Sinatra::Base
     encoded = encode_url(
       species: params[:species],
       study_type: params[:study_type],
-      instrument: params[:platform],
+      instrument: params[:instrument],
       query: params[:search_query]
     )
     redirect to("#{app_root}/search?#{encoded}")
@@ -123,7 +123,7 @@ class SoyLatte < Sinatra::Base
       encoded = encode_url(
         species: params[:species],
         study_type: simple_type,
-        instrument: params[:platform],
+        instrument: params[:instrument],
         query: params[:search_query]
       )
       redirect to("#{app_root}/search?#{encoded}")
