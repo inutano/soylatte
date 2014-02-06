@@ -75,9 +75,9 @@
                     %option{ :value => "Other" }
                       Other
               .control-group    
-                %label.control-label{ "for" => "platform" } Sequencing Instrument
+                %label.control-label{ "for" => "instrument" } Sequencing Instrument
                 .controls
-                  %select{ :id => "platform", :name => "platform", :width => 66 }
+                  %select{ :id => "instrument", :name => "instrument", :width => 66 }
                     %option{ :value => "" } -
                     - @instruments.each do |instrument|
                       %option{ :value => instrument }= instrument
