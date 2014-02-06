@@ -231,7 +231,7 @@ class DBupdate
       xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
       parser = PubMedMetadataParser.new(xml)
       
-      array = [ @id,
+      array = [ @id.to_s,
                 parser.journal_title,
                 parser.article_title,
                 parser.abstract,
@@ -247,8 +247,7 @@ class DBupdate
     xml = open(@@eutil_base + "db=pubmed&id=" + @id.join(",")).read
     id_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
       parser = PubMedMetadataParser.new(xml)
-      array = [ parser.pmid,
-                parser.journal_title,
+      array = [ parser.journal_title,
                 parser.article_title,
                 parser.abstract,
                 parser.affiliation,
