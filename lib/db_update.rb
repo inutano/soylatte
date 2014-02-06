@@ -2,7 +2,6 @@
 
 require "groonga"
 require "yaml"
-require "parallel"
 require "open-uri"
 
 require "./lib_db_update"
@@ -32,7 +31,7 @@ if __FILE__ == $0
       !projects[studyid]
     end
     
-    # UPDATE SAMPLE
+    ### UPDATE SAMPLE
     study_sample_hash = {}
     study_sample_raw = `awk -F '\t' '{ print $5 "\t" $4 }' #{run_members}`
     study_sample_raw.split("\n").each do |line|
@@ -42,24 +41,14 @@ if __FILE__ == $0
     end
     
     samples = Groonga["Samples"]
-
     samples_not_recorded = not_recorded.map{|study_id| study_sample_hash[study_id] }
     sample_id_list = samples_not_recorded.flatten.uniq.select do |id|
       id =~ /^(S|E|D)RS\d{6}$/ && !samples[id]
     end
     
-    processing_samples = sample_id_list.size.to_s
-    sample_n = 0
-    while !sample_id_list.empty?
-      sample_in_progress = sample_id_list.shift(50)
-      
-      inserts = Parallel.map(sample_in_progress, :in_threads => 16) do |sample_id|
-        [sample_id, DBupdate.new(sample_id).sample_insert]
-      end
-      
-      inserts.each do |insert_set|
-        sample_id = insert_set[0]
-        insert = insert_set[1]
+    sample_threads = sample_id_list.lazy.map do |sample_id|
+      Thread.new do
+        insert = DBupdate.new(sample_id).sample_insert
         if insert
           samples.add(sample_id,
                       sample_title: insert[:sample_title],
@@ -68,8 +57,14 @@ if __FILE__ == $0
                       scientific_name: insert[:scientific_name])
         end
       end
-      sample_n += 50
-      puts "#{Time.now}\t#{sample_n.to_s}/#{processing_samples}"
+    end
+    
+    sample_n = 0
+    num_blocks = 4
+    sample_threads.each_slice(num_blocks).each do |group|
+      group.each{|t| t.join }
+      sample_n += num_blocks
+      puts "#{Time.now}\t#{sample_n}/#{sample_id_list.size}" if sample_n % 10 == 0
     end
     
     # UPDATE RUN
@@ -82,73 +77,69 @@ if __FILE__ == $0
     end
     
     runs = Groonga["Runs"]
-
     runs_not_recorded = not_recorded.map{|study_id| study_run_hash[study_id] }
     run_id_list = runs_not_recorded.flatten.uniq.select do |id|
       id =~ /^(S|E|D)RR\d{6}$/ && !runs[id]
     end
     
-    processing_run = run_id_list.size.to_s
+    run_threads = run_id_list.lazy.map do |run_id|
+      Thread.new do
+        insert = DBupdate.new(run_id).run_insert
+        if insert
+          runs.add(run_id,
+                   experiment_id: insert[:experiment_id],
+                   instrument: insert[:instrument],
+                   library_strategy: insert[:library_strategy],
+                   library_source: insert[:library_source],
+                   library_selection: insert[:library_selection],
+                   library_layout: insert[:library_layout],
+                   library_orientation: insert[:library_orientation],
+                   library_nominal_length: insert[:library_nominal_length],
+                   library_nominal_sdev: insert[:library_nominal_sdev],
+                   submission_id: insert[:submission_id],
+                   sample: insert[:sample])
+        end
+      end
+    end
+    
     run_n = 0
-    while !run_id_list.empty?
-      run_in_progress = run_id_list.shift(50)
-      
-      inserts = Parallel.map(run_in_progress, :in_threads => 16) do |run_id|
-        [run_id, DBupdate.new(run_id).run_insert]
-      end
-      
-      inserts.each do |insert_set|
-        run_id = insert_set[0]
-        insert = insert_set[1]
-        runs.add(run_id,
-                 experiment_id: insert[:experiment_id],
-                 instrument: insert[:instrument],
-                 library_strategy: insert[:library_strategy],
-                 library_source: insert[:library_source],
-                 library_selection: insert[:library_selection],
-                 library_layout: insert[:library_layout],
-                 library_orientation: insert[:library_orientation],
-                 library_nominal_length: insert[:library_nominal_length],
-                 library_nominal_sdev: insert[:library_nominal_sdev],
-                 submission_id: insert[:submission_id],
-                 sample: insert[:sample])
-      end
-      run_n += 50
-      puts "#{Time.now}\t#{run_n.to_s}/#{processing_run}"
+    num_blocks = 4
+    run_threads.each_slice(num_blocks).each do |group|
+      group.each{|t| t.join }
+      run_n += num_blocks
+      puts "#{Time.now}\t#{run_n}/#{run_id_list.size}" if run_n % 10 == 0
     end
     
     # UPDATE PROJECT
     study_id_list = not_recorded
-    processing_study = not_recorded.size.to_s
+    study_threads = study_id_list.lazy.map do |study_id|
+      Thread.new do
+        insert = DBupdate.new(study_id).project_insert
+        if insert
+          projects.add(study_id,
+                       study_title: insert[:study_title],
+                       study_type: insert[:study_type],
+                       run: insert[:run],
+                       submission_id: insert[:submission_id],
+                       pubmed_id: insert[:pubmed_id],
+                       pmc_id: insert[:pmc_id])
+        end
+      end
+    end
+    
     study_n = 0
-    while !study_id_list.empty?
-      study_in_progress = study_id_list.shift(50)
-      inserts = Parallel.map(study_in_progress, :in_threads => 16) do |study_id|
-        [study_id, DBupdate.new(study_id).project_insert]
-      end
-      inserts.each do |insert_set|
-        study_id = insert_set[0]
-        insert = insert_set[1]
-        projects.add(study_id,
-                     study_title: insert[:study_title],
-                     study_type: insert[:study_type],
-                     run: insert[:run],
-                     submission_id: insert[:submission_id],
-                     pubmed_id: insert[:pubmed_id],
-                     pmc_id: insert[:pmc_id])
-      end
-      study_n += 50
-      puts "#{Time.now}\t#{study_n.to_s}/#{processing_study}"
+    num_blocks = 4
+    study_threads.each_slice(num_blocks).each do |group|
+      group.each{|t| t.join }
+      study_n += num_blocks
+      puts "#{Time.now}\t#{study_n}/#{study_id_list.size}" if study_n % 10 == 0
     end
     
     # UPDATE FULLTEXT SEARCH FIELD
     text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
-    processing_text = text_not_recorded.size.to_s
-    text_n = 0
-    while !text_not_recorded.empty?
-      study_in_progress = text_not_recorded.shift(50)
-      
-      insert_meta = Parallel.map(study_in_progress, :in_threads => 16) do |study_id|
+    
+    text_threads = text_not_recorded.lazy.map do |study_id|
+      Thread.new do
         insert = []
         record = projects[study_id]
         
@@ -161,28 +152,19 @@ if __FILE__ == $0
         insert << experiment_ids.compact.map{|id| DBupdate.new(id).experiment_description }
         
         insert << DBupdate.new(study_id).project_description
+        insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
+        insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
         
-        [study_id, insert.flatten.compact.join("\s")]
+        record[:search_fulltext] = insert.join("\s")
       end
-      
-      insert_pubmed = {}
-      study_in_progress.each do |study_id|
-        insert_pubmed[study_id] ||= []
-        record = projects[study_id]
-        insert_pubmed[study_id] << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
-        insert_pubmed[study_id] << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
-      end
-      
-      insert_meta.each do |insert_set|
-        study_id = insert_set[0]
-        full_text = insert_set[1]
-        pubmed_text = insert_pubmed[study_id].flatten.compact.join("\s")
-        
-        record = projects[study_id]
-        record[:search_fulltext] = [full_text, pubmed_text].join("\s")
-      end
-      text_n += 50
-      puts "#{Time.now}\t#{text_n.to_s}/#{processing_text}"
+    end
+    
+    text_n = 0
+    num_blocks = 4
+    text_threads.each_slice(num_blocks).each do |group|
+      group.each{|t| t.join }
+      text_n += num_blocks
+      puts "#{Time.now}\t#{text_n}/#{text_not_recorded.size}" if text_n % 10 == 0
     end
     
   when "--debug"
