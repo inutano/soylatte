@@ -134,6 +134,7 @@ class DBupdate
   def sample_insert
     submission_id = @@acc_hash[@id]
     xml = get_xml_path(@id, "sample")
+    raise NameError if File.size(xml) > 1_000_000
     parser = SRAMetadataParser::Sample.new(@id, xml)
     sample_title = parser.title
     sample_description = parser.sample_description
@@ -157,6 +158,7 @@ class DBupdate
     
     xml = get_xml_path(experiment_id, "experiment")
     parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
+    raise NameError if File.size(xml) > 1_000_000
     
     { experiment_id: experiment_id,
       instrument: parser.instrument_model,
@@ -184,6 +186,7 @@ class DBupdate
     pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
     
     xml = get_xml_path(@id, "study")
+    raise NameError if File.size(xml) > 1_000_000
     parser = SRAMetadataParser::Study.new(@id, xml)
     study_title = parser.study_title
     study_type = parser.study_type
@@ -203,6 +206,7 @@ class DBupdate
   
   def experiment_description
     xml = get_xml_path(@id, "experiment")
+    raise NameError if File.size(xml) > 1_000_000
     parser = SRAMetadataParser::Experiment.new(@id, xml)
 
     array = [ parser.title,
@@ -215,6 +219,7 @@ class DBupdate
   
   def project_description
     xml = get_xml_path(@id, "study")
+    raise NameError if File.size(xml) > 1_000_000
     parser = SRAMetadataParser::Study.new(@id, xml)
     
     array = [ parser.center_name, 
