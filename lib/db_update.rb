@@ -6,7 +6,6 @@ require "open-uri"
 
 require "./lib_db_update"
 
-
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
@@ -24,7 +23,6 @@ if __FILE__ == $0
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
-    
     studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
     
     projects = Groonga["Projects"]
@@ -66,7 +64,7 @@ if __FILE__ == $0
     sample_n = 0
     num_blocks = 4
     sample_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join }
+      group.each{|t| t.join ; Thread.kill(t) }
       sample_n += num_blocks
       puts "#{Time.now}\t#{sample_n}/#{sample_id_list.size}" if sample_n % 10 == 0
     end
@@ -112,7 +110,7 @@ if __FILE__ == $0
     run_n = 0
     num_blocks = 4
     run_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join }
+      group.each{|t| t.join ; Thread.kill(t) }
       run_n += num_blocks
       puts "#{Time.now}\t#{run_n}/#{run_id_list.size}" if run_n % 10 == 0
     end
@@ -140,7 +138,7 @@ if __FILE__ == $0
     study_n = 0
     num_blocks = 4
     study_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join }
+      group.each{|t| t.join ; Thread.kill(t) }
       study_n += num_blocks
       puts "#{Time.now}\t#{study_n}/#{study_id_list.size}" if study_n % 10 == 0
     end
@@ -175,7 +173,7 @@ if __FILE__ == $0
     text_n = 0
     num_blocks = 4
     text_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join }
+      group.each{|t| t.join ; Thread.kill(t) }
       text_n += num_blocks
       puts "#{Time.now}\t#{text_n}/#{text_not_recorded.size}" if text_n % 10 == 0
     end
