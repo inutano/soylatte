@@ -6,6 +6,7 @@ require "open-uri"
 
 require "./lib_db_update"
 
+
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
@@ -50,11 +51,14 @@ if __FILE__ == $0
       Thread.new do
         insert = DBupdate.new(sample_id).sample_insert
         if insert
-          samples.add(sample_id,
-                      sample_title: insert[:sample_title],
-                      sample_description: insert[:sample_description],
-                      taxon_id: insert[:taxon_id],
-                      scientific_name: insert[:scientific_name])
+          begin
+            samples.add(sample_id,
+                        sample_title: insert[:sample_title],
+                        sample_description: insert[:sample_description],
+                        taxon_id: insert[:taxon_id],
+                        scientific_name: insert[:scientific_name])
+          rescue TypeError
+          end
         end
       end
     end
@@ -86,18 +90,21 @@ if __FILE__ == $0
       Thread.new do
         insert = DBupdate.new(run_id).run_insert
         if insert
-          runs.add(run_id,
-                   experiment_id: insert[:experiment_id],
-                   instrument: insert[:instrument],
-                   library_strategy: insert[:library_strategy],
-                   library_source: insert[:library_source],
-                   library_selection: insert[:library_selection],
-                   library_layout: insert[:library_layout],
-                   library_orientation: insert[:library_orientation],
-                   library_nominal_length: insert[:library_nominal_length],
-                   library_nominal_sdev: insert[:library_nominal_sdev],
-                   submission_id: insert[:submission_id],
-                   sample: insert[:sample])
+          begin
+            runs.add(run_id,
+                     experiment_id: insert[:experiment_id],
+                     instrument: insert[:instrument],
+                     library_strategy: insert[:library_strategy],
+                     library_source: insert[:library_source],
+                     library_selection: insert[:library_selection],
+                     library_layout: insert[:library_layout],
+                     library_orientation: insert[:library_orientation],
+                     library_nominal_length: insert[:library_nominal_length],
+                     library_nominal_sdev: insert[:library_nominal_sdev],
+                     submission_id: insert[:submission_id],
+                     sample: insert[:sample])
+          rescue TypeError
+          end
         end
       end
     end
@@ -116,13 +123,16 @@ if __FILE__ == $0
       Thread.new do
         insert = DBupdate.new(study_id).project_insert
         if insert
-          projects.add(study_id,
-                       study_title: insert[:study_title],
-                       study_type: insert[:study_type],
-                       run: insert[:run],
-                       submission_id: insert[:submission_id],
-                       pubmed_id: insert[:pubmed_id],
-                       pmc_id: insert[:pmc_id])
+          begin
+            projects.add(study_id,
+                         study_title: insert[:study_title],
+                         study_type: insert[:study_type],
+                         run: insert[:run],
+                         submission_id: insert[:submission_id],
+                         pubmed_id: insert[:pubmed_id],
+                         pmc_id: insert[:pmc_id])
+          rescue TypeError
+          end
         end
       end
     end
@@ -140,6 +150,7 @@ if __FILE__ == $0
     
     text_threads = text_not_recorded.lazy.map do |study_id|
       Thread.new do
+        begin
         insert = []
         record = projects[study_id]
         
@@ -156,6 +167,8 @@ if __FILE__ == $0
         insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
         
         record[:search_fulltext] = insert.join("\s")
+        rescue TypeError
+        end
       end
     end
     
@@ -180,6 +193,8 @@ if __FILE__ == $0
     ap hit.map{|n| n["_key"] }
     
     #ap projects["ERP000230"].submission_id
+    
+    ap samples.map{|n| n["_key"] }
     
     ap samples.size
     ap runs.size
