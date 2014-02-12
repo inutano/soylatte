@@ -161,8 +161,6 @@ if __FILE__ == $0
         insert << experiment_ids.compact.map{|id| DBupdate.new(id).experiment_description }
         
         insert << DBupdate.new(study_id).project_description
-        insert << record.pubmed_id.map{|pmid| DBupdate.new(pmid).pubmed_description }
-        insert << record.pmc_id.map{|pmcid| DBupdate.new(pmcid).pmc_description }
         
         record[:search_fulltext] = insert.join("\s")
         rescue TypeError
@@ -178,7 +176,6 @@ if __FILE__ == $0
       puts "#{Time.now}\t#{text_n}/#{text_not_recorded.size}" if text_n % 10 == 0
     end
     
-    
     pmid_hash = {}
     pmcid_hash = {}
     text_not_recorded.each do |study_id|
@@ -193,6 +190,7 @@ if __FILE__ == $0
       pmcid_hash[pmcid] << study_id
     end
     
+    pubmed_n = 0
     pmid_hash.each_pair do |pmid, studyid_list|
       pubmed_desc = DBupdate.new(pmcid).pmc_description
       if pubmed_desc
@@ -202,8 +200,10 @@ if __FILE__ == $0
           record[:search_fulltext] = text + pubmed_desc
         end
       end
+      puts "#{Time.now}\t#{pubmed_n}/#{pmid_hash.size}" if pubmed_n % 10 == 0
     end
     
+    pmc_n = 0
     pmcid_hash.each_pair do |pmcid, studyid_list|
       pmc_desc = DBupdate.new(pmcid).pmc_description
       if pmc_desc
@@ -212,6 +212,7 @@ if __FILE__ == $0
           text = record[:search_fulltext]
           record[:search_fulltext] = text + pmc_desc
       end
+      puts "#{Time.now}\t#{pmc_n}/#{pmcid_hash.size}" if pmc_n % 10 == 0
     end
     
   when "--debug"
