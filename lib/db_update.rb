@@ -178,6 +178,42 @@ if __FILE__ == $0
       puts "#{Time.now}\t#{text_n}/#{text_not_recorded.size}" if text_n % 10 == 0
     end
     
+    
+    pmid_hash = {}
+    pmcid_hash = {}
+    text_not_recorded.each do |study_id|
+      record = projects[study_id]
+      pmid = record.pubmed_id
+      pmcid = record.pmc_id
+      
+      pmid_hash[pmid] ||= []
+      pmid_hash[pmid] << study_id
+      
+      pmcid_hash[pmcid] ||= []
+      pmcid_hash[pmcid] << study_id
+    end
+    
+    pmid_hash.each_pair do |pmid, studyid_list|
+      pubmed_desc = DBupdate.new(pmcid).pmc_description
+      if pubmed_desc
+        studyid_list.each do |study_id|
+          record = projects[study_id]
+          text = record[:search_fulltext]
+          record[:search_fulltext] = text + pubmed_desc
+        end
+      end
+    end
+    
+    pmcid_hash.each_pair do |pmcid, studyid_list|
+      pmc_desc = DBupdate.new(pmcid).pmc_description
+      if pmc_desc
+        studyid_list.each do |study_id|
+          record = projects[study_id]
+          text = record[:search_fulltext]
+          record[:search_fulltext] = text + pmc_desc
+      end
+    end
+    
   when "--debug"
     require "ap"
     Groonga::Database.open(db_path)
