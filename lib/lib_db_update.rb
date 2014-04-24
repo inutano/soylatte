@@ -233,6 +233,8 @@ class DBupdate
    
   def pubmed_description
     if @id
+      puts @@eutil_base + "db=pubmed&id=#{@id}"
+      sleep 1
       xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
       parser = PubMedMetadataParser.new(xml)
       
@@ -265,6 +267,8 @@ class DBupdate
   end
   
   def pmc_description
+    puts @@eutil_base + "db=pmc&id=#{@id}"
+    sleep 1
     xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
     parser = PMCMetadataParser.new(xml)
     if parser.is_available?

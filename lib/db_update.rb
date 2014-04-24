@@ -178,21 +178,23 @@ if __FILE__ == $0
     
     pmid_hash = {}
     pmcid_hash = {}
-    text_not_recorded.each do |study_id|
+    projects.map{|r| r["_key"] }.each do |study_id|
       record = projects[study_id]
-      pmid = record.pubmed_id
-      pmcid = record.pmc_id
       
-      pmid_hash[pmid] ||= []
-      pmid_hash[pmid] << study_id
+      record.pubmed_id.each do |pmid|
+        pmid_hash[pmid] ||= []
+        pmid_hash[pmid] << study_id
+      end
       
-      pmcid_hash[pmcid] ||= []
-      pmcid_hash[pmcid] << study_id
+      record.pmc_id.each do |pmcid|
+        pmcid_hash[pmcid] ||= []
+        pmcid_hash[pmcid] << study_id
+      end
     end
     
     pubmed_n = 0
     pmid_hash.each_pair do |pmid, studyid_list|
-      pubmed_desc = DBupdate.new(pmcid).pmc_description
+      pubmed_desc = DBupdate.new(pmid).pubmed_description
       if pubmed_desc
         studyid_list.each do |study_id|
           record = projects[study_id]
@@ -200,6 +202,7 @@ if __FILE__ == $0
           record[:search_fulltext] = text + pubmed_desc
         end
       end
+      pubmed_n += 1
       puts "#{Time.now}\t#{pubmed_n}/#{pmid_hash.size}" if pubmed_n % 10 == 0
     end
     
@@ -211,7 +214,9 @@ if __FILE__ == $0
           record = projects[study_id]
           text = record[:search_fulltext]
           record[:search_fulltext] = text + pmc_desc
+        end
       end
+      pmc_n += 1
       puts "#{Time.now}\t#{pmc_n}/#{pmcid_hash.size}" if pmc_n % 10 == 0
     end
     
