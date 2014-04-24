@@ -1,0 +1,20 @@
+!!!
+%html
+	%head
+		%title no result - kusarinoko
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/failed.css", :type => "text/css" }
+		%link{ :rel => "shortcut icon", :href => "http://g86.dbcls.jp/~iNut/images/kusarinoko_favicon.ico", :type => "image/x-icon" }
+		
+	%body
+		.hako
+			.neko
+				.message
+					%h1 No dataset found
+				.caption try again with another words. your search query: #{@query}
+				.kusako{ :align => "center" }
+					%img{ :src => "http://g86.dbcls.jp/~iNut/images/kusarinoko_icons/kusarinoko_404.png", :width => "300px"}
+				.title{ :align => "right" }
+					%h2
+						%a{ :href => "/kusarinoko" } kusarinoko: Search SRA Entries with PubMed Article
+				.subtitle{ :align => "right"} ...or, who has to make that data is you.

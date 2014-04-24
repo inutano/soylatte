@@ -1,0 +1,153 @@
+!!!
+%html
+	%head
+		%title kusarinoko - result
+		%meta{ :charset => "utf-8" }
+		%link{ :rel => :stylesheet, :href => "/kusarinoko/result.css", :type => "text/css" }
+		%link{ :rel => "shortcut icon", :href => "http://g86.dbcls.jp/~iNut/images/kusarinoko_favicon.ico", :type => "image/x-icon" }
+		
+	%body
+		.left_box
+			- @result.each do |set|
+				%article
+					%section{ :class => "submission"  }
+						- sub_id = set[0].gsub('<font color="#E597B2">','').gsub('</font>','')
+						- ncbi = "http://www.ncbi.nlm.nih.gov/sra/?term=" + sub_id
+						%h1{ :id => sub_id }
+							%a{ :href => ncbi, :target => "_blank" }= sub_id	
+						%a{ :href => "http://g86.dbcls.jp/kusarinoko/show/#{sub_id}", :target => "_blank", :class => "indvlink" } link to this entry
+					
+					%section{ :class => "pubmed" }
+						- set[1].each do |pmset|
+							- pmid = pmset[0].gsub('<font color="#E597B2">','').gsub('</font>','')
+							- article_title = pmset[1]
+							- journal = pmset[2]
+							- date = pmset[3]
+							- article_abstract = pmset[5]
+							- author = pmset[6]
+							%h2{ :class => "article_title" }
+								%a{ :href => "http://www.ncbi.nlm.nih.gov/pubmed/#{pmid}", :target => "_blank" }= article_title
+							%h3{ :class => "date journal", :align => "right" }= date + " / " + journal
+							%p{ :class => "article_abstract" }= article_abstract
+							%p{ :class => "article_author" }= author
+							%p{ :class => "pmid" }= "pmid: " + pmid
+					
+					%section{ :class => "study"}
+						%h2{ :class => "study_top", :align => "right" }= "Study"
+							
+					- if set[2].class == Array
+						- study_id = set[2][0]
+						- study_abstract = set[2][1]
+						- study_description = set[2][2]
+						%h3{ :class => "study_id" }= "study id: " + study_id
+						%li{ :class => "study_abstract" }= "study abstract: " + study_abstract
+						%li{ :class => "study_description" }= "study description: " + study_description
+						
+					- else
+						%h2{ :class => "study_top", :align => "right" }= "Study"
+						%h3= "no study metadata."
+						
+					%section{ :class => "experiment" }
+					- if set[3].class == Array	
+						- expnum = set[3].length.to_s
+						%h2{ :class => "experiment_top", :align => "right" }= "Experiment"
+						.expnum{ :align => "right" }= "total " + expnum
+						
+						- set[3].each do |exp|
+							- exp_id = exp[0].gsub('<font color="#E597B2">','').gsub('</font>','')
+							- dbcenter_head = exp_id.slice(0,3)
+							- expid_head = exp_id.slice(0,6)
+							- ftp_url = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/#{dbcenter_head}/#{expid_head}/#{exp_id}"
+							- design = exp[1]
+							- lib = exp[2]
+							- platform = exp[3]
+							- space = exp[4]
+							- sample_id = exp[5]
+							
+							%h3{ :class => "experiment_id" }= "experiment id: " + exp_id
+							%p{ :class => "download_link" }
+								%a{ :href => ftp_url }= "ftp download from DDBJ"
+							%li{ :class => "experiment_design" }= "experiment design: " + design
+							%li{ :class => "library_constraction" }= "experiment library constraction: " + lib
+							%li{ :class => "platform" }= "platform: " + platform
+							%li{ :class => "sequence_space" }= "sequence space: " + space
+							%li{ :class => "sample_id_for_experiment" }
+								%a{ :href => "\##{sample_id}" }= "sample: " + sample_id
+							
+							- if exp[6].class == Array
+								- exp[6].each do |run|
+									- run_id = run[0].gsub('<font color="#E597B2">','').gsub('</font>','')
+									- ncbi_run = "http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&m=data&s=viewer&run=#{run_id}"
+									- ftp_url_run = "#{ftp_url}/#{run_id}/#{run_id}.lite.sra"
+									- spotnum = run[1]
+									- basenum = run[2]
+									- read_length = run[3]
+									
+									%h3{ :class => "run_id" }
+										%a{ :href => ncbi_run }= "run id: " + run_id
+									%p{ :class => "download_link" }
+										%a{ :href => ftp_url_run }= "ftp download from DDBJ"
+									%li{ :class => "number_of_spot" }= "number of spots: " + spotnum
+									%li{ :class => "number_of_bases" }= "number of bases: " + basenum
+									%li{ :class => "read_length" }= "average read length: " + read_length
+							- else
+								%h3= "no sequence run metadata."
+						
+							- index_lastexp = set[3].length - 1
+							- expid_last = set[3][index_lastexp][0]
+							- if exp_id != expid_last
+								%hr
+					- else
+						%h2{ :class => "experiment_top", :align => "right" }= "Experiment"
+						%h3= "no experiment metadata."
+					
+						
+					%section{ :class => "sample" }
+					- if set[4].class == Array
+						- samplenum = set[4].length.to_s
+						%h2{ :class => "sample_top", :align => "right" }= "Sample"
+						.samplenum{ :align => "right" }= "total" + samplenum
+					
+						- set[4].each do |sample|
+							- sample_id = sample[0]
+							- sample_desc = sample[1]
+							%h3{ :class => "sample_id", :id => "#{sample_id}" }= "sampled id: " + sample_id
+							%li{ :class => "sample_description" }= "sample description: " + sample_desc
+							%h4{ :class => "sample_attribution" }
+					
+							- sample[2].each do |attr|
+								- attr_tag = attr[0]
+								- attr_val = attr[1]
+								%span{ :id => attr_tag }= attr_tag + ": " + attr_val
+					
+							- index_lastsample = set[4].length - 1
+							- sampleid_last = set[4][index_lastsample][0]
+							- if sample_id != sampleid_last
+								%hr
+					- else
+						%h2{ :class => "sample_top", :align => "right" }= "Sample"
+						%h3= "no sample metadata."
+					
+					- index_lastset = @result.length - 1
+					- subid_last = @result[index_lastset][0]
+					- if sub_id != subid_last
+						%hr{ :class => "section_end" }
+						
+		.right_box
+			.search_query{ :align => "right" }= "search query: " + @query
+			- resultnum = @result.length.to_s
+			.result_number{ :align => "right" }= "total result: " + resultnum
+			%h2{ :align => "right" }= "kusarinoko"
+			.concept{ :align => "right" }
+				%font{ :size => "1pt" }= "find the data that works."
+			.return{ :align => "right" }
+				%a{ :href => "/kusarinoko" } try again
+			.result_index
+				- @result.each do |set|
+					- sub_id = set[0]
+					- set[1].each do |pmset|
+						- article_title = pmset[1]
+						%li{ :class => "pubmed_index" }
+							%a{ :href => "\##{sub_id}" }= sub_id + ": " + article_title
+
+
