@@ -1,5 +1,5 @@
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
     archive-zip (0.5.0)
       io-like (>= 0.3.0)
