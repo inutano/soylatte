@@ -193,13 +193,15 @@ if __FILE__ == $0
     end
     
     ## Experimental part: vs eutils connection limit
-    def bulk_retrieve(hash)
+    require "ap"
+    
+    def bulk_description(hash, projects)
       num_of_parallel = 100
       array = hash.to_a
       while !array.empty?
         first = array.shift(num_of_parallel)
         first_id = first.map{|a| a.first }.flatten
-        desc_hash = DBupdate.new(first_id).bulk_description
+        desc_hash = DBupdate.new(first_id).bulk_retrieve
         first.each do |id_idlist|
           id = id_idlist.first
           idlist = id_idlist.last
@@ -214,8 +216,8 @@ if __FILE__ == $0
         end
       end
     end
-    bulk_retrieve(pmid_hash)
-    bulk_retrieve(pmcid_hash)
+    bulk_description(pmid_hash, projects)
+    bulk_description(pmcid_hash, projects)
     
 =begin
     pubmed_n = 0
