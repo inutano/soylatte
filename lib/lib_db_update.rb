@@ -291,7 +291,7 @@ class DBupdate
         cited_by = p.cited_by
         title_cited_by = cited_by.map{|n| n.values } if cited_by
         # merge
-        array = [body, title_ref_journal_list, title_cited_by],
+        array = [body, title_ref_journal_list, title_cited_by]
         [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
       end
     end
