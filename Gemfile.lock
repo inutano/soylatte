@@ -3,6 +3,7 @@ GEM
   specs:
     archive-zip (0.5.0)
       io-like (>= 0.3.0)
+    awesome_print (1.2.0)
     diff-lcs (1.2.1)
     groonga (1.0.0)
       rroonga
@@ -39,6 +40,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   groonga
   haml
   nokogiri

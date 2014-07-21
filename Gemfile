@@ -7,6 +7,7 @@ gem "sass"
 gem "groonga"
 gem "nokogiri"
 gem "rack-protection"
+gem "awesome_print"
 
 group :test do
   gem "rspec"
