@@ -250,6 +250,80 @@ class DBupdate
     end
   end
   
+  def bulk_retrieve
+    idlist = @id.join(",")
+    if idlist =~ /PMC/
+      bulk_parse(idlist, :pmc)
+    else
+      bulk_parse(idlist, :pubmed)
+    end
+  end
+  
+  def bulk_parse(idlist, sym)
+    xml = bulk_xml(idlist, sym)
+    case sym
+    when :pmc
+      bulkpmc_parse(xml)
+    when :pubmed
+      bulkpubmed_parse(xml)
+    end
+  end
+  
+  def bulk_xml(idlist, sym)
+    open(@@eutil_base + "db=" + sym.to_s + "&id=" + idlist).read
+  end
+  
+  def bulkpmc_parse(xml)
+    pmcid_text = Nokogiri::XML(xml).css("article").map{|n| n.to_xml }.map do |xml|
+      p = PMCMetadataParser.new(xml)
+      if p.is_available?
+        # article body
+        body = p.body.compact.map do |section|
+          if section.has_key?(:subsec)
+            [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
+          else
+            section.values
+          end
+        end
+        # metadata
+        ref_journal_list = p.ref_journal_list
+        title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
+        cited_by = p.cited_by
+        title_cited_by = cited_by.map{|n| n.values } if cited_by
+        # merge
+        array = [body, title_ref_journal_list, title_cited_by]
+        [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+      end
+    end
+    array_to_hash(pmcid_text)
+  end
+  
+  def bulkpubmed_parse(xml)
+    pmid_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
+      p = PubMedMetadataParser.new(xml)
+      array = [ p.journal_title,
+                p.article_title,
+                p.abstract,
+                p.affiliation,
+                p.authors.map{|n| n.values.compact },
+                p.chemicals.map{|n| n[:name_of_substance] },
+                p.mesh_terms.map{|n| n.values.compact } ]
+      [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+    end
+    array_to_hash(pmid_text)
+  end
+  
+  def array_to_hash(array)
+    h = {}
+    array.each do |k_v|
+      key = k_v.first
+      value = k_v.last
+      h[key] = value
+    end
+    h
+  end
+  
+  # test implementation; not tested
   def bulk_pubmed_description
     xml = open(@@eutil_base + "db=pubmed&id=" + @id.join(",")).read
     id_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
@@ -263,7 +337,7 @@ class DBupdate
                 parser.mesh_terms.map{|n| n.values.compact } ]
       [parser.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s")]
     end
-    Hash[id_text.flatten]
+    Hash[id_text.flatten] ## NO LONGER WORK WITH < RUBY 2.0
   end
   
   def pmc_description

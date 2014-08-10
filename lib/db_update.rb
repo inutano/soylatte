@@ -192,6 +192,34 @@ if __FILE__ == $0
       end
     end
     
+    ## Experimental part: vs eutils connection limit
+    require "ap"
+    
+    def bulk_description(hash, projects)
+      num_of_parallel = 100
+      array = hash.to_a
+      while !array.empty?
+        first = array.shift(num_of_parallel)
+        first_id = first.map{|a| a.first }.flatten
+        desc_hash = DBupdate.new(first_id).bulk_retrieve
+        first.each do |id_idlist|
+          id = id_idlist.first
+          idlist = id_idlist.last
+          desc = desc_hash[id]
+          if desc
+            idlist.each do |i|
+              record = projects[i]
+              text = record[:search_fulltext]
+              record[:search_fulltext] = text + "\s" + desc
+            end
+          end
+        end
+      end
+    end
+    bulk_description(pmid_hash, projects)
+    bulk_description(pmcid_hash, projects)
+    
+=begin
     pubmed_n = 0
     pmid_hash.each_pair do |pmid, studyid_list|
       pubmed_desc = DBupdate.new(pmid).pubmed_description
@@ -219,6 +247,7 @@ if __FILE__ == $0
       pmc_n += 1
       puts "#{Time.now}\t#{pmc_n}/#{pmcid_hash.size}" if pmc_n % 10 == 0
     end
+=end
     
   when "--debug"
     require "ap"
