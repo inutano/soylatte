@@ -4,9 +4,10 @@ ruby '2.1.2'
 gem "sinatra"
 gem "haml"
 gem "sass"
-gem "groonga"
+gem "rroonga"
 gem "nokogiri"
 gem "rack-protection"
+gem "awesome_print"
 
 group :test do
   gem "rspec"
