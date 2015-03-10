@@ -1,0 +1,141 @@
+!!! XML
+!!!
+%html
+  %head
+    %title Search Result
+    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/theme.bootstrap.css" }
+    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
+
+    %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.widgets.min.js" }
+    :javascript
+      $(document).ready(function(){
+        $.extend($.tablesorter.themes.bootstrap, {
+          table: 'table table-hover',
+          header: 'bootstrap-header',
+          footerRow: '',
+          footerCells: '',
+          icons: '',
+          sortNone: 'bootstrap-icon-unsorted',
+          sortAsc: 'icon-chevron-up',
+          sortDesc: 'icon-chevron-down',
+          active: '',
+          hover: '',
+          filterRow: '',
+          even: '',
+          odd: ''
+        });
+        $("#projectList").tablesorter({
+          theme: "bootstrap",
+          widthFixed: true,
+          headerTemplate: '{content} {icon}',
+          widgets: ["uitheme", "filter", "zebra"],
+          widgetOptions: {
+            zebra : ["even", "odd"],
+            filter_reset: ".reset",
+          }
+        })
+      });
+
+
+  %body
+    .container
+      .navbar.navbar-fixed-top
+        .navbar-inner
+          .container
+            %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse"}
+              %span.icon-bar
+              %span.icon-bar
+              %span.icon-bar
+            %a.brand
+              DBCLS SRA metadata search (beta)
+            .nav-collapse
+              %ul.nav
+                %li
+                  %a{:href => "#{app_root}" } Home
+                %li
+                  %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
+                %li
+                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit", "data-toggle" => "tooltip", "title" => "github repo"}
+                    %i.icon-github
+                %li
+                  %a{:href => "http://twitter.com/inutano", "data-toggle" => "tooltip", "title" => "Twitter" }
+                    %i.icon-twitter
+                :javascript
+                  $("a").tooltip({
+                    'selector': '',
+                    'placement': 'bottom'
+                  });
+
+      .page-header
+        %h1
+          DBCLS SRA Metadata Search
+          %small
+            project: Soylatte
+
+      %section
+        - show_query = @query.empty? ? "undefined" : @query
+        %p.lead= "Search query: " + show_query
+        %hr
+
+        - result_size = @result.size
+        - project_s = @result.size == 1 ? " project" : " projects"
+        %h4= result_size.to_s + project_s
+        %table.table.table-hover.tablesorter#projectList
+          - study_type_ref = { 1 => "Genome",
+                               2 => "Transcriptome",
+                               3 => "Epigenome",
+                               4 => "Metagenome",
+                               5 => "Cancer Genomics",
+                               0 => "Other" }
+          %thead
+            %tr
+              %th Study ID
+              %th Study Title
+              %th Study Type
+              %th Sequencing Instrument
+              %th Scientific Name
+              %th Number of Sequencing
+              %th PubMed ID
+
+          %tbody
+            - @result.each do |record|
+              - study_id = record["_key"]
+              - if !record.pubmed_id.empty?
+                %tr{ :class => "info" }
+                  %td
+                    %a{ :href => "#{app_root}/view/#{study_id}"}= study_id
+                  - title = record.study_title
+                  %td= title ? title.gsub("_","\s") : title
+                  %td= record.study_type
+                  %td= record.run.map{|r| r.instrument }.uniq.join(", ")
+                  %td= record.run.map{|r| r.sample.map{|s| s ? s.scientific_name : s } }.flatten.uniq.compact.join(", ")
+                  %td= record.run.size.to_s
+                  %td
+                    - record.pubmed_id.map do |pmid|
+                      %a{ :href => "http://www.ncbi.nlm.nih.gov/pubmed/#{pmid}" }= pmid
+              - else
+                %tr
+                  %td
+                    %a{ :href => "#{app_root}/view/#{study_id}"}= study_id
+                  - title = record.study_title
+                  %td= title ? title.gsub("_","\s") : title
+                  %td= record.study_type
+                  %td= record.run.map{|r| r.instrument }.uniq.join(", ")
+                  %td= record.run.map{|r| r.sample.map{|s| s ? s.scientific_name : s } }.flatten.uniq.compact.join(", ")
+                  %td= record.run.size.to_s
+                  %td no publication
+
+      %footer
+        powered by
+        %a{ :href => "http://dbcls.rois.ac.jp/en" }
+          DBCLS
+        , project licensed under CC-BY 2.1 JP. /
+        Font Awesome by Dave Gandy -
+        %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
+          http://fortawesome.github.com/Font-Awesome
