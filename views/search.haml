@@ -125,18 +125,7 @@
                 filter_ignoreCase : true
               }
         });
-        $("select").change(function(){
-            var url = window.location.href;
-            var str = $(this).val();
-            var newurl = "";
-            if(url.match(/lpp/)){
-                url = url.replace(/lpp=[0-9]+/,"");
-                newurl = url + "lpp=" +  str;
-            }else{
-                newurl = url + "&lpp=" + str;
-            }
-            window.location=newurl;
-        });
+
         $(window).scroll(function () {
             var v = $(window).scrollTop();
             var u = $('body').height() - (v + $(window).height());
