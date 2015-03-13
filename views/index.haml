@@ -13,20 +13,23 @@
     %script{ :src => "#{app_root}/js/ranking_study.js" }
     %script{ :src => "#{app_root}/js/ranking_platform.js" }
 
-    -# This page is replaced by static html on actual operation
+    / This page is replaced by static public/index.html file on actual operation,
+    / and used only in rendering test.
 
   %body
     #container
       #header
         .content
           .box.box1
-            %h1 DBCLS
+            %h1
+              DBCLS
               %span.or SRA
           .box.box2
             %img{:src => "#{app_root}/images/DBCLS_SRA_logo.png"}
           .box.box3
             %p
-              %span.em DISCOVER
+              %span.em
+                DISCOVER
                 %br Interesting & Available SRA Data
 
       #main
@@ -77,7 +80,8 @@
             #hot-ele-1.hot-ele
               .icon
                 %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
-              .boxtitle Other
+              .boxtitle
+                Other
                 %br
                 Hiseq 2500
               .ttl
@@ -88,7 +92,8 @@
             #hot-ele-2.hot-ele
               .icon
                 %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
-              .boxtitle Transcriptome
+              .boxtitle
+                Transcriptome
                 %br
                 Helicos HeliScope
               .ttl
@@ -98,7 +103,7 @@
                 .pub-journal Nature
             #hot-ele-3.hot-ele
               .icon
-                %img{src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png" :width => "50px"}
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
               .boxtitle Transcriptome
                 %br Helicos HeliScope
               .ttl
@@ -109,7 +114,8 @@
             #hot-ele4.hot-ele
               .icon
                 %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
-              .boxtitle Transcriptome
+              .boxtitle
+                Transcriptome
                 %br
                 Helicos HeliScope
               .ttl
@@ -124,7 +130,7 @@
         .content
           %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"}
             %img{:alt => "Creative Commons License", :style => "border-width:0", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png"}
-          %span{:xmlns:dct => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
+          %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
           is licensed under a
-          %a{:rel => "license", href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
+          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
             Unported License
