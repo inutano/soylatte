@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>SRA 15</title>
+  <link rel="stylesheet" href="css/sra15.css">
+  <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script src="js/d3.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/ranking_species.js"></script>
+  <script src="js/ranking_study.js"></script>
+  <script src="js/ranking_platform.js"></script>
+</head>
+
+<body>
+  <div id="container">
+
+
+    <div id="header">
+      <div class="content">
+
+        <!-- Header section -->
+        <div class="box box1">
+          <h1>DBCLS
+            <span class="or">SRA</span>
+          </h1>
+        </div>
+        <div class="box box2">
+          <img src="images/DBCLS_SRA_logo.png">
+        </div>
+        <div class="box box3">
+          <p>
+            <span class="em">DISCOVER</span>
+            <br>Interesting & Available SRA Data
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!--
+    <div class="news">
+        <div class="alert alert-warning alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">&times;</span></button>
+             404 Not Found
+        </div>
+    </div>
+    -->
+
+
+    <div id="main">
+      <div class="content">
+        <!-- Trends section -->
+        <h2>Trends & Search SRA data</h2>
+
+        <div class="row">
+          <div class="box-r">→ <a href="trends.html"> for more detail</a>
+          </div>
+        </div>
+        <div class="row trends">
+          <div class="box tob">
+            <h3>Species</h3>
+
+            <div id="col1_list" class="ranking"></div>
+            <div id="col1_bars" class="col_bars"></div>
+            <div id="col1_form">
+              <input type="text" size="15" placeholder="&#xF002; Search" />
+            </div>
+          </div>
+          <div class="box">
+            <h3>Study Type</h3>
+
+            <div id="col2_list" class="ranking"></div>
+            <div id="col2_bars" class="col_bars"></div>
+            <div id="col2_form">
+              <input type="text" size="15" placeholder="&#xF002; Search" />
+            </div>
+          </div>
+          <div class="box">
+            <h3>Platform</h3>
+
+            <div id="col3_list" class="ranking"></div>
+            <div id="col3_bars" class="col_bars"></div>
+            <div id="col3_form">
+              <input type="text" size="15" placeholder="&#xF002; Search" />
+            </div>
+          </div>
+          <div class="box">
+            <h3>Usage</h3>
+
+            <div class="lists">
+              <ul>
+                <li>Click bars or bubbles and you can see more details of selected data.</li>
+                <li>Input keywords and you can view ratio of feature selection.</li>
+                <li>You can see result of combined search criteria too.</li>
+              </ul>
+            </div>
+            <div class="col_bars">
+
+            </div>
+          </div>
+        </div>
+        <div class="row search">
+          <h3>Free Keyword</h3>
+          <input type="text" size="40">
+          <button type="button">Submit</button>
+        </div>
+
+
+        <!-- Publication section -->
+        <h2>Publications</h2>
+
+        <div class="row">
+          <div class="box-r">→ <a href="http://sra.dbcls.jp/trends.html">Full Publication List</a>
+          </div>
+        </div>
+        <h3>New Publications</h3>
+
+        <div class="row hot">
+
+          <div id="hot-ele-1" class="hot-ele">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png" width="50px">
+            </div>
+            <div class="boxtitle">
+              Other
+              <br> Hiseq 2500
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP002445">
+                            Genome Reseq for res investigation of STAP cell
+                        </a>
+            </div>
+            <div class="impact-high">
+              <div class="pub-yr">2014</div>
+              <div class="pub-journal">Nature</div>
+            </div>
+          </div>
+          <div id="hot-ele-2" class="hot-ele">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png" width="50px">
+            </div>
+            <div class="boxtitle">
+              Transcriptome
+              <br> Helicos HeliScope
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032">
+                            A promoter level mammalian exp atlas
+                        </a>
+            </div>
+            <div class="impact-high">
+              <div class="pub-yr">2014</div>
+              <div class="pub-journal">Nature</div>
+            </div>
+          </div>
+          <div id="hot-ele-3" class="hot-ele">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png" width="50px">
+            </div>
+            <div class="boxtitle">
+              Transcriptome
+              <br> Helicos HeliScope
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032">
+                            A promoter level mammalian exp atlas
+                        </a>
+            </div>
+            <div class="impact-high">
+              <div class="pub-yr">2014</div>
+              <div class="pub-journal">Nature</div>
+            </div>
+          </div>
+          <div id="hot-ele-4" class="hot-ele">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png" width="50px">
+            </div>
+            <div class="boxtitle">
+              Transcriptome
+              <br> Helicos HeliScope
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032">
+                            A promoter level mammalian exp atlas
+                        </a>
+            </div>
+            <div class="impact-high">
+              <div class="pub-yr">2014</div>
+              <div class="pub-journal">Nature</div>
+            </div>
+          </div>
+        </div>
+        <h3>Hot Publications</h3>
+
+        <div class="row hot">
+
+          <div class="odd-ele" id="odd-ele-1" style="">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png">
+            </div>
+            <div class="boxtitle">
+              Transcriptome
+              <br> Illumina HiSeq 1500
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP038104">
+                <span style="text-decoration: line-through;">
+                  Bidirectional developmental potential in reprogrammed cells with acquired pluripotency
+
+                </span>
+              </a>
+            </div>
+            <div class="impact-high">
+              <div class="pub-yr">2014</div>
+              <div class="pub-journal">Nature</div>
+            </div>
+
+          </div>
+          <div class="odd-ele" id="odd-ele-2" style="">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png">
+            </div>
+            <div class="boxtitle">
+              Epigenetics
+              <br> Illumina HiSeq 2000
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP012539">
+                            PRMT5-mediated histone H4 arginine-3 symmetrical dimethylation ...
+                        </a>
+            </div>
+            <div class="impact-middle">
+              <div class="pub-yr">2013</div>
+              <div class="pub-journal">Nucleic Acids Res</div>
+            </div>
+
+          </div>
+          <div class="odd-ele" id="odd-ele-3" style="">
+            <div class="icon">
+              <br>
+            </div>
+            <div class="boxtitle">
+              Other
+              <br> Illumina Genome Analyzer II
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP028632">
+                            a tool for genome-wide discovery of subgenome-specific base-identity
+                            in polyploids
+                        </a>
+            </div>
+            <div class="impact-low">
+              <div class="pub-yr">2013</div>
+              <div class="pub-journal">BMC Genomics</div>
+            </div>
+          </div>
+          <div class="odd-ele" id="odd-ele-4" style="">
+            <div class="icon">
+              <img src="http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/09/Rice_sm.png">
+            </div>
+            <div class="boxtitle">
+              Whole Genome Seq
+              <br> Illumina HiSeq 2000
+            </div>
+            <div class="ttl">
+              <a href="http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP022168">
+                            Genomewide Variation in an Introgression Line of Rice-Zizania ...
+                        </a>
+            </div>
+            <div class="impact-low">
+              <div class="pub-yr">2013</div>
+              <div class="pub-journal">PLOS One</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="content">
+
+        <!-- Footer section-->
+        <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+          <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/80x15.png" />
+        </a>
+        <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">DBCLS SRA</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0
+            Unported License</a>.
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+  </script>
+</body>
+
+</html>

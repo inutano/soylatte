@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Trends in SRA data - DBCLS SRA</title>
+    <link rel="stylesheet" href="css/sra15.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="js/highstock.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:400,300"/>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="js/exporting.js"></script>
+    <script type="text/javascript" src="js/trends.type.js"></script>
+    <script type="text/javascript" src="js/trends.platform.js"></script>
+    <script type="text/javascript" src="js/table.trend.type.js"></script>
+    <script type="text/javascript" src="js/table.trend.platform.js"></script>
+</head>
+<body>
+<div id="container">
+
+
+    <div id="header" class="sub">
+        <div class="content">
+
+            <!-- Header section -->
+            <div class="box box1"><img src="images/DBCLS_SRA_logo.png" height="115">
+            </div>
+            <div class="box box2"><h1>DBCLS <span class="or">SRA</span></h1></div>
+            <div class="box box3">
+                <ul>
+                    <li><a href="http://github.com/inutano/sra_metadata_toolkit"> <i
+                            class="fa fa-github-square"></i></a></li>
+                    <li><a href="http://twitter.com/inutano"><i class="fa fa-twitter"></i></a></li>
+                    <li><a href="http://trattoriainutano.tumblr.com">blog</a></li>
+                    <li><a href="http://sra.dbcls.jp/search">Home</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="main" class="trends">
+        <div class="content">
+            <h2>Trends in SRA data</h2>
+
+            <div id="type">
+                <h3>By study types</h3>
+                <div class="row">
+                    <div id="tableType" class="table">
+                        <table class="tbl"
+                               style="width: 340px; float: right;">
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="graphType" class="graph"></div>
+                </div>
+            </div>
+
+            <br style="clear: both;"><br>
+
+            <div id="platform">
+                <h3>By sequencing platforms</h3>
+                <div class="row">
+                    <div id="tablePlatform" class="table">
+                        <table class="tbl"
+                               style="width: 340px; float: right;">
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="graphPlatform" class="graph"></div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div id="footer">
+        <div class="content">
+
+            <!-- Footer section-->
+            <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+                <img alt="Creative Commons License"
+                     style="border-width:0"
+                     src="https://i.creativecommons.org/l/by/3.0/80x15.png"/></a><span
+                xmlns:dct="http://purl.org/dc/terms/" property="dct:title">DBCLS SRA</span> is licensed under a <a
+                rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0
+            Unported License</a>.
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

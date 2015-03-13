@@ -3,7 +3,6 @@ data
 lib/.ruby-version
 lib/Prev
 lib/test_db
-public
 vendor
 .rbenv-version
 .sass-cache
