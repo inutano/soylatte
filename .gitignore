@@ -18,3 +18,4 @@ lib/pubmed_metadata_parser.rb
 lib/sra_metadata_parser.rb
 log
 resources
+.ruby-version
