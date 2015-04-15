@@ -206,6 +206,21 @@ div#main{
     padding: 4px 4px;
     color: #444444;
 }
+#main .search input[type="submit"]{
+  width: 200px;
+  height: 28px;
+  font-size: 16px;
+  -webkit-border-radius:2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  border: none;
+  background-color: #f6ad49;
+  color: white;
+  margin-left: 10px;
+}
+#main .search input[type="submit"]:hover{
+  background-color: #f39800;
+}
 #main .search{
     height: 90px;
     margin-bottom: 14px;
@@ -862,6 +877,19 @@ a.dropdown-toggle i.fa.fa-download{
 }
 #main.trends .tbl a:hover {
     color: #708090;
+}
+/* 404 NOT FOUND */
+#main.result .span6 {
+  width: 460px;
+  float: left;
+  margin-left: 20px;
+}
+#main .form-horizontal .control-group::after {
+  clear: both;
+}
+#main .form-horizontal .control-group::before,
+ .form-horizontal .control-group::after {
+   display: table;
 }
 /* Dismissible Alerts */
 div.news {

@@ -1,125 +1,135 @@
-!!! XML
 !!!
+!!! 5
 %html
   %head
     %title NOT FOUND
-    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
-    %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+    %meta{:charset => "utf-8"}
+    %link{:rel => :stylesheet, :href => "//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/sra15.css", :type => "text/css"}
+    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
     %script{ :src => "#{app_root}/js/bootstrap.min.js" }
-      
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.widgets.min.js" }
+
   %body
-    .container
-      .navbar.navbar-fixed-top
-        .navbar-inner
-          .container
-            %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse" }
-              %span.icon-bar
-              %span.icon-bar
-              %span.icon-bar
-            %a.brand
-              DBCLS SRA metadata search (beta)
-            .nav-collapse
-              %ul.nav
-                %li
-                  %a{:href => "#{app_root}" } Home
-                %li
-                  %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
-                %li
-                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit", "data-toggle" => "tooltip", "title" => "github repo"}
-                    %i.icon-github
-                %li
-                  %a{:href => "http://twitter.com/inutano", "data-toggle" => "tooltip", "title" => "Twitter" }
-                    %i.icon-twitter
-                :javascript
-                  $("a").tooltip({
-                    'selector': '',
-                    'placement': 'bottom'
-                  });
-      
-      .page-header
-        %h1
-          DBCLS SRA Metadata Search
-          %small
-            project: Soylatte
-      
-      %section
-        .row
-          %p.lead 404 Not Found
-          .span6
-            %p.lead Setting search filter
-            %form.form-horizontal{ :name => "filters", :action => "#{app_root}/filter", :method => "POST" }
-              .control-group  
-                %label.control-label{ "for" => "species" } Sample Organism
-                .controls
-                  %input.input-large.search-query#typeSpecies{ :type => "text", :name => "species", :placeholder => "Type scientific name" }
-                  :javascript
-                    var organismList = #{@species};
-                    $('#typeSpecies').typeahead({source: organismList});
-              .control-group
-                %label.control-label{ "for" => "study_type" } Study Type
-                .controls
-                  %select{ :id => "study_type", :name => "study_type", :width => 66 }
-                    %option{ :value => "" } -
-                    %option{ :value => "Genome" }
-                      Genome
-                    %option{ :value => "Transcriptome" }
-                      Transcriptome
-                    %option{ :value => "Epigenome" }
-                      Epigenome
-                    %option{ :value => "Metagenome" }
-                      Metagenome
-                    %option{ :value => "Cancer Genomics" }
-                      Cancer Genomics
-                    %option{ :value => "Other" }
-                      Other
-              .control-group    
-                %label.control-label{ "for" => "platform" } Sequencing Instrument
-                .controls
-                  %select{ :id => "platform", :name => "platform", :width => 66 }
-                    %option{ :value => "" } -
-                    - @instruments.each do |instrument|
-                      %option{ :value => instrument }= instrument
-              .control-group
-                .controls
-                  %button.btn{ :type => "submit" }
-                    submit condition
-        
-          .span6
-            %p.lead Fulltext search
-            %form.search{ :name => "search", :action => "#{app_root}/search", :method => "POST" }
-              %label search without filtering
-              %input.input-large.search-query{ :type => "text", :name => "search_query", :placeholder => "Type search query" }
-              %button.btn{ :type => "submit" }
-                search
-      
-      %hr
-      %section
-        .row
-          .span3
-          .span6
-            %p.lead Search on DDBJ/EBI/NCBI, EGA and dbGaP
+    #container
+      -#header section
+      #header.sub
+        .content
+          .box.box1
+            %img{:src => "#{app_root}/images/DBCLS_SRA_logo.png", :height => "115"}
+          .box.box2
+            %h1
+              DBCLS
+              %span.or SRA
+          .box.box3
             %ul
               %li
-                %a{ :href => "http://trace.ddbj.nig.ac.jp/DRASearch" } DRASearch/DDBJ DRA
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                  %i.fa.fa-github-square
               %li
-                %a{ :href => "http://www.ebi.ac.uk/ena" } ENABrowser/EBI ENA
+                %a{:href => "http://twitter.com/inutano"}
+                  %i.fa.fa-twitter
               %li
-                %a{ :href => "http://www.ncbi.nlm.nih.gov/sra/advanced" } SRA Advanced Search Builder/NCBI SRA
+                %a{:href => "http://trattoriainutano.tumblr.co"} blog
               %li
-                %a{ :href => "https://www.ebi.ac.uk/ega/studies" } Studies/EBI EGA
-              %li
-                %a{ :href => "http://www.ncbi.nlm.nih.gov/gap/advanced" } dbGaP Advanced Search Builder/NCBI dbGaP
-          .span3
-          
-          
-      %footer
-        powered by
-        %a{ :href => "http://dbcls.rois.ac.jp/en" }
-          DBCLS
-        , project licensed under CC-BY 2.1 JP. /
-        Font Awesome by Dave Gandy - 
-        %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
-          http://fortawesome.github.com/Font-Awesome
+                %a{:href => "#{app_root}"} Home
+
+      -#main section
+      #main.result
+        .content
+          %h2 DBCLS SRA Metadata Search
+          - show_query = @query.empty? ? "undefined" : @query
+          %h3= "404 Not Found: " + show_query
+          .row
+            .span6
+              %p.lead Setting search filter
+              %form.form-horizontal{ :name => "filters", :action => "#{app_root}/filter", :method => "POST" }
+                .control-group
+                  %label.control-label{ "for" => "species" } Sample Organism
+                  .controls
+                    %input.input-large.search-query#typeSpecies{ :type => "text", :name => "species", :placeholder => "Type scientific name" }
+                    :javascript
+                      var organismList = #{@species};
+                      $('#typeSpecies').typeahead({source: organismList});
+                .control-group
+                  %label.control-label{ "for" => "study_type" } Study Type
+                  .controls
+                    %select{ :id => "study_type", :name => "study_type", :width => 66 }
+                      %option{ :value => "" } -
+                      %option{ :value => "Genome" }
+                        Genome
+                      %option{ :value => "Transcriptome" }
+                        Transcriptome
+                      %option{ :value => "Epigenome" }
+                        Epigenome
+                      %option{ :value => "Metagenome" }
+                        Metagenome
+                      %option{ :value => "Cancer Genomics" }
+                        Cancer Genomics
+                      %option{ :value => "Other" }
+                        Other
+                .control-group
+                  %label.control-label{ "for" => "platform" } Sequencing Instrument
+                  .controls
+                    %select{ :id => "platform", :name => "platform", :width => 66 }
+                      %option{ :value => "" } -
+                      - @instruments.each do |instrument|
+                        %option{ :value => instrument }= instrument
+                .control-group
+                  .controls
+                    %button.btn{ :type => "submit" }
+                      submit condition
+
+            .span6
+              %p.lead Fulltext search
+              %form.search{ :name => "search", :action => "#{app_root}/search", :method => "POST" }
+                %label search without filtering
+                %input.input-large.search-query{ :type => "text", :name => "search_query", :placeholder => "Type search query" }
+                %button.btn{ :type => "submit" }
+                  search
+
+          .row
+            .span6
+              %p.lead Search on DDBJ/EBI/NCBI, EGA and dbGaP
+              %ul
+                %li
+                  %a{ :href => "http://trace.ddbj.nig.ac.jp/DRASearch" } DRASearch/DDBJ DRA
+                %li
+                  %a{ :href => "http://www.ebi.ac.uk/ena" } ENABrowser/EBI ENA
+                %li
+                  %a{ :href => "http://www.ncbi.nlm.nih.gov/sra/advanced" } SRA Advanced Search Builder/NCBI SRA
+                %li
+                  %a{ :href => "https://www.ebi.ac.uk/ega/studies" } Studies/EBI EGA
+                %li
+                  %a{ :href => "http://www.ncbi.nlm.nih.gov/gap/advanced" } dbGaP Advanced Search Builder/NCBI dbGaP
+
+
+      /Footer Section
+      #footer
+        .content
+          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"}
+            %img{:alt => "Creative Commons License", :style => "border-width:0", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png"}
+          %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
+          is licensed under a
+          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
+            Unported License
+
+    :javascript
+      $(document).ready(function (){
+        $("#exp").tablesorter({
+            theme: 'default',
+            cssChildRow:"tablesorter-childRow",
+            widgets:["zebra","filter", "pager"],
+
+            widgetOptions: {
+                pager_output: '{startRow} - {endRow} / {filteredRows} ({totalRows})', // '{page}/{totalPages}'
+                pager_removeRows: false,
+                filter_childRows  : true,
+                filter_cssFilter  : 'tablesorter-filter',
+                filter_startsWith : false,
+                filter_ignoreCase : true
+              }
+        });
+
+      });

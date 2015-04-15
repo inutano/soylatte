@@ -180,7 +180,7 @@ $(function(){
                 .attr("y", function (d) {
                     return y1(d.val) + 10
                 })
-                .attr({"fill": "#696969", "font-size": "12px", "cursor": "pointer"})
+                .attr({"fill": "#696969", "font-size": "11px", "cursor": "pointer"})
                 .text(function (d) {
                     return parseInt(d.val + "projects")
                 })
@@ -230,8 +230,8 @@ $(function(){
 
     function showList(q) {
         if (q != "total") {
-            //window.location = "/lists?org=" + q;
-            window.location = "/lists"
+            q = escape(q)
+            window.location = "http://sra.dbcls.jp/search/search?species=" + q +"&type=&instrument=&search_query=";
         }
     }
 

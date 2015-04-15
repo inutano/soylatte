@@ -1,5 +1,4 @@
 .bundle
-data
 lib/.ruby-version
 lib/Prev
 lib/test_db
