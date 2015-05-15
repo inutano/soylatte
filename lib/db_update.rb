@@ -173,10 +173,11 @@ if __FILE__ == $0
       pid = fork do
         insert = []
         record = projects[study_id]
-        record[:search_fulltext] = [ record.study_title,
-                                     record.run.map{|r| r.sample ? r.sample_description : nil }.uniq.compact,
-                                     record.run.map{|r| r.experiment_id ? DBupdate.new(id).experiment_description : nil }.uniq.compact,
-                                     DBupdate.new(study_id).project_description ].join("\s")
+        record[:search_fulltext] = [ 
+          record.study_title,
+          record.run.map{|r| r.sample }.flatten.map{|r| r ? r.sample_description : "" }.uniq,
+          record.run.map{|r| r.experiment_id }.uniq.map{|id| id ? DBupdate.new(id).experiment_description : "" }.uniq,
+          DBupdate.new(study_id).project_description ].join("\s")
       end
       
       # create thread to monitor pid
