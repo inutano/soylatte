@@ -257,16 +257,23 @@ if __FILE__ == $0
     runs = Groonga["Runs"]
     projects = Groonga["Projects"]
     
+    puts "\#sample: " + samples.size.to_s
+    puts "\#run: " + runs.size.to_s
+    puts "\#project: " + projects.size.to_s
+    
     query = "genome"
     hit = projects.select{|r| r.search_fulltext =~ query }
-    ap hit.map{|n| n["_key"] }
+    puts "hit count with query 'genome': " + hit.map{|n| n["_key"] }.size.to_s
     
-    #ap projects["ERP000230"].submission_id
-    
-    ap samples.map{|n| n["_key"] }
-    
-    ap samples.size
-    ap runs.size
-    ap projects.size
+    id = "DRP000001"
+    r = projects[id]
+    h = { title: r.study_title,
+          study_type: r.study_type,
+          submission_id: r.submission_id,
+          pubmed_id: r.pubmed_id,
+          pmc_id: r.pmc_id,
+          run: r.run,
+          text: r.search_fulltext  }
+    ap h
   end
 end
