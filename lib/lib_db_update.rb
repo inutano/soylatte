@@ -101,7 +101,7 @@ class DBupdate
     @@taxon_hash = {}
     open(config["taxon_table"]) do |file|
       while lt = file.gets
-        l = lt.split("\t")
+        l = lt.split(",")
         @@taxon_hash[l[0]] = l[1]
       end
     end
@@ -109,7 +109,7 @@ class DBupdate
     @@pmc_hash = {} # pmid - pmcid
     open(config["PMC-ids"]) do |file|
       while lt = file.gets
-        l = lt.split("\t")
+        l = lt.split(",")
         @@pmc_hash[l[0]] = l[1]
       end
     end
