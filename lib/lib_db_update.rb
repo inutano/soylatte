@@ -80,7 +80,8 @@ class DBupdate
     
     @@acc_hash = {} # any id => submissionid
     open(config["sra_accessions"]) do |file|
-      while l = file.gets.split("\t")
+      while lt = file.gets
+        l = lt.split("\t")
         @@acc_hash[l[0]] = l[1]
       end
     end
@@ -88,7 +89,8 @@ class DBupdate
     @@run_hash = {} # runid => [ [expid, sampleid, studyid], .. ]
     @@study_hash = {} # studyid => runid
     open(config["sra_run_members"]) do |file|
-      while l = file.gets.split("\t")
+      while lt = file.gets
+        l = lt.split("\t")
         @@run_hash[l[0]] ||= []
         @@run_hash[l[0]] << [l[1], l[2], l[3]]
         @@study_hash[l[3]] ||= []
@@ -98,14 +100,16 @@ class DBupdate
     
     @@taxon_hash = {}
     open(config["taxon_table"]) do |file|
-      while l = file.gets.split("\t")
+      while lt = file.gets
+        l = lt.split("\t")
         @@taxon_hash[l[0]] = l[1]
       end
     end
     
     @@pmc_hash = {} # pmid - pmcid
-    open(config["PMD-ids"]) do |file|
-      while l = file.gets.split("\t")
+    open(config["PMC-ids"]) do |file|
+      while lt = file.gets
+        l = lt.split("\t")
         @@pmc_hash[l[0]] = l[1]
       end
     end
