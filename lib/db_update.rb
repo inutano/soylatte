@@ -51,6 +51,7 @@ if __FILE__ == $0
         if insert
           begin
             samples.add(sample_id,
+                        submission_id: insert[:submission_id],
                         sample_title: insert[:sample_title],
                         sample_description: insert[:sample_description],
                         taxon_id: insert[:taxon_id],
@@ -123,12 +124,12 @@ if __FILE__ == $0
         if insert
           begin
             projects.add(study_id,
-                         study_title: insert[:study_title],
-                         study_type: insert[:study_type],
-                         run: insert[:run],
+                         study_title:   insert[:study_title],
+                         study_type:    insert[:study_type],
+                         run:           insert[:run],
                          submission_id: insert[:submission_id],
-                         pubmed_id: insert[:pubmed_id],
-                         pmc_id: insert[:pmc_id])
+                         pubmed_id:     insert[:pubmed_id],
+                         pmc_id:        insert[:pmc_id])
           rescue TypeError
           end
         end
