@@ -23,7 +23,7 @@ if __FILE__ == $0
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
-    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
+    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions} | head -100`.split("\n")
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -45,29 +45,33 @@ if __FILE__ == $0
       id =~ /^(S|E|D)RS\d{6}$/ && !samples[id]
     end
     
-    sample_threads = sample_id_list.lazy.map do |sample_id|
-      Thread.new do
-        insert = DBupdate.new(sample_id).sample_insert
-        if insert
-          begin
-            samples.add(sample_id,
-                        submission_id: insert[:submission_id],
-                        sample_title: insert[:sample_title],
-                        sample_description: insert[:sample_description],
-                        taxon_id: insert[:taxon_id],
-                        scientific_name: insert[:scientific_name])
-          rescue TypeError
-          end
-        end
+    total_sample_number = sample_id_list.size
+    sample_processes = []
+    sample_id_list.each.with_index do |sample_id, i|
+      # wait if process number is > 12
+      while sample_processes.select{|th| th.status }.size > 12
+        sleep 10
       end
-    end
-    
-    sample_n = 0
-    num_blocks = 4
-    sample_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join ; Thread.kill(t) }
-      sample_n += num_blocks
-      puts "#{Time.now}\t#{sample_n}/#{sample_id_list.size}" if sample_n % 10 == 0
+      
+      # fork insert process
+      pid = fork do
+        insert = DBupdate.new(sample_id).sample_insert || Hash.new("")
+        samples.add(sample_id,
+                    submission_id:      insert[:submission_id],
+                    sample_title:       insert[:sample_title],
+                    sample_description: insert[:sample_description],
+                    taxon_id:           insert[:taxon_id],
+                    scientific_name:    insert[:scientific_name])
+      end
+      
+      # create thread to monitor pid
+      th = Process.detach(pid)
+      sample_processes << th
+      
+      # progress
+      if i % (total_sample_number / 10) == 0
+        puts "+10 #{Time.now}"
+      end
     end
     
     # UPDATE RUN
