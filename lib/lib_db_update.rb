@@ -79,35 +79,35 @@ class DBupdate
     config = YAML.load_file(config_path)
     
     @@acc_hash = {} # any id => submissionid
-    acc_raw = `awk -F '\t' '$1 != "Accession" { print $1 "\t" $2 }' #{config["sra_accessions"]}`
-    acc_raw.split("\n").each do |line|
-      id_acc = line.split("\t")
-      @@acc_hash[id_acc[0]] = id_acc[1]
+    open(config["sra_accessions"]) do |file|
+      while l = file.gets.split("\t")
+        @@acc_hash[l[0]] = l[1]
+      end
     end
     
     @@run_hash = {} # runid => [ [expid, sampleid, studyid], .. ]
     @@study_hash = {} # studyid => runid
-    run_raw = `awk -F '\t' '$1 != "Run" { print $1 "\t" $3 "\t" $4 "\t" $5 }' #{config["sra_run_members"]}`
-    run_raw.split("\n").each do |line|
-      id_acc = line.split("\t")
-      @@run_hash[id_acc[0]] ||= []
-      @@run_hash[id_acc[0]] << [id_acc[1], id_acc[2], id_acc[3]]
-      @@study_hash[id_acc[3]] ||= []
-      @@study_hash[id_acc[3]] << id_acc[0]
+    open(config["sra_run_members"]) do |file|
+      while l = file.gets.split("\t")
+        @@run_hash[l[0]] ||= []
+        @@run_hash[l[0]] << [l[1], l[2], l[3]]
+        @@study_hash[l[3]] ||= []
+        @@study_hash[l[3]] << l[0]
+      end
     end
     
     @@taxon_hash = {}
-    taxon_raw = `awk -F ',' '{ print $1 "\t" $2 }' #{config["taxon_table"]}`
-    taxon_raw.split("\n").each do |line|
-      id_name = line.split("\t")
-      @@taxon_hash[id_name[0]] = id_name[1]
+    open(config["taxon_table"]) do |file|
+      while l = file.gets.split("\t")
+        @@taxon_hash[l[0]] = l[1]
+      end
     end
     
-    @@pmc_hash = {}
-    pmc_ids_raw = `awk -F ',' '{ print $10 "\t" $9 }' #{config["PMC-ids"]}`
-    pmc_ids_raw.split("\n").each do |line|
-      pmid_pmcid = line.split("\t")
-      @@pmc_hash[pmid_pmcid[0]] = pmid_pmcid[1]
+    @@pmc_hash = {} # pmid - pmcid
+    open(config["PMD-ids"]) do |file|
+      while l = file.gets.split("\t")
+        @@pmc_hash[l[0]] = l[1]
+      end
     end
     
     publication = config["publication"]
