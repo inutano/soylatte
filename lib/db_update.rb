@@ -19,6 +19,8 @@ if __FILE__ == $0
   
   when "--update"
     Groonga::Database.open(db_path)
+    
+    puts "LOADING TABLES #{Time.now}"
     DBupdate.load_file(config_path)
     
     accessions = config["sra_accessions"]
@@ -30,7 +32,7 @@ if __FILE__ == $0
       !projects[studyid]
     end
     
-    puts "UPDATE SAMPLE"
+    puts "UPDATE SAMPLE #{Time.now}"
     study_sample_hash = {}
     study_sample_raw = `awk -F '\t' '{ print $5 "\t" $4 }' #{run_members}`
     study_sample_raw.split("\n").each do |line|
@@ -74,7 +76,7 @@ if __FILE__ == $0
       end
     end
     
-    puts "UPDATE RUN"
+    puts "UPDATE RUN #{Time.now}"
     study_run_hash = {}
     study_run_raw = `awk -F '\t' '{ print $5 "\t" $1 }' #{run_members}`
     study_run_raw.split("\n").each do |line|
@@ -124,7 +126,7 @@ if __FILE__ == $0
       end
     end
 
-    puts "UPDATE PROJECT"
+    puts "UPDATE PROJECT #{Time.now}"
     study_id_list = not_recorded
     total_study_number = study_id_list.size
     study_processes = []
@@ -157,11 +159,11 @@ if __FILE__ == $0
       end
     end
 
-    puts "UPDATE FULLTEXT SEARCH FIELD"
+    puts "UPDATE FULLTEXT SEARCH FIELD #{Time.now}"
     text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
     
     total_text_number = text_not_recorded.size
-    text_processes []
+    text_processes = []
     text_not_recorded.each.with_index do |study_id|
       # wait if process number is > 12
       while text_processes.select{|th| th.status }.size > 12
