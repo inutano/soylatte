@@ -30,7 +30,7 @@ if __FILE__ == $0
       !projects[studyid]
     end
     
-    ### UPDATE SAMPLE
+    puts "UPDATE SAMPLE"
     study_sample_hash = {}
     study_sample_raw = `awk -F '\t' '{ print $5 "\t" $4 }' #{run_members}`
     study_sample_raw.split("\n").each do |line|
@@ -50,7 +50,7 @@ if __FILE__ == $0
     sample_id_list.each.with_index do |sample_id, i|
       # wait if process number is > 12
       while sample_processes.select{|th| th.status }.size > 12
-        sleep 10
+        sleep 3
       end
       
       # fork insert process
@@ -74,7 +74,7 @@ if __FILE__ == $0
       end
     end
     
-    # UPDATE RUN
+    puts "UPDATE RUN"
     study_run_hash = {}
     study_run_raw = `awk -F '\t' '{ print $5 "\t" $1 }' #{run_members}`
     study_run_raw.split("\n").each do |line|
@@ -89,96 +89,102 @@ if __FILE__ == $0
       id =~ /^(S|E|D)RR\d{6}$/ && !runs[id]
     end
     
-    run_threads = run_id_list.lazy.map do |run_id|
-      Thread.new do
-        insert = DBupdate.new(run_id).run_insert
-        if insert
-          begin
-            runs.add(run_id,
-                     experiment_id: insert[:experiment_id],
-                     instrument: insert[:instrument],
-                     library_strategy: insert[:library_strategy],
-                     library_source: insert[:library_source],
-                     library_selection: insert[:library_selection],
-                     library_layout: insert[:library_layout],
-                     library_orientation: insert[:library_orientation],
-                     library_nominal_length: insert[:library_nominal_length],
-                     library_nominal_sdev: insert[:library_nominal_sdev],
-                     submission_id: insert[:submission_id],
-                     sample: insert[:sample])
-          rescue TypeError
-          end
-        end
+    total_run_number = run_id_list.size
+    run_processes = []
+    run_id_list.each.with_index do |run_id, i|
+      # wait if process number is > 12
+      while run_processes.select{|th| th.status }.size > 12
+        sleep 3
+      end
+      
+      # fork insert process
+      pid = fork do
+        insert = DBupdate.new(run_id).run_insert || Hash.new("")
+        runs.add(run_id,
+                 experiment_id: insert[:experiment_id],
+                 instrument: insert[:instrument],
+                 library_strategy: insert[:library_strategy],
+                 library_source: insert[:library_source],
+                 library_selection: insert[:library_selection],
+                 library_layout: insert[:library_layout],
+                 library_orientation: insert[:library_orientation],
+                 library_nominal_length: insert[:library_nominal_length],
+                 library_nominal_sdev: insert[:library_nominal_sdev],
+                 submission_id: insert[:submission_id],
+                 sample: insert[:sample])
+      end
+      
+      # create thread to monitor pid
+      th = Process.detach(pid)
+      run_processes << th
+      
+      # progress
+      if i % (total_run_number / 10) == 0
+        puts "+10 #{Time.now}"
       end
     end
-    
-    run_n = 0
-    num_blocks = 4
-    run_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join ; Thread.kill(t) }
-      run_n += num_blocks
-      puts "#{Time.now}\t#{run_n}/#{run_id_list.size}" if run_n % 10 == 0
-    end
-    
-    # UPDATE PROJECT
+
+    puts "UPDATE PROJECT"
     study_id_list = not_recorded
-    study_threads = study_id_list.lazy.map do |study_id|
-      Thread.new do
-        insert = DBupdate.new(study_id).project_insert
-        if insert
-          begin
-            projects.add(study_id,
-                         study_title:   insert[:study_title],
-                         study_type:    insert[:study_type],
-                         run:           insert[:run],
-                         submission_id: insert[:submission_id],
-                         pubmed_id:     insert[:pubmed_id],
-                         pmc_id:        insert[:pmc_id])
-          rescue TypeError
-          end
-        end
+    total_study_number = study_id_list.size
+    study_processes = []
+
+    study_id_list.each.with_index do |study_id, i|
+      # wait if process number is > 12
+      while study_processes.select{|th| th.status }.size > 12
+        sleep 3
+      end
+      
+      # fork insert process
+      pid = fork do
+        insert = DBupdate.new(study_id).project_insert || Hash.new("")
+        projects.add(study_id,
+                     study_title:   insert[:study_title],
+                     study_type:    insert[:study_type],
+                     run:           insert[:run],
+                     submission_id: insert[:submission_id],
+                     pubmed_id:     insert[:pubmed_id],
+                     pmc_id:        insert[:pmc_id])
+      end
+      
+      # create thread to monitor pid
+      th = Process.detach(pid)
+      study_processes << th
+      
+      # progress
+      if i % (total_study_number / 10) == 0
+        puts "+10 #{Time.now}"
       end
     end
-    
-    study_n = 0
-    num_blocks = 4
-    study_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join ; Thread.kill(t) }
-      study_n += num_blocks
-      puts "#{Time.now}\t#{study_n}/#{study_id_list.size}" if study_n % 10 == 0
-    end
-    
-    # UPDATE FULLTEXT SEARCH FIELD
+
+    puts "UPDATE FULLTEXT SEARCH FIELD"
     text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
     
-    text_threads = text_not_recorded.lazy.map do |study_id|
-      Thread.new do
-        begin
+    total_text_number = text_not_recorded.size
+    text_processes []
+    text_not_recorded.each.with_index do |study_id|
+      # wait if process number is > 12
+      while text_processes.select{|th| th.status }.size > 12
+        sleep 3
+      end
+
+      pid = fork do
         insert = []
         record = projects[study_id]
-        
-        insert << record.study_title
-        
-        sample_records = record.run.map{|r| r.sample }.flatten
-        insert << sample_records.compact.map{|r| r.sample_description }.uniq
-        
-        experiment_ids = record.run.map{|r| r.experiment_id }.uniq
-        insert << experiment_ids.compact.map{|id| DBupdate.new(id).experiment_description }
-        
-        insert << DBupdate.new(study_id).project_description
-        
-        record[:search_fulltext] = insert.join("\s")
-        rescue TypeError
-        end
+        record[:search_fulltext] = [ record.study_title,
+                                     record.run.map{|r| r.sample ? r.sample_description : nil }.uniq.compact,
+                                     record.run.map{|r| r.experiment_id ? DBupdate.new(id).experiment_description : nil }.uniq.compact,
+                                     DBupdate.new(study_id).project_description ].join("\s")
       end
-    end
-    
-    text_n = 0
-    num_blocks = 4
-    text_threads.each_slice(num_blocks).each do |group|
-      group.each{|t| t.join ; Thread.kill(t) }
-      text_n += num_blocks
-      puts "#{Time.now}\t#{text_n}/#{text_not_recorded.size}" if text_n % 10 == 0
+      
+      # create thread to monitor pid
+      th = Process.detach(pid)
+      text_processes << th
+      
+      # progress
+      if i % (total_text_number / 10) == 0
+        puts "+10 #{Time.now}"
+      end
     end
     
     pmid_hash = {}
@@ -198,8 +204,6 @@ if __FILE__ == $0
     end
     
     ## Experimental part: vs eutils connection limit
-    require "ap"
-    
     def bulk_description(hash, projects)
       num_of_parallel = 100
       array = hash.to_a
