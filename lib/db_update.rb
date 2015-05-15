@@ -265,15 +265,37 @@ if __FILE__ == $0
     hit = projects.select{|r| r.search_fulltext =~ query }
     puts "hit count with query 'genome': " + hit.map{|n| n["_key"] }.size.to_s
     
-    id = "DRP000001"
-    r = projects[id]
-    h = { title: r.study_title,
+    def study_summary(gr_object, id)
+      r = gr_object[id]
+      case id
+      when /^.RP/
+        { title:      r.study_title,
           study_type: r.study_type,
-          submission_id: r.submission_id,
-          pubmed_id: r.pubmed_id,
-          pmc_id: r.pmc_id,
-          run: r.run,
-          text: r.search_fulltext  }
-    ap h
+          sub_id:     r.submission_id,
+          pubmed_id:  r.pubmed_id,
+          pmc_id:     r.pmc_id,
+          run:        r.run,
+          text:       r.search_fulltext  }
+      when /^.RR/
+        { expid:       r.experiment_id,
+          strategy:    r.library_strategy,
+          source:      r.library_source,
+          selection:   r.library_selection,
+          layout:      r.library_layout,
+          orientation: r.library_orientation,
+          instrument:  r.instrument,
+          subid:       r.submission_id,
+          sample:      r.sample }
+      when /^.RS/
+        { title:   r.sample_title,
+          desc:    r.sample_description,
+          taxonid: r.taxon_id,
+          sname:   r.scientific_name,
+          subid:   r.submission_id }
+      end
+    end
+    ap study_summary(samples, "DRS000001")
+    ap study_summary(runs, "DRR000001")
+    ap study_summary(projects, "DRP000001")
   end
 end
