@@ -92,9 +92,9 @@ class DBupdate
       while lt = file.gets
         l = lt.split("\t")
         @@run_hash[l[0]] ||= []
-        @@run_hash[l[0]] << [l[1], l[2], l[3]]
-        @@study_hash[l[3]] ||= []
-        @@study_hash[l[3]] << l[0]
+        @@run_hash[l[0]] << [l[2], l[3], l[4]]
+        @@study_hash[l[4]] ||= []
+        @@study_hash[l[4]] << l[0]
       end
     end
     
@@ -110,7 +110,7 @@ class DBupdate
     open(config["PMC-ids"]) do |file|
       while lt = file.gets
         l = lt.split(",")
-        @@pmc_hash[l[0]] = l[1]
+        @@pmc_hash[l[9]] = l[8]
       end
     end
     
