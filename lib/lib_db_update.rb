@@ -141,7 +141,7 @@ class DBupdate
     taxon_id = parser.taxon_id
     
     scientific_name = @@taxon_hash[taxon_id]
-    
+
     { submission_id: submission_id,
       sample_title: sample_title,
       sample_description: clean_text(sample_description),
@@ -296,6 +296,9 @@ class DBupdate
       end
     end
     array_to_hash(pmcid_text)
+  rescue Errno::ENETUNREACH
+    sleep 300
+    retry
   end
   
   def bulkpubmed_parse(xml)
@@ -311,6 +314,9 @@ class DBupdate
       [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
     end
     array_to_hash(pmid_text)
+  rescue Errno::ENETUNREACH
+    sleep 300
+    retry
   end
   
   def array_to_hash(array)
