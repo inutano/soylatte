@@ -164,7 +164,7 @@ if __FILE__ == $0
     
     total_text_number = text_not_recorded.size
     text_processes = []
-    text_not_recorded.each.with_index do |study_id|
+    text_not_recorded.each.with_index do |study_id, i|
       # wait if process number is > 12
       while text_processes.select{|th| th.status }.size > 12
         sleep 3
