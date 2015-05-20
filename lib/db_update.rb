@@ -25,7 +25,7 @@ if __FILE__ == $0
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
-    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions} | head -100`.split("\n")
+    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -75,6 +75,7 @@ if __FILE__ == $0
         puts "+10 #{Time.now}"
       end
     end
+    Process.waitall
     
     puts "UPDATE RUN #{Time.now}"
     study_run_hash = {}
@@ -125,6 +126,7 @@ if __FILE__ == $0
         puts "+10 #{Time.now}"
       end
     end
+    Process.waitall
 
     puts "UPDATE PROJECT #{Time.now}"
     study_id_list = not_recorded
@@ -158,7 +160,8 @@ if __FILE__ == $0
         puts "+10 #{Time.now}"
       end
     end
-
+    Process.waitall
+    
     puts "UPDATE FULLTEXT SEARCH FIELD #{Time.now}"
     text_not_recorded = projects.map{|r| r["_key"] }.select{|id| !projects[id].search_fulltext }
     
@@ -189,6 +192,7 @@ if __FILE__ == $0
         puts "+10 #{Time.now}"
       end
     end
+    Process.waitall
     
     pmid_hash = {}
     pmcid_hash = {}
