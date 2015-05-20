@@ -43,7 +43,7 @@ class DBupdate
         table.short_text("study_type")
         table.reference("run", "Runs", type: :vector)
         table.short_text("submission_id", type: :vector)
-        table.uint16("pubmed_id", type: :vector)
+        table.short_text("pubmed_id", type: :vector)
         table.short_text("pmc_id", type: :vector)
         table.text("search_fulltext")
       end
