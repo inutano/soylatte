@@ -8,6 +8,7 @@ gem "rroonga"
 gem "nokogiri"
 gem "rack-protection"
 gem "awesome_print"
+gem "parallel"
 
 group :test do
   gem "rspec"
