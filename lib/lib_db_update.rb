@@ -45,7 +45,7 @@ class DBupdate
         table.short_text("submission_id", type: :vector)
         table.short_text("pubmed_id", type: :vector)
         table.short_text("pmc_id", type: :vector)
-        table.text("search_fulltext")
+        table.long_text("search_fulltext")
       end
             
       schema.create_table("Index_text",
@@ -296,7 +296,8 @@ class DBupdate
         title_cited_by = cited_by.map{|n| n.values } if cited_by
         # merge
         array = [body, title_ref_journal_list, title_cited_by]
-        [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+        
+        [ p.pmcid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
       end
     end
     array_to_hash(pmcid_text)
