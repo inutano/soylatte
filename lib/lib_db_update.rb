@@ -297,7 +297,7 @@ class DBupdate
         # merge
         array = [body, title_ref_journal_list, title_cited_by]
         
-        [ p.pmcid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+        [ "PMC" + p.pmcid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
       end
     end
     array_to_hash(pmcid_text)

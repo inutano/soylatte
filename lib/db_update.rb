@@ -217,7 +217,8 @@ if __FILE__ == $0
       while !hash.empty?
         pubid_studyids = Hash.new([])
         id_list = []
-        num_of_parallel.times do
+        times_loop = num_of_parallel > hash.size ? hash.size : num_of_parallel
+        times_loop.times do
           item = hash.shift
           pubid = item[0]
           studyids = item[1]
@@ -226,7 +227,7 @@ if __FILE__ == $0
           pubid_studyids[pubid] = studyids
         end
         DBupdate.new(id_list).bulk_retrieve.each_pair do |id, text|
-          studyids = pubid[id]
+          studyids = pubid_studyids[id]
           studyids.each do |studyid|
             record = projects[studyid]
             exists = record[:search_fulltext]
@@ -237,7 +238,7 @@ if __FILE__ == $0
     end
     bulk_description(pmid_hash, projects)
     bulk_description(pmcid_hash, projects)
-    
+
 =begin
     pubmed_n = 0
     pmid_hash.each_pair do |pmid, studyid_list|
