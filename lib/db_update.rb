@@ -25,7 +25,7 @@ if __FILE__ == $0
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
-    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
+    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions} | head -50`.split("\n")
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -211,23 +211,26 @@ if __FILE__ == $0
     end
     
     ## Experimental part: vs eutils connection limit
+    # hash for { pmid => [studyid1, studyid2, ..] } or { pmcid => [studyid1, studyid2, ...] }
     def bulk_description(hash, projects)
       num_of_parallel = 100
-      array = hash.to_a
-      while !array.empty?
-        first = array.shift(num_of_parallel)
-        first_id = first.map{|a| a.first }.flatten
-        desc_hash = DBupdate.new(first_id).bulk_retrieve
-        first.each do |id_idlist|
-          id = id_idlist.first
-          idlist = id_idlist.last
-          desc = desc_hash[id]
-          if desc
-            idlist.each do |i|
-              record = projects[i]
-              text = record[:search_fulltext]
-              record[:search_fulltext] = text + "\s" + desc
-            end
+      while !hash.empty?
+        pubid_studyids = Hash.new([])
+        id_list = []
+        num_of_parallel.times do
+          item = hash.shift
+          pubid = item[0]
+          studyids = item[1]
+          
+          id_list << item[0]
+          pubid_studyids[pubid] = studyids
+        end
+        DBupdate.new(id_list).bulk_retrieve.each_pair do |id, text|
+          studyids = pubid[id]
+          studyids.each do |studyid|
+            record = projects[studyid]
+            exists = record[:search_fulltext]
+            record[:search_fulltext] = [exists, text].join("\s")
           end
         end
       end
