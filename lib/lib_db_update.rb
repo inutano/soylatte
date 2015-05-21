@@ -136,49 +136,55 @@ class DBupdate
   end
   
   def sample_insert
-    submission_id = @@acc_hash[@id]
-    xml = get_xml_path(@id, "sample")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Sample.new(@id, xml)
-    sample_title = parser.title
-    sample_description = parser.sample_description
-    taxon_id = parser.taxon_id
+    # initialize insert hash
+    insert = Hash.new("")
     
-    scientific_name = @@taxon_hash[taxon_id]
+    # set submission id
+    submission_id = @@acc_hash[@id]
+    insert[:submission_id]      = submission_id
+    
+    # retrieve xml
+    xml = get_xml_path(@id, "sample")
+    
+    if !(File.size(xml) > 1_000_000)
+      parser = SRAMetadataParser::Sample.new(@id, xml)
 
-    { submission_id: submission_id,
-      sample_title: sample_title,
-      sample_description: clean_text(sample_description),
-      taxon_id: taxon_id,
-      scientific_name: scientific_name }
-  rescue NameError, Errno::ENOENT
-    { submission_id: submission_id }
+      # get scientific name
+      taxon_id = parser.taxon_id
+      scientific_name = @@taxon_hash[taxon_id]
+    
+      # set values
+      insert[:sample_title]       = parser.title
+      insert[:sample_description] = clean_text(parser.sample_description)
+      insert[:taxon_id]           = taxon_id
+      insert[:scientific_name]    = scientific_name
+    end
+    insert
   end
   
   def run_insert
-    sample = @@run_hash[@id].map{|a| a[1] }.uniq
-    submission_id = @@acc_hash[@id]
+    # initialize insert hash
+    insert = Hash.new("")
+    
     experiment_id = @@run_hash[@id].map{|a| a[0] }.uniq.first
-    
+    insert[:experiment_id] = experiment_id
+    insert[:submission_id] = @@acc_hash[@id]
+    insert[:sample]        = @@run_hash[@id].map{|a| a[1] }.uniq
+
     xml = get_xml_path(experiment_id, "experiment")
-    parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
-    raise NameError if File.size(xml) > 1_000_000
     
-    { experiment_id: experiment_id,
-      instrument: parser.instrument_model,
-      library_strategy: parser.library_strategy,
-      library_source: parser.library_source,
-      library_selection: parser.library_selection,
-      library_layout: parser.library_layout,
-      library_orientation: parser.library_orientation,
-      library_nominal_length: parser.library_nominal_length,
-      library_nominal_sdev: parser.library_nominal_sdev,
-      submission_id: submission_id,
-      sample: sample }
-  rescue NameError, Errno::ENOENT
-    { experiment_id: experiment_id,
-      submission_id: submission_id,
-      sample: sample }
+    if !(File.size(xml) > 1_000_000)
+      parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
+      insert[:instrument]             = parser.instrument_model
+      insert[:library_strategy]       = parser.library_strategy
+      insert[:library_source]         = parser.library_source
+      insert[:library_selection]      = parser.library_selection
+      insert[:library_layout]         = parser.library_layout
+      insert[:library_orientation]    = parser.library_orientation
+      insert[:library_nominal_length] = parser.library_nominal_length
+      insert[:library_nominal_sdev]   = parser.library_nominal_sdev
+    end
+    insert
   end
   
   def project_insert
