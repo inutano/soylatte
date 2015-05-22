@@ -131,8 +131,8 @@ class DBupdate
   
   def get_xml_path(id, type)
     acc = @@acc_hash[id]
-    acc_head = acc.slice(0..5)
-    File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
+    path = File.join(@@xml_base, acc.sub(/...$/,""), acc, acc + ".#{type}.xml")
+    path if File.exist?(path) && !(File.size(path) > 1_000_000)
   end
   
   def sample_insert
@@ -145,8 +145,7 @@ class DBupdate
     
     # retrieve xml
     xml = get_xml_path(@id, "sample")
-    
-    if !(File.size(xml) > 1_000_000)
+    if xml
       parser = SRAMetadataParser::Sample.new(@id, xml)
 
       # get scientific name
@@ -172,8 +171,7 @@ class DBupdate
     insert[:sample]        = @@run_hash[@id].map{|a| a[1] }.uniq
 
     xml = get_xml_path(experiment_id, "experiment")
-    
-    if !(File.size(xml) > 1_000_000)
+    if xml
       parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
       insert[:instrument]             = parser.instrument_model
       insert[:library_strategy]       = parser.library_strategy
@@ -188,59 +186,56 @@ class DBupdate
   end
   
   def project_insert
-    run = @@study_hash[@id]
-
+    # initialize insert hash
+    insert = Hash.new("")
+    
+    # set id variables
     submission_id = @@acc_hash[@id]
     pub_info = @@json.select{|row| submission_id == row["sra_id"] }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
     
+    # set values
+    insert[:run]           = @@study_hash[@id]
+    insert[:submission_id] = submission_id
+    insert[:pubmed_id]     = pubmed_id
+    insert[:pmc_id]        = pmc_id
+    
+    # parse xml
     xml = get_xml_path(@id, "study")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Study.new(@id, xml)
-    study_title = parser.study_title
-    study_type = parser.study_type
-
-    { study_title: clean_text(study_title),
-      study_type: study_type,
-      run: run,
-      submission_id: submission_id,
-      pubmed_id: pubmed_id,
-      pmc_id: pmc_id }
-  rescue NameError, Errno::ENOENT
-    { run: run,
-      submission_id: submission_id,
-      pubmed_id: pubmed_id,
-      pmc_id: pmc_id }
+    if xml
+      parser = SRAMetadataParser::Study.new(@id, xml)
+      insert[:study_title]   = clean_text(parser.study_title)
+      insert[:study_type]    = parser.study_type
+    end
+    insert
   end
   
   def experiment_description
+    desc_array = []
     xml = get_xml_path(@id, "experiment")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Experiment.new(@id, xml)
-
-    array = [ parser.title,
-              parser.design_description,
-              parser.library_construction_protocol ]
-    array.map{|d| clean_text(d) }.join("\s")
-  rescue NameError, Errno::ENOENT
-    nil
+    if xml
+      parser = SRAMetadataParser::Experiment.new(@id, xml)
+      desc_array << parser.title
+      desc_array << parser.design_description
+      desc_array << parser.library_construction_protocol
+    end
+    desc_array.map{|d| clean_text(d) }.join("\s")
   end
   
   def project_description
+    desc_array = []
     xml = get_xml_path(@id, "study")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Study.new(@id, xml)
-    
-    array = [ parser.center_name, 
-              parser.center_project_name,
-              parser.study_abstract,
-              parser.study_description ]
-    array.map{|d| clean_text(d) }.join("\s")
-  rescue NameError, Errno::ENOENT
-    nil
+    if xml
+      parser = SRAMetadataParser::Study.new(@id, xml)
+      desc_array << parser.center_name
+      desc_array << parser.center_project_name
+      desc_array << parser.study_abstract
+      desc_array << parser.study_description
+    end
+    desc_array.map{|d| clean_text(d) }.join("\s")
   end
-   
+  
   def pubmed_description
     if @id
       puts @@eutil_base + "db=pubmed&id=#{@id}"
