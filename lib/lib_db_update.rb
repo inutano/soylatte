@@ -220,7 +220,7 @@ class DBupdate
       desc_array << parser.design_description
       desc_array << parser.library_construction_protocol
     end
-    desc_array.map{|d| clean_text(d) }.join("\s")
+    clean_text(desc_array.join("\s"))
   end
   
   def project_description
@@ -233,44 +233,15 @@ class DBupdate
       desc_array << parser.study_abstract
       desc_array << parser.study_description
     end
-    desc_array.map{|d| clean_text(d) }.join("\s")
-  end
-  
-  def pubmed_description
-    if @id
-      puts @@eutil_base + "db=pubmed&id=#{@id}"
-      sleep 1
-      xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
-      parser = PubMedMetadataParser.new(xml)
-      
-      array = [ @id.to_s,
-                parser.journal_title,
-                parser.article_title,
-                parser.abstract,
-                parser.affiliation,
-                parser.authors.map{|n| n.values.compact },
-                parser.chemicals.map{|n| n[:name_of_substance] },
-                parser.mesh_terms.map{|n| n.values.compact } ]
-      array.flatten.compact.map{|d| clean_text(d) }.join("\s")
-    end
+    clean_text(desc_array.join("\s"))
   end
   
   def bulk_retrieve
     idlist = @id.join(",")
     if idlist =~ /PMC/
-      bulk_parse(idlist, :pmc)
+      bulkpmc_parse(bulk_xml(idlist, :pmc))
     else
-      bulk_parse(idlist, :pubmed)
-    end
-  end
-  
-  def bulk_parse(idlist, sym)
-    xml = bulk_xml(idlist, sym)
-    case sym
-    when :pmc
-      bulkpmc_parse(xml)
-    when :pubmed
-      bulkpubmed_parse(xml)
+      bulkpubmed_parse(bulk_xml(idlist, :pubmed))
     end
   end
   
@@ -279,102 +250,54 @@ class DBupdate
   end
   
   def bulkpmc_parse(xml)
-    pmcid_text = Nokogiri::XML(xml).css("article").map{|n| n.to_xml }.map do |xml|
-      p = PMCMetadataParser.new(xml)
-      if p.is_available?
-        # article body
-        body = p.body.compact.map do |section|
-          if section.has_key?(:subsec)
-            [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
-          else
-            section.values
-          end
-        end
-        # metadata
-        ref_journal_list = p.ref_journal_list
-        title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
-        cited_by = p.cited_by
-        title_cited_by = cited_by.map{|n| n.values } if cited_by
-        # merge
-        array = [body, title_ref_journal_list, title_cited_by]
-        
-        [ "PMC" + p.pmcid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+    pmcid_text = Hash.new("")
+    Nokogiri::XML(xml).css("article").each do |article|
+      p = PMCMetadataParser.new(article.to_xml)
+      ref_journal_list = p.ref_journal_list || []
+      cited_by         = p.cited_by || []
+      
+      text = []
+      text << ref_journal_list.map{|n| n.values }
+      text << cited_by.map{|n| n.values }
+      text << pmc_body_text(p)
+      
+      # set key/pmcid, value/text
+      pmcid_text["PMC" + p.pmcid] = clean_text(text.join("\s"))
+    end
+    pmcid_text
+  rescue Errno::ENETUNREACH
+    sleep 180
+    retry
+  end
+  
+  def pmc_body_text(pmc_parser)
+    pmc_parser.body.compact.map do |section|
+      if section.has_key?(:subsec)
+        [section[:sec_title], section[:subsec].map{|subsec| subsec.values }]
+      else
+        section.values
       end
     end
-    array_to_hash(pmcid_text)
-  rescue Errno::ENETUNREACH
-    sleep 300
-    retry
   end
   
   def bulkpubmed_parse(xml)
-    pmid_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
-      p = PubMedMetadataParser.new(xml)
-      array = [ p.journal_title,
-                p.article_title,
-                p.abstract,
-                p.affiliation,
-                p.authors.map{|n| n.values.compact },
-                p.chemicals.map{|n| n[:name_of_substance] },
-                p.mesh_terms.map{|n| n.values.compact } ]
-      [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+    pmid_text = Hash.new("")
+    Nokogiri::XML(xml).css("PubmedArticle").each do |article|
+      p = PubMedMetadataParser.new(article.to_xml)
+      text = []
+      text << p.journal_title
+      text << p.article_title
+      text << p.abstract
+      text << p.affiliation
+      text << p.authors.map{|n| n.values.compact }
+      text << p.chemicals.map{|n| n[:name_of_substance] }
+      text << p.mesh_terms.map{|n| n.values.compact }
+      pmid_text[p.pmid] = clean_text(text.join("\s"))
     end
-    array_to_hash(pmid_text)
+    pmid_text
   rescue Errno::ENETUNREACH
-    sleep 300
+    sleep 180
     retry
-  end
-  
-  def array_to_hash(array)
-    h = {}
-    array.each do |k_v|
-      key = k_v.first
-      value = k_v.last
-      h[key] = value
-    end
-    h
-  end
-  
-  # test implementation; not tested
-  def bulk_pubmed_description
-    xml = open(@@eutil_base + "db=pubmed&id=" + @id.join(",")).read
-    id_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
-      parser = PubMedMetadataParser.new(xml)
-      array = [ parser.journal_title,
-                parser.article_title,
-                parser.abstract,
-                parser.affiliation,
-                parser.authors.map{|n| n.values.compact },
-                parser.chemicals.map{|n| n[:name_of_substance] },
-                parser.mesh_terms.map{|n| n.values.compact } ]
-      [parser.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s")]
-    end
-    Hash[id_text.flatten] ## NO LONGER WORK WITH < RUBY 2.0
-  end
-  
-  def pmc_description
-    puts @@eutil_base + "db=pmc&id=#{@id}"
-    sleep 1
-    xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
-    parser = PMCMetadataParser.new(xml)
-    if parser.is_available?
-      body = parser.body.compact.map do |section|
-        if section.has_key?(:subsec)
-          [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
-        else
-          section.values
-        end
-      end
-      
-      ref_journal_list = parser.ref_journal_list
-      title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
-    
-      cited_by = parser.cited_by
-      title_cited_by = cited_by.map{|n| n.values } if cited_by
-    
-      array = [ @id, body, title_ref_journal_list, title_cited_by ]
-      array.flatten.compact.map{|d| clean_text(d) }.join("\s")
-    end
   end
 end
 

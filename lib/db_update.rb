@@ -239,36 +239,6 @@ if __FILE__ == $0
     bulk_description(pmid_hash, projects)
     bulk_description(pmcid_hash, projects)
 
-=begin
-    pubmed_n = 0
-    pmid_hash.each_pair do |pmid, studyid_list|
-      pubmed_desc = DBupdate.new(pmid).pubmed_description
-      if pubmed_desc
-        studyid_list.each do |study_id|
-          record = projects[study_id]
-          text = record[:search_fulltext]
-          record[:search_fulltext] = text + pubmed_desc
-        end
-      end
-      pubmed_n += 1
-      puts "#{Time.now}\t#{pubmed_n}/#{pmid_hash.size}" if pubmed_n % 10 == 0
-    end
-    
-    pmc_n = 0
-    pmcid_hash.each_pair do |pmcid, studyid_list|
-      pmc_desc = DBupdate.new(pmcid).pmc_description
-      if pmc_desc
-        studyid_list.each do |study_id|
-          record = projects[study_id]
-          text = record[:search_fulltext]
-          record[:search_fulltext] = text + pmc_desc
-        end
-      end
-      pmc_n += 1
-      puts "#{Time.now}\t#{pmc_n}/#{pmcid_hash.size}" if pmc_n % 10 == 0
-    end
-=end
-    
   when "--debug"
     require "ap"
     Groonga::Database.open(db_path)
