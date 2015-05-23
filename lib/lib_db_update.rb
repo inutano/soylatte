@@ -159,6 +159,8 @@ class DBupdate
       insert[:scientific_name]    = scientific_name
     end
     insert
+  rescue NameError
+    insert
   end
   
   def run_insert
@@ -182,6 +184,8 @@ class DBupdate
       insert[:library_nominal_length] = parser.library_nominal_length
       insert[:library_nominal_sdev]   = parser.library_nominal_sdev
     end
+    insert
+  rescue NameError
     insert
   end
   
@@ -209,6 +213,8 @@ class DBupdate
       insert[:study_type]    = parser.study_type
     end
     insert
+  rescue NameError
+    insert
   end
   
   def experiment_description
@@ -221,6 +227,8 @@ class DBupdate
       desc_array << parser.library_construction_protocol
     end
     clean_text(desc_array.join("\s"))
+  rescue NameError
+    []
   end
   
   def project_description
@@ -234,6 +242,8 @@ class DBupdate
       desc_array << parser.study_description
     end
     clean_text(desc_array.join("\s"))
+  rescue NameError
+    []
   end
   
   def bulk_retrieve
