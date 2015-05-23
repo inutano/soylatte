@@ -50,9 +50,9 @@ if __FILE__ == $0
     total_sample_number = sample_id_list.size
     sample_processes = []
     sample_id_list.each.with_index do |sample_id, i|
-      # wait if process number is > 12
-      while sample_processes.select{|th| th.status }.size > 12
-        sleep 3
+      # wait if process number is > 15
+      while sample_processes.select{|th| th.status }.size > 15
+        sleep 1
       end
       
       # fork insert process
@@ -95,9 +95,9 @@ if __FILE__ == $0
     total_run_number = run_id_list.size
     run_processes = []
     run_id_list.each.with_index do |run_id, i|
-      # wait if process number is > 12
-      while run_processes.select{|th| th.status }.size > 12
-        sleep 3
+      # wait if process number is > 15
+      while run_processes.select{|th| th.status }.size > 15
+        sleep 1
       end
       
       # fork insert process
@@ -134,9 +134,9 @@ if __FILE__ == $0
     study_processes = []
 
     study_id_list.each.with_index do |study_id, i|
-      # wait if process number is > 12
-      while study_processes.select{|th| th.status }.size > 12
-        sleep 3
+      # wait if process number is > 15
+      while study_processes.select{|th| th.status }.size > 15
+        sleep 1
       end
       
       # fork insert process
@@ -168,9 +168,9 @@ if __FILE__ == $0
     total_text_number = text_not_recorded.size
     text_processes = []
     text_not_recorded.each.with_index do |study_id, i|
-      # wait if process number is > 12
-      while text_processes.select{|th| th.status }.size > 12
-        sleep 3
+      # wait if process number is > 15
+      while text_processes.select{|th| th.status }.size > 15
+        sleep 1
       end
 
       pid = fork do
