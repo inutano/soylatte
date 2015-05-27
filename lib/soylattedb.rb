@@ -1,40 +1,88 @@
 # :)
 
 require 'groonga'
+require 'open-uri'
 
 Groonga::Context.default_options = { encoding: :utf8 }
 
 class SoylatteDB
-  class << self
-    def load(db, sub_id)
-      establish_connection(db)
-      load_project(sub_id)
-      load_experiment(sub_id)
-      load_sample(sub_id)
-      load_run(sub_id)
+  def initialize(db, sub_id)
+    @db = db
+    @sub_id = sub_id
+  end
+  
+  def load
+    establish_connection
+    [ :study, :experiment, :sample, :run ].each do |type|
+      load_data(xml_path(@sub_id, type))
     end
+  end
     
-    def establish_connection(db)
-      Groonga::Database.open(db)
+  def establish_connection
+    Groonga::Database.open(@db)
+  end
+  
+  def xml_path(type)
+    base = File.join(PROJ_ROOT, "data", "sra_metadata")
+    File.join(base, @sub_id.sub(/...$/,""), @sub_id, @sub_id + ".#{type}.xml")
+  end
+  
+  def get_publication_xml
+    base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
+    pairs = { :pubmed => get_pubmed_id(@sub_id),
+              :pmc    => get_pmc_id(@sub_id)     }
+    pairs.each_pair do |type, ids|
+      base + "db=#{type}&id=#{ids.join(",")}"
     end
-    
-    def load_project(sub_id)
+  end
+  
+  def load_data(xml)
+    case xml
+    when /study/
+      load_study_metadata(xml)
+    when /experiment/
+      load_experiment_metadata(xml)
+    when /sample/
+      load_sample_metadata(xml)
+    when /run/
+      load_run_metadata(xml)
     end
-    
-    def load_experiment(sub_id)
+  end
+  
+  def load_study_metadata(xml)
+  end
+  
+  def load_experiment_metadata(xml)
+  end
+  
+  def load_sample_metadata(xml)
+    sample_node_list = SRAMetadataParser::Sample.new(xml).parse
+    sample_node_list.each do |node|
+      insert_sample_record(node)
     end
-    
-    def load_sample(sub_id)
-    end
-    
-    def load_run(sub_id)
-    end
+  end
+  
+  def insert_sample_record(node)
+    taxon_id = node[:organism_information][:taxon_id]
+    scientific_name = Groonda["Taxon"][taxon_id].scientific_name
+    Groonga["Samples"].add(
+      node[:accession],
+      submission_id:      @sub_id,
+      sample_title:       node[:title],
+      sample_description: node[:sample_description],
+      taxon_id:           taxon_id,
+      scientific_name:    scientific_name
+    )
+  end
+  
+  def load_run_metadata(xml)
   end
 
   def self.up(db_path)
     Groonga::Database.create(:path => db_path)
     
     Groonga::Schema.define do |schema|
+      
       schema.create_table("Samples", :type => :hash) do |table|
         table.short_text("sample_title")
         table.text("sample_description")
