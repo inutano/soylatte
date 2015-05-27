@@ -78,16 +78,12 @@ namespace :soylatte do
   directory lib_dir
   directory repos
   
-  file sra_metadata_toolkit => repos do |t|
-    cd repos
-    sh "git clone https://github.com/inutano/sra_metadata_toolkit"
+  [sra_metadata_toolkit, pmc_metadata_toolkit].each do |fpath|
+    file fpath => repos do |t|
+      sh "git clone https://github.com/inutano/#{t.name.split("/").last} #{repos}"
+    end
   end
-
-  file pmc_metadata_toolkit => repos do |t|
-    cd repos
-    sh "git clone https://github.com/inutano/opPMC"
-  end
-
+  
   sra_parser    = File.join(lib_dir, "sra_metadata_parser.rb")
   fastqc_parser = File.join(lib_dir, "fastqc_result_parser.rb")
   pubmed_parser = File.join(lib_dir, "pubmed_metadata_parser.rb")
@@ -95,22 +91,16 @@ namespace :soylatte do
   
   task :fetch_scripts => [ sra_parser, fastqc_parser, pubmed_parser, pmc_parser ]
   
-  file sra_parser => [ sra_metadata_toolkit, lib_dir ] do |t|
-    sh "ln -s #{sra_metadata_toolkit}/#{t.name.split("/").last} #{lib_dir}"
-  end
+  repos_and_scripts = { sra_metadata_toolkit => [sra_parser, fastqc_parser],
+                        pmc_metadata_toolkit => [pubmed_parser, pmc_parser] }
   
-  file fastqc_parser => [ sra_metadata_toolkit, lib_dir ] do |t|
-    sh "ln -s #{sra_metadata_toolkit}/#{t.name.split("/").last} #{lib_dir}"
+  repos_and_scripts.each_pair do |repo, scripts|
+    scripts.each do |script|
+      file script => [lib_dir, repo] do |t|
+        sh "ln -s #{repo}/#{t.name.split("/").last} #{lib_dir}"
+      end
+    end
   end
-  
-  file pubmed_parser => [ pmc_metadata_toolkit, lib_dir ] do |t|
-    sh "ln -s #{pmc_metadata_toolkit}/#{t.name.split("/").last} #{lib_dir}"
-  end
-  
-  file pmc_parser => [ pmc_metadata_toolkit, lib_dir ] do |t|
-    sh "ln -s #{pmc_metadata_toolkit}/#{t.name.split("/").last} #{lib_dir}"
-  end
-  
   
   ## config ##
   
