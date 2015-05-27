@@ -4,7 +4,7 @@ require File.join(PROJ_ROOT, 'lib', 'soylattedb.rb')
 
 namespace :soylatte do
   db_dir = File.join(PROJ_ROOT, 'db')
-  db = File.join(db_dir, 'project.db')
+  db = File.join(db_dir, 'soylatte.db')
   
   directory db_dir
   
@@ -19,12 +19,15 @@ namespace :soylatte do
   
   task :load_data => [db, live_accessions] do |t|
     live_accessions.split("\n").each do |sub_id|
-      SoylatteDB.load(sub_id)
+      SoylatteDB.load(db, sub_id)
     end
   end
   
   file live_accessions => [data_dir, accessions] do |t|
     pattern = '$1 ~ /^.RA/ && $3 == "live" && $9 == "public"'
     sh "awk -F '\t' '#{pattern} { print $1 }' #{accessions} > #{t.name}"
+  end
+  
+  task :validate_db => db do |t|
   end
 end
