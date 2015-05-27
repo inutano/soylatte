@@ -43,7 +43,7 @@ class SoylatteDB
     def study_ids_pair
       pairs = Hash.new(Hash.new([]))
       accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
-      cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS="\t" ; print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
+      cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
       `#{cmd}`.split("\n").each do |ln|
         line = ln.split("\t")
         study_id = line[0]
@@ -94,7 +94,7 @@ class SoylatteDB
     def exp_run_id_pair
       pairs = Hash.new([])
       accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
-      cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS="\t" ; print $11, $1 }' #{accessions}" # exp_id, run_id
+      cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $11, $1 }' #{accessions}" # exp_id, run_id
       `#{cmd}`.split("\n").each do |ln|
         line = ln.split("\t")
         exp_id = line[0]
@@ -202,7 +202,7 @@ class SoylatteDB
         run_id,
         submission_id: @sub_id,
         experiment_id: exp_id,
-        sample: [node[:sample_accession]]),
+        sample: [node[:sample_accession]],
         instrument:             node[:platform_information][:instrument],
         library_strategy:       node[:library_description][:library_strategy],
         library_source:         node[:library_description][:library_source],
