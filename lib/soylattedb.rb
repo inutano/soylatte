@@ -127,7 +127,7 @@ class SoylatteDB
   
   def load
     establish_connection
-    [ :study, :experiment, :sample, :run ].each do |type|
+    [ :sample, :experiment, :study ].each do |type|
       load_data(xml_path(@sub_id, type))
     end
   end
@@ -166,11 +166,6 @@ class SoylatteDB
       node_list = SRAMetadataParser::Sample.new(xml).parse
       node_list.each do |node|
         insert_sample_record(node)
-      end
-    when /run/
-      node_list = SRAMetadataParser::Run.new(xml).parse
-      node_list.each do |node|
-        insert_run_record(node)
       end
     end
   end
