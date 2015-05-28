@@ -78,27 +78,11 @@ namespace :soylatte do
   directory lib_dir
   directory repos
   
+  task :fetch_scripts => [ sra_metadata_toolkit, pmc_metadata_toolkit ]
+  
   [sra_metadata_toolkit, pmc_metadata_toolkit].each do |fpath|
     file fpath => repos do |t|
       sh "git clone https://github.com/inutano/#{t.name.split("/").last} #{repos}"
-    end
-  end
-  
-  sra_parser    = File.join(lib_dir, "sra_metadata_parser.rb")
-  fastqc_parser = File.join(lib_dir, "fastqc_result_parser.rb")
-  pubmed_parser = File.join(lib_dir, "pubmed_metadata_parser.rb")
-  pmc_parser    = File.join(lib_dir, "pmc_metadata_parser.rb")
-  
-  task :fetch_scripts => [ sra_parser, fastqc_parser, pubmed_parser, pmc_parser ]
-  
-  repos_and_scripts = { sra_metadata_toolkit => [sra_parser, fastqc_parser],
-                        pmc_metadata_toolkit => [pubmed_parser, pmc_parser] }
-  
-  repos_and_scripts.each_pair do |repo, scripts|
-    scripts.each do |script|
-      file script => [lib_dir, repo] do |t|
-        sh "ln -s #{repo}/#{t.name.split("/").last} #{lib_dir}"
-      end
     end
   end
   
