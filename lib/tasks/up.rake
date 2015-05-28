@@ -1,6 +1,6 @@
 # :)
 
-require File.join(PROJ_ROOT, 'lib', 'soylattedb.rb')
+require File.join(PROJ_ROOT, 'lib', 'soylattedb')
 
 namespace :soylatte do
   db_dir = File.join(PROJ_ROOT, 'db')
@@ -10,7 +10,7 @@ namespace :soylatte do
   
   task :create_db => db
   file db => db_dir do |t|
-    SoylatteDB.up(t.name)
+    SoylatteDB::Scheme.up(t.name)
   end
   
   data_dir        = File.join(PROJ_ROOT, "data")
@@ -25,19 +25,19 @@ namespace :soylatte do
   task :load_data => [ :load_references, :load_metadata, :load_publication ]
   
   task :load_references => db do |t|
-    SoylatteDB.load_references(db)
+    SoylatteDB::Reference.load(db)
   end
   
   task :load_data => [db, live_accessions] do |t|
     sub_id_list = open(live_accessions).read.split("\n")
     sub_id_list.each do |sub_id|
-      SoylatteDB.new(db, sub_id).load
+      SoylatteDB::SRA.new(db, sub_id).load
     end
   end
   
   task :load_publication => [db, live_accesions] do |t|
     sub_id_list = open(live_accessions).read.split("\n")
-    SoylatteDB.load_publication(db, sub_id_list)
+    SoylatteDB::Publication.load(db, sub_id_list)
   end
   
   task :validate_db => db do |t|
