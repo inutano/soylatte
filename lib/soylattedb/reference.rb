@@ -35,6 +35,14 @@ class SoylatteDB
             pubmed_id: pubmed_id_list,
             pmc_id:    pmc_id_list
           )
+          
+          existing_study_id = Groonga["SubIDs"][sub_id].study_id || []
+          Groonga["SubIDs"].add(
+            sub_id,
+            study_id: existing_study_id + study_id
+            pubmed_id: pubmed_id_list,
+            pmc_id:    pmc_id_list
+          )
         end
       end
 

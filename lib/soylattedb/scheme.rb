@@ -15,6 +15,12 @@ class SoylatteDB
             table.short_text("pmc_id", type: :vector)
           end
 
+          schema.create_table("SubIDs", :type => :hash) do |table|
+            table.short_text("study_id", type: :vector)
+            table.short_text("pubmed_id", type: :vector)
+            table.short_text("pmc_id", type: :vector)
+          end
+
           schema.create_table("Experiments", :type => :hash) do |table|
             table.short_text("run_id", type: :vector)
           end
