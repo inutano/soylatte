@@ -31,7 +31,7 @@ namespace :soylatte do
   task :load_data => [db, live_accessions] do |t|
     sub_id_list = open(live_accessions).read.split("\n")
     sub_id_list.each do |sub_id|
-      SoylatteDB.load(db, sub_id)
+      SoylatteDB.new(db, sub_id).load
     end
   end
   
