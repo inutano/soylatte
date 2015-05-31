@@ -29,6 +29,7 @@ namespace :soylatte do
   end
   
   task :fix_metadata_dir => sra_metadata do |t|
+    cd sra_metadata
     parent_dirs = Dir.entries(sra_metadata).select{|f| f =~ /^.RA\d+$/ }
     parent_dirs.group_by{|id| id.sub(/...$/,"") }.each_pair do |pid, ids|
       moveto = File.join sra_metadata, pid
