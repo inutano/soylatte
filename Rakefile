@@ -32,4 +32,17 @@ namespace :soylatte do
   task :load_data do
     Rake::Task["soylatte:load_data"].invoke
   end
+  
+  desc "erase all db files."
+  task :down do
+    puts "Erase all db files? Y/N"
+    answer = STDIN.gets.chomp
+    if answer == "Y"
+      rm_r File.join(PROJ_ROOT, "db")
+    elsif answer == "N"
+      puts "canceled."
+    else
+      puts "what?"
+    end
+  end
 end
