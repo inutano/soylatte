@@ -79,7 +79,7 @@ class SoylatteDB
       def pubmed_pmc_id_pair
         pairs = Hash.new("")
         pmc_ids = File.join(PROJ_ROOT, "data", "PMC-ids.csv")
-        open(pmc_ids) do file
+        open(pmc_ids) do |file|
           while l = file.gets
             cols = l.split(",")
             pairs[cols[9]] = cols[8] # pubmed_id: pmc_id
