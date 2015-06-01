@@ -42,7 +42,7 @@ namespace :soylatte do
 
   file pmc_ids => data_dir do |t|
     base_url = "ftp://ftp.ncbi.nlm.nih.gov/pub/pmc"
-    gzip     = "#{t.name}.gz"
+    gzip     = "#{t.name.split("/").last}.gz"
     
     cd data_dir
     sh "lftp -c \"open #{base_url} && pget -n 8 -O #{data_dir} #{gzip}\""
