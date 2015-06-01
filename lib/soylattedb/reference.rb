@@ -56,7 +56,10 @@ class SoylatteDB
           run_id   = line[1]
           sub_id   = line[2]
 
+          pairs[study_id][:run_id] ||= []
           pairs[study_id][:run_id] << run_id
+
+          pairs[study_id][:sub_id] ||= []
           pairs[study_id][:sub_id] << sub_id
         end
         pairs
@@ -70,7 +73,11 @@ class SoylatteDB
         json["ResultSet"]["Result"].each do |node|
           sub_id = node["sra_id"]
           pubmed_id = node["pmid"]
+          
+          pairs[sub_id][:pubmed_id] ||= []
           pairs[sub_id][:pubmed_id] << pubmed_id
+
+          pairs[sub_id][:pmc_id] ||= []
           pairs[sub_id][:pmc_id] << publication_pair[pubmed_id]
         end
         pairs
@@ -105,6 +112,7 @@ class SoylatteDB
           line = ln.split("\t")
           exp_id = line[0]
           run_id = line[1]
+          pairs[exp_id] ||= []
           pairs[exp_id] << run_id
         end
         pairs

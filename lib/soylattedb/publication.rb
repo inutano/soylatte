@@ -19,8 +19,11 @@ class SoylatteDB
         sub_id_list.each do |sub_id|
           record = Groonga["SubIDs"][sub_id]
           record.study_id.each do |study_id|
+            pubmed_id_pair[record.pubmed_id] ||= []
             pubmed_id_pair[record.pubmed_id] << study_id
-            pmc_id_pair[record.pmc_id]       << study_id
+
+            pmc_id_pair[record.pmc_id] ||= []
+            pmc_id_pair[record.pmc_id] << study_id
           end
         end
         [pubmed_id_pair, pmc_id_pair]
