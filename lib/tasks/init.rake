@@ -85,7 +85,8 @@ namespace :soylatte do
   
   [sra_metadata_toolkit, pmc_metadata_toolkit].each do |fpath|
     file fpath => repos do |t|
-      sh "git clone https://github.com/inutano/#{t.name.split("/").last} #{repos}"
+      cd repos
+      sh "git clone https://github.com/inutano/#{t.name.split("/").last}"
     end
   end
   
