@@ -68,7 +68,7 @@ namespace :soylatte do
     file = `grep "scientific" names.dmp`.gsub("|","\t").gsub(/\t/,",").split("\n")
     table = file.map{|l| l.split(",")[0..1].join(",") }
     open(t.name, "w"){|f| f.puts(table) }
-    rm FileList["*.dmp"], "gc.prt", "readme.txt", tarball
+    rm [FileList["*.dmp"], "gc.prt", "readme.txt", tarball].flatten
   end
   
   ## fetch scripts ##
