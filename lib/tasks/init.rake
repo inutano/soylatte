@@ -29,9 +29,9 @@ namespace :soylatte do
   end
   
   task :fix_metadata_dir => sra_metadata do |t|
-    cd sra_metadata
     original_files = Dir.entries(sra_metadata).select{|f| f =~ /^.RA\d+$/ }
     if !original_files.select{|f| f =~ /^.RA\d{6,7}/ }.empty? # check if it's done
+      cd sra_metadata
       original_files.group_by{|id| id.sub(/...$/,"") }.each_pair do |pid, ids|
         moveto = File.join sra_metadata, pid
         mkdir moveto
