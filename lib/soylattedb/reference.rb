@@ -47,7 +47,7 @@ class SoylatteDB
       end
 
       def study_ids_pair
-        pairs = Hash.new(Hash.new([]))
+        pairs = Hash.new(Hash.new{|h,k| h[k] = [] })
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
         cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
         `#{cmd}`.split("\n").each do |ln|
@@ -56,10 +56,7 @@ class SoylatteDB
           run_id   = line[1]
           sub_id   = line[2]
 
-          pairs[study_id][:run_id] ||= []
           pairs[study_id][:run_id] << run_id
-
-          pairs[study_id][:sub_id] ||= []
           pairs[study_id][:sub_id] << sub_id
         end
         pairs
@@ -67,18 +64,15 @@ class SoylatteDB
 
       def sra_publications_pair
         publication_pair = pubmed_pmc_id_pair
-        pairs = Hash.new(Hash.new([]))
+        pairs = Hash.new(Hash.new{|h,k| h[k] = [] })
         publication_json = File.join(PROJ_ROOT, "data", "publication.json")
         json = open(publication_json){|f| JSON.load(f) }
         json["ResultSet"]["Result"].each do |node|
           sub_id = node["sra_id"]
           pubmed_id = node["pmid"]
           
-          pairs[sub_id][:pubmed_id] ||= []
           pairs[sub_id][:pubmed_id] << pubmed_id
-
-          pairs[sub_id][:pmc_id] ||= []
-          pairs[sub_id][:pmc_id] << publication_pair[pubmed_id]
+          pairs[sub_id][:pmc_id]    << publication_pair[pubmed_id]
         end
         pairs
       end
@@ -105,16 +99,16 @@ class SoylatteDB
       end
 
       def exp_run_id_pair
-        pairs = Hash.new([])
+        pairs = Hash.new{|h,k| h[k] = [] }
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
         cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $11, $1 }' #{accessions}" # exp_id, run_id
         `#{cmd}`.split("\n").each do |ln|
           line = ln.split("\t")
           exp_id = line[0]
           run_id = line[1]
-          pairs[exp_id] ||= []
           pairs[exp_id] << run_id
         end
+        
         pairs
       end
 
