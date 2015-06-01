@@ -1,9 +1,12 @@
 # :)
 
 require 'groonga'
+require File.join(PROJ_ROOT, 'lib', 'repos', 'opPMC', 'publication_metadata_parser')
 
 class SoylatteDB
   class Publication
+    include PublicationMetadataParser
+
     class << self
       def load(db, sub_id_list)
         pubmed_id_pair, pmc_id_pair = create_pairs(sub_id_list)

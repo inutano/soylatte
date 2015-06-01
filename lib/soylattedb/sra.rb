@@ -1,9 +1,12 @@
 # :)
 
 require 'groonga'
+require File.join(PROJ_ROOT, 'lib', 'repos', 'sra_metadata_toolkit', 'sra_metadata_parser')
 
 class SoylatteDB
   class SRA
+    include SRAMetadataParser
+    
     def initialize(db, sub_id)
       @db = db
       @sub_id = sub_id
@@ -12,7 +15,7 @@ class SoylatteDB
     def load
       establish_connection
       [ :sample, :experiment, :study ].each do |type|
-        load_data(xml_path(@sub_id, type))
+        load_data(xml_path(type))
       end
     end
 
@@ -28,17 +31,17 @@ class SoylatteDB
     def load_data(xml)
       case xml
       when /study/
-        node_list = SRAMetadataParser::Study.new(xml).parse
+        node_list = Study.new(xml).parse
         node_list.each do |node|
           insert_study_record(node)
         end
       when /experiment/
-        node_list = SRAMetadataParser::Experiment.new(xml).parse
+        node_list = Experiment.new(xml).parse
         node_list.each do |node|
           insert_experiment_record(node)
         end
       when /sample/
-        node_list = SRAMetadataParser::Sample.new(xml).parse
+        node_list = Sample.new(xml).parse
         node_list.each do |node|
           insert_sample_record(node)
         end
