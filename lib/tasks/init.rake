@@ -98,26 +98,10 @@ namespace :soylatte do
   
   directory log_dir
 
-  task :config => [ log_file, config_yaml ]
+  task :config => log_file
 
   file log_file => log_dir do |t|
     touch t.name
-  end
-
-  file config_yaml => [log_dir, sra_metadata, pmc_ids, publication, taxon_table] do |t|
-    paths = { 
-              logfile: log_dir,
-              sra_xml_base: sra_metadata,
-              sra_accessions: File.join(sra_metadata, "SRA_Accessions"),
-              sra_run_members: File.join(sra_metadata, "SRA_Run_Members"),
-              pmc_ids: pmc_ids,
-              publication: publication,
-              taxon_table: taxon_table,
-              fqc_path: File.join(data_dir, fastqc)
-            }
-    paths.each_pair do |name, path|
-      sh "echo '#{name}: #{path}' >> #{t.name}"
-    end
   end
 end
 
