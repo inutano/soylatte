@@ -9,7 +9,10 @@ end
 
 namespace :soylatte do
   desc "trigger fetching metadata and configuration"
-  task :init => [ :fetch, :config ]
+  task :init => [ :fetch, :config ] do
+    puts "Heads up: you need to sync fastqc directory before deploy application."
+    puts "soylatte:init done."
+  end
   
   desc "create db and load data"
   task :up => [ :create_db, :load_data ]

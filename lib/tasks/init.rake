@@ -9,7 +9,9 @@ namespace :soylatte do
   
   directory data_dir
   
-  task :fetch => [ :fetch_metadata, :fetch_scripts ]
+  task :fetch => [ :fetch_metadata, :fetch_scripts ] do
+    puts "fetch metadata and scripts: done."
+  end
   
   ## fetch metadata ##
   
@@ -94,11 +96,18 @@ namespace :soylatte do
   
   log_dir  = File.join(PROJ_ROOT, "log")
   log_file = File.join(log_dir, "query.log")
-  config_yaml = File.join(PROJ_ROOT, "config.yaml")
   
-  directory log_dir
+  fastqc_dir = File.join(data_dir, "fastqc")
 
-  task :config => log_file
+  public_dir = File.join(PROJ_ROOT, "public")
+
+  directory log_dir
+  directory fastqc_dir
+  directory public_dir
+
+  task :config => [log_file, fastqc_dir, public_dir] do
+    puts "repository configuration: done."
+  end
 
   file log_file => log_dir do |t|
     touch t.name
