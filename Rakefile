@@ -1,7 +1,7 @@
 # :)
 
 PROJ_ROOT = File.expand_path(__dir__)
-NUM_OF_PARALLEL = 16
+NUM_OF_PARALLEL = 24
 
 Dir["#{PROJ_ROOT}/lib/tasks/**/*.rake"].each do |path|
   load path
