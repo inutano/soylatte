@@ -20,6 +20,10 @@ group :development, :test do
   gem 'pry-doc'
   gem 'pry-byebug'
   gem 'pry-stack_explorer'
+  
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  
   gem 'rspec'
   gem 'rack-test', :require => 'rack/test'
 end
