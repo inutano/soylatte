@@ -30,11 +30,13 @@ namespace :soylatte do
   
   task :fix_metadata_dir => sra_metadata do |t|
     cd sra_metadata
-    parent_dirs = Dir.entries(sra_metadata).select{|f| f =~ /^.RA\d+$/ }
-    parent_dirs.group_by{|id| id.sub(/...$/,"") }.each_pair do |pid, ids|
-      moveto = File.join sra_metadata, pid
-      mkdir moveto
-      mv ids, moveto
+    original_files = Dir.entries(sra_metadata).select{|f| f =~ /^.RA\d+$/ }
+    if !original_files.select{|f| f =~ /^.RA\d{6,7}/ }.empty? # check if it's done
+      original_files.group_by{|id| id.sub(/...$/,"") }.each_pair do |pid, ids|
+        moveto = File.join sra_metadata, pid
+        mkdir moveto
+        mv ids, moveto
+      end
     end
   end
 
