@@ -62,7 +62,7 @@ namespace :soylatte do
     tarball  = "taxdump.tar.gz"
     
     cd data_dir
-    sh "lftp -c \"open #{base_url} && pget -n 8 -O #{tarball}\""
+    sh "lftp -c \"open #{base_url} && pget -n 8 #{tarball}\""
     sh "tar zxf #{tarball}"
     
     file = `grep "scientific" names.dmp`.gsub("|","\t").gsub(/\t/,",").split("\n")
