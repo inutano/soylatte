@@ -1,6 +1,7 @@
 # :)
 
 require 'groonga'
+require 'parallel'
 
 class SoylatteDB
   class Reference
@@ -18,7 +19,7 @@ class SoylatteDB
 
       def load_studyids
         publication_ref_pair = sra_publications_pair
-        study_ids_pair.each_pair do |study_id, id_hash|
+        Parallel.each(study_ids_pair, :in_threads => NUM_OF_PARALLEL) do |study_id, id_hash|
           run_id_list = id_hash[:run_id]
           sub_id_list = id_hash[:sub_id]
 
@@ -65,7 +66,7 @@ class SoylatteDB
         pairs = Hash.new
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
         cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
-        `#{cmd}`.split("\n").each do |ln|
+        Parallel.each(`#{cmd}`.split("\n"), :in_threads => NUM_OF_PARALLEL) do |ln|
           line = ln.split("\t")
           study_id = line[0]
           run_id   = line[1]
@@ -74,7 +75,7 @@ class SoylatteDB
           pairs[study_id] ||= {}
           pairs[study_id][:run_id] ||= []
           pairs[study_id][:sub_id] ||= []
-
+          
           pairs[study_id][:run_id] << run_id
           pairs[study_id][:sub_id] << sub_id
         end
@@ -86,7 +87,7 @@ class SoylatteDB
         pairs = {}
         publication_json = File.join(PROJ_ROOT, "data", "publication.json")
         json = open(publication_json){|f| JSON.load(f) }
-        json["ResultSet"]["Result"].each do |node|
+        Parallel.each(json["ResultSet"]["Result"], :in_threads => NUM_OF_PARALLEL) do |node|
           sub_id = node["sra_id"]
           pubmed_id = node["pmid"]
           
@@ -113,7 +114,7 @@ class SoylatteDB
       end
 
       def load_experiments
-        exp_run_id_pair.each_pair do |exp_id, run_id_list|
+        Parallel.each(exp_run_id_pair, :in_threads => NUM_OF_PARALLEL) do |exp_id, run_id_list|
           Groonga["Experiments"].add(
             exp_id,
             run_id: run_id_list
@@ -125,7 +126,7 @@ class SoylatteDB
         pairs = Hash.new{|h,k| h[k] = [] }
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
         cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $11, $1 }' #{accessions}" # exp_id, run_id
-        `#{cmd}`.split("\n").each do |ln|
+        Parallel.each(`#{cmd}`.split("\n"), :in_threads => NUM_OF_PARALLEL) do |ln|
           line = ln.split("\t")
           exp_id = line[0]
           run_id = line[1]
