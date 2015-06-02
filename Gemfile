@@ -24,6 +24,8 @@ group :development, :test do
   gem 'better_errors'
   gem 'binding_of_caller'
   
+  gem 'stackprof'
+  
   gem 'rspec'
   gem 'rack-test', :require => 'rack/test'
 end
