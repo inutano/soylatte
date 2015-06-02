@@ -28,7 +28,7 @@ class SoylatteDB
             pubmed_id_list << publication_ref_pair[sub_id][:pubmed_id]
             pmc_id_list    << publication_ref_pair[sub_id][:pmc_id]
           end
-
+          
           Groonga["StudyIDs"].add(
             study_id,
             run_id:    run_id_list,
@@ -47,7 +47,7 @@ class SoylatteDB
       end
 
       def study_ids_pair
-        pairs = Hash.new(Hash.new{|h,k| h[k] = [] })
+        pairs = Hash.new
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
         cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
         `#{cmd}`.split("\n").each do |ln|
@@ -55,6 +55,10 @@ class SoylatteDB
           study_id = line[0]
           run_id   = line[1]
           sub_id   = line[2]
+          
+          pairs[study_id] ||= {}
+          pairs[study_id][:run_id] ||= []
+          pairs[study_id][:sub_id] ||= []
 
           pairs[study_id][:run_id] << run_id
           pairs[study_id][:sub_id] << sub_id
@@ -64,12 +68,16 @@ class SoylatteDB
 
       def sra_publications_pair
         publication_pair = pubmed_pmc_id_pair
-        pairs = Hash.new(Hash.new{|h,k| h[k] = [] })
+        pairs = {}
         publication_json = File.join(PROJ_ROOT, "data", "publication.json")
         json = open(publication_json){|f| JSON.load(f) }
         json["ResultSet"]["Result"].each do |node|
           sub_id = node["sra_id"]
           pubmed_id = node["pmid"]
+          
+          pairs[sub_id] ||= {}
+          pairs[sub_id][:pubmed_id] ||= []
+          pairs[sub_id][:pmc_id]    ||= []
           
           pairs[sub_id][:pubmed_id] << pubmed_id
           pairs[sub_id][:pmc_id]    << publication_pair[pubmed_id]
@@ -108,7 +116,6 @@ class SoylatteDB
           run_id = line[1]
           pairs[exp_id] << run_id
         end
-        
         pairs
       end
 

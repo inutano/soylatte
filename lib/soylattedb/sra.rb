@@ -55,7 +55,7 @@ class SoylatteDB
       run_id_list    = study_id_record.run_id
       pubmed_id_list = study_id_record.pubmed_id
       pmc_id_list    = study_id_record.pmc_id
-
+      
       Groonga["Projects"].add(
         study_id,
         submission_id: @sub_id,
