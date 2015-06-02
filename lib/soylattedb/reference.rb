@@ -22,12 +22,17 @@ class SoylatteDB
           run_id_list = id_hash[:run_id]
           sub_id_list = id_hash[:sub_id]
 
-          pubmed_id_list = []
-          pmc_id_list    = []
+          pubmed_id_sets = []
+          pmc_id_sets    = []
           sub_id_list.each do |sub_id|
-            pubmed_id_list << publication_ref_pair[sub_id][:pubmed_id]
-            pmc_id_list    << publication_ref_pair[sub_id][:pmc_id]
+            pub_pair = publication_ref_pair[sub_id]
+            if pub_pair
+              pubmed_id_sets << pub_pair[:pubmed_id]
+              pmc_id_sets    << pub_pair[:pmc_id]
+            end
           end
+          pubmed_id_list = pubmed_id_sets.flatten
+          pmc_id_list    = pmc_id_sets.flatten
           
           Groonga["StudyIDs"].add(
             study_id,
@@ -36,13 +41,23 @@ class SoylatteDB
             pmc_id:    pmc_id_list
           )
           
-          existing_study_id = Groonga["SubIDs"][sub_id].study_id || []
-          Groonga["SubIDs"].add(
-            sub_id,
-            study_id:  existing_study_id + study_id,
-            pubmed_id: pubmed_id_list,
-            pmc_id:    pmc_id_list
-          )
+          sub_id_list.each do |sub_id|
+            record = Groonga["SubIDs"][sub_id]
+            if record
+              existing_study_id  = record.study_id
+              existing_pubmed_id = record.pubmed_id
+              existing_pmc_id    = record.pmc_id
+              
+              record["study_id"]  = [existing_study_id, study_id].flatten
+              record["pubmed_id"] = [existing_pubmed_id, pubmed_id_list].flatten
+              record["pmc_id"]    = [existing_pmc_id, pmc_id_list].flatten
+            else
+              record = Groonga["SubIDs"].add(sub_id)
+              record["study_id"]  = study_id
+              record["pubmed_id"] = pubmed_id_list
+              record["pmc_id"]    = pmc_id_list
+            end
+          end
         end
       end
 
