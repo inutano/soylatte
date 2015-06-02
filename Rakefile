@@ -1,5 +1,8 @@
 # :)
 
+require 'pry-byebug'
+require 'stackprof'
+
 PROJ_ROOT = File.expand_path(__dir__)
 NUM_OF_PARALLEL = 24
 
@@ -30,7 +33,9 @@ namespace :soylatte do
   end
   
   task :load_data do
-    Rake::Task["soylatte:load_data"].invoke
+    StackProf.run(mode: :cpu, out: './stackprof-cpu-load-data.dump') do
+      Rake::Task["soylatte:load_data"].invoke
+    end
   end
   
   desc "erase all db files."
