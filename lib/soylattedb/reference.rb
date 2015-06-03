@@ -8,7 +8,9 @@ class SoylatteDB
     class << self
       def load(db)
         establish_connection(db)
-        load_studyids
+        pub_ref = sra_publications_pair
+        load_subids(pub_ref)
+        load_studyids(pub_ref)
         load_experiments
         load_taxons
       end
@@ -16,138 +18,125 @@ class SoylatteDB
       def establish_connection(db)
         Groonga::Database.open(db)
       end
-
-      def load_studyids
-        publication_ref_pair = sra_publications_pair
-        Parallel.each(study_ids_pair, :in_threads => NUM_OF_PARALLEL) do |study_id, id_hash|
-          run_id_list = id_hash[:run_id]
-          sub_id_list = id_hash[:sub_id]
-
-          pubmed_id_sets = []
-          pmc_id_sets    = []
-          sub_id_list.each do |sub_id|
-            pub_pair = publication_ref_pair[sub_id]
-            if pub_pair
-              pubmed_id_sets << pub_pair[:pubmed_id]
-              pmc_id_sets    << pub_pair[:pmc_id]
-            end
-          end
-          pubmed_id_list = pubmed_id_sets.flatten
-          pmc_id_list    = pmc_id_sets.flatten
-          
-          Groonga["StudyIDs"].add(
-            study_id,
-            run_id:    run_id_list,
-            pubmed_id: pubmed_id_list,
-            pmc_id:    pmc_id_list
-          )
-          
-          sub_id_list.each do |sub_id|
-            record = Groonga["SubIDs"][sub_id]
-            if record
-              existing_study_id  = record.study_id
-              existing_pubmed_id = record.pubmed_id
-              existing_pmc_id    = record.pmc_id
-              
-              record["study_id"]  = [existing_study_id, study_id].flatten
-              record["pubmed_id"] = [existing_pubmed_id, pubmed_id_list].flatten
-              record["pmc_id"]    = [existing_pmc_id, pmc_id_list].flatten
-            else
-              record = Groonga["SubIDs"].add(sub_id)
-              record["study_id"]  = study_id
-              record["pubmed_id"] = pubmed_id_list
-              record["pmc_id"]    = pmc_id_list
-            end
-          end
-        end
-      end
-
-      def study_ids_pair
-        pairs = Hash.new
-        accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
-        cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
-        Parallel.each(`#{cmd}`.split("\n"), :in_threads => NUM_OF_PARALLEL) do |ln|
-          line = ln.split("\t")
-          study_id = line[0]
-          run_id   = line[1]
-          sub_id   = line[2]
-          
-          pairs[study_id] ||= {}
-          pairs[study_id][:run_id] ||= []
-          pairs[study_id][:sub_id] ||= []
-          
-          pairs[study_id][:run_id] << run_id
-          pairs[study_id][:sub_id] << sub_id
-        end
-        pairs
-      end
-
+      
+      ### publications pair ###
+      
       def sra_publications_pair
-        publication_pair = pubmed_pmc_id_pair
-        pairs = {}
-        publication_json = File.join(PROJ_ROOT, "data", "publication.json")
-        json = open(publication_json){|f| JSON.load(f) }
-        Parallel.each(json["ResultSet"]["Result"], :in_threads => NUM_OF_PARALLEL) do |node|
-          sub_id = node["sra_id"]
+        ref = pubmed_pmc_id_pair
+        list = Parallel.map(publication_json, :in_threads => NUM_OF_PARALLEL) do |node|
           pubmed_id = node["pmid"]
-          
-          pairs[sub_id] ||= {}
-          pairs[sub_id][:pubmed_id] ||= []
-          pairs[sub_id][:pmc_id]    ||= []
-          
-          pairs[sub_id][:pubmed_id] << pubmed_id
-          pairs[sub_id][:pmc_id]    << publication_pair[pubmed_id]
+          [node["sra_id"], [pubmed_id, ref[pubmed_id]]]
         end
-        pairs
+        Hash[list]
+      end
+      
+      def publication_json
+        publication_json = File.join(PROJ_ROOT, "data", "publication.json")
+        open(publication_json){|f| JSON.load(f) }["ResultSet"]["Result"]
       end
 
       def pubmed_pmc_id_pair
         pairs = Hash.new("")
-        pmc_ids = File.join(PROJ_ROOT, "data", "PMC-ids.csv")
-        open(pmc_ids) do |file|
-          while l = file.gets
-            cols = l.split(",")
-            pairs[cols[9]] = cols[8] # pubmed_id: pmc_id
-          end
-        end
-        pairs
+        csv = File.join(PROJ_ROOT, "data", "PMC-ids.csv")
+        cmd = "awk -F ',' 'BEGIN{ OFS=\"\t\" }{ print $8, $7 }'"
+        Hash[`#{cmd} #{csv}`.split("\n").map{|n| n.split("\t") }]
       end
 
-      def load_experiments
-        Parallel.each(exp_run_id_pair, :in_threads => NUM_OF_PARALLEL) do |exp_id, run_id_list|
-          Groonga["Experiments"].add(
-            exp_id,
-            run_id: run_id_list
-          )
+      ### submission ids ###
+      
+      def load_subids(pub_ref)
+        db = Groonga["SubIDs"]
+        pub_ref = sra_publications_pair
+        Parallel.each(submission_id_list, :in_threads => NUM_OF_PARALLEL) do |sub_id, list_of_line|
+          add_submission(db, sub_id, list_of_line.map{|l| l.split("\t")[1] }, pub_ref)
         end
       end
-
-      def exp_run_id_pair
-        pairs = Hash.new{|h,k| h[k] = [] }
+      
+      def submission_id_list
+        cmd = "awk -F '\t' 'BEGIN{ OFS=\"\t\" } $1 ~ /^.RP/ { print $2, $1 }'"
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
-        cmd = "awk -F '\t' '$1 ~ /^.RR/ { OFS=\"\t\" ; print $11, $1 }' #{accessions}" # exp_id, run_id
-        Parallel.each(`#{cmd}`.split("\n"), :in_threads => NUM_OF_PARALLEL) do |ln|
-          line = ln.split("\t")
-          exp_id = line[0]
-          run_id = line[1]
-          pairs[exp_id] << run_id
-        end
-        pairs
+        `#{cmd} #{accessions}`.split("\n").group_by{|node| node.split("\t")[0] } # group by submission id
       end
-
-      def load_taxons
-        taxon_table = File.join(PROJ_ROOT, "data", "taxon_table.csv")
-        open(taxon_table) do |file|
-          while lt = file.gets
-            l = lt.split(",")
-            taxon_id        = l[0]
-            scientific_name = l[1]
-            Groonga["Taxons"].add(
-              taxon_id,
-              scientific_name: scientific_name
-            )
-          end
+      
+      def add_submission(db, sub_id, study_id_list, pub_ref)
+        db.add(
+          sub_id,
+          study_id:  study_id_list,
+          pubmed_id: pub_ref[sub_id][:pubmed_id],
+          pmc_id:    pub_ref[sub_id][:pmc_id],
+        )
+      end
+      
+      ### study ids ###
+      
+      def load_studyids(pub_ref)
+        db = Groonga["StudyIDs"]
+        Parallel.each(study_id_list, :in_threads => NUM_OF_PARALLEL) do |study_id, list_of_line|
+          run_id_list = list_of_line.map{|l| l.split("\t")[1] }
+          sub_id_list = list_of_line.map{|l| l.split("\t")[2] }
+          add_study(db, study_id, run_id_list, sub_id_list, pub_ref)
         end
+      end
+      
+      def study_id_list
+        accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
+        cmd = "awk -F '\t' 'BEGIN{ OFS=\"\t\" } $1 ~ /^.RR/ { print $13, $1, $2 }' #{accessions}" # study_id, run_id, sub_id
+        `#{cmd} #{accessions}`.split("\n").group_by{|node| node.split("\t")[0] } # sort by study id
+      end
+      
+      def add_study(db, study_id, run_id_list, sub_id_list, pub_ref)
+        db.add(
+          study_id,
+          run_id:    run_id_list,
+          pubmed_id: sub_id_list.map{|sub_id| pub_ref[sub_id][:pubmed_id] }.flatten,
+          pmc_id:    sub_id_list.map{|sub_id| pub_ref[sub_id][:pmc_id] }.flatten,
+        )
+      end
+      
+      ### experiments ###
+      
+      def load_experiment
+        db = Groonga["Experiments"]
+        Parallel.each(exp_run_id_pair, :in_threads => NUM_OF_PARALLEL) do |exp_id, list_of_line|
+          run_id_list = list_of_line.map{|l| l.split("\t")[1] }
+          add_experiment(db, exp_id, run_id_list)
+        end
+      end
+      
+      def exp_run_id_list
+        accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
+        cmd = "awk -F '\t' 'BEGIN{ OFS=\"\t\" } $1 ~ /^.RR/ { print $11, $1 }' #{accessions}" # exp_id, run_id
+        `#{cmd} #{accessions}`.split("\n").group_by{|n| n.split("\t")[0] }
+      end
+      
+      def add_experiment(db, exp_id, run_id_list)
+        db.add(
+          exp_id,
+          run_id: run_id_list
+        )
+      end
+      
+      ### taxonomy ###
+      
+      def load_taxons
+        db = Groonga["Taxons"]
+        Parallel.each(taxon_list, :in_threads => NUM_OF_PARALLEL) do |ln|
+          line = ln.split("\t")
+          add_taxon(db, line[0], line[1])
+        end
+      end
+      
+      def taxon_list
+        taxon_table = File.join(PROJ_ROOT, "data", "taxon_table.csv")
+        cmd = "awk -F ',' 'BEGIN{ OFS=\"\t\" }{ print $1, $2 }'"
+        `#{cmd} #{taxon_table}`.split("\n")
+      end
+      
+      def add_taxon(db, taxon_id, s_name)
+        db.add(
+          taxon_id,
+          scientific_name: s_name
+        )
       end
     end
   end
