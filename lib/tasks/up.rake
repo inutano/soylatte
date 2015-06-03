@@ -1,5 +1,6 @@
 # :)
 
+require 'parallel'
 require File.join(PROJ_ROOT, 'lib', 'soylattedb')
 
 namespace :soylatte do
@@ -30,7 +31,7 @@ namespace :soylatte do
   
   task :load_metadata => [db, live_accessions] do |t|
     sub_id_list = open(live_accessions).read.split("\n")
-    sub_id_list.each do |sub_id|
+    Parallel.each(sub_id_list, :in_threads => NUM_OF_PARALLEL) do |sub_id|
       SoylatteDB::SRA.new(db, sub_id).load
     end
   end

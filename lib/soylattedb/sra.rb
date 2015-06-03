@@ -81,7 +81,7 @@ class SoylatteDB
       end
     end
     
-    def add_run(rundb, run_id, exp_id, node
+    def add_run(rundb, run_id, exp_id, node)
       rundb.add(
         run_id,
         submission_id: @sub_id,
