@@ -5,9 +5,9 @@ require File.join(PROJ_ROOT, 'lib', 'repos', 'opPMC', 'publication_metadata_pars
 
 class SoylatteDB
   class Publication
-    include PublicationMetadataParser
-
     class << self
+      include PublicationMetadataParser
+
       def load(db, sub_id_list)
         pubmed_id_pair, pmc_id_pair = create_pairs(sub_id_list)
         load_pub(db, :pubmed, pubmed_id_pair)
