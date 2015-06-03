@@ -55,13 +55,13 @@ class SoylatteDB
       end
     end
 
-    def insert_study_record(studydb, projectdb, node)
+    def insert_study_record(node, studydb, projectdb)
       study_id = node[:accession]
       study_id_record = studydb[study_id]
-      add_project(projectdb, study_id_record, node)
+      add_project(node, study_id, projectdb, study_id_record)
     end
     
-    def add_project(projectdb, study_id_record, node)
+    def add_project(node, study_id, projectdb, study_id_record)
       projectdb.add(
         study_id,
         submission_id: @sub_id,
@@ -75,13 +75,13 @@ class SoylatteDB
 
     def insert_experiment_record(node, experimentdb, rundb)
       exp_id = node[:accession]
-      run_id_list = experimentsdb[exp_id].run_id
+      run_id_list = experimentdb[exp_id].run_id
       run_id_list.each do |run_id|
-        add_run(rundb, run_id, exp_id, node)
+        add_run(node, rundb, run_id, exp_id)
       end
     end
     
-    def add_run(rundb, run_id, exp_id, node)
+    def add_run(node, rundb, run_id, exp_id)
       rundb.add(
         run_id,
         submission_id: @sub_id,
@@ -101,10 +101,10 @@ class SoylatteDB
     def insert_sample_record(node, taxondb, sampledb)
       taxon_id = node[:organism_information][:taxon_id]
       s_name   = taxondb[taxon_id].scientific_name
-      add_sample(sampledb, taxon_id, s_name, node)
+      add_sample(node, sampledb, taxon_id, s_name)
     end
     
-    def add_sample(sampledb, taxon_id, s_name, node)
+    def add_sample(node, sampledb, taxon_id, s_name)
       sampledb.add(
         node[:accession],
         submission_id:      @sub_id,
