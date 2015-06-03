@@ -1,6 +1,7 @@
 # :)
 
 require 'groonga'
+
 require File.join(PROJ_ROOT, 'lib', 'repos', 'sra_metadata_toolkit', 'sra_metadata_parser')
 
 class SoylatteDB
@@ -31,71 +32,84 @@ class SoylatteDB
     def load_data(xml)
       case xml
       when /study/
-        node_list = Study.new(xml).parse
+        node_list  = Study.new(xml).parse
+        studydb    = Groonga["StudyIDs"]
+        projectdb = Groonga["Projects"]
         node_list.each do |node|
-          insert_study_record(node)
+          insert_study_record(node, studydb, projectdb)
         end
       when /experiment/
-        node_list = Experiment.new(xml).parse
+        node_list    = Experiment.new(xml).parse
+        experimentdb = Groonga["Experiments"]
+        rundb        = Groonga["Runs"]
         node_list.each do |node|
-          insert_experiment_record(node)
+          insert_experiment_record(node, experimentdb, rundb)
         end
       when /sample/
         node_list = Sample.new(xml).parse
+        taxondb   = Groonga["Taxons"]
+        sampledb  = Groonga["Samples"]
         node_list.each do |node|
-          insert_sample_record(node)
+          insert_sample_record(node, taxondb, sampledb)
         end
       end
     end
 
-    def insert_study_record(node)
+    def insert_study_record(studydb, projectdb, node)
       study_id = node[:accession]
-
-      study_id_record = Groonga["StudyIDs"][study_id]
-      run_id_list    = study_id_record.run_id
-      pubmed_id_list = study_id_record.pubmed_id
-      pmc_id_list    = study_id_record.pmc_id
-      
-      Groonga["Projects"].add(
+      study_id_record = studydb[study_id]
+      add_project(projectdb, study_id_record, node)
+    end
+    
+    def add_project(projectdb, study_id_record, node)
+      projectdb.add(
         study_id,
         submission_id: @sub_id,
         study_title:   node[:study_title],
         study_type:    node[:study_type],
-        run:           run_id_list,
-        pubmed_id:     pubmed_id_list,
-        pmc_id:        pmc_id_list
+        run:           study_id_record.run_id,
+        pubmed_id:     study_id_record.pubmed_id,
+        pmc_id:        study_id_record.pmc_id
       )
     end
 
-    def insert_experiment_record(node)
+    def insert_experiment_record(node, experimentdb, rundb)
       exp_id = node[:accession]
-      run_id_list = Groonga["Experiments"][exp_id].run_id
+      run_id_list = experimentsdb[exp_id].run_id
       run_id_list.each do |run_id|
-        Groonga["Runs"].add(
-          run_id,
-          submission_id: @sub_id,
-          experiment_id: exp_id,
-          sample: [node[:sample_accession]],
-          instrument:             node[:platform_information][:instrument],
-          library_strategy:       node[:library_description][:library_strategy],
-          library_source:         node[:library_description][:library_source],
-          library_selection:      node[:library_description][:library_selection],
-          library_layout:         node[:library_description][:library_layout],
-          library_orientation:    node[:library_description][:library_orientation],
-          library_nominal_length: node[:library_description][:library_nominal_length],
-          library_nominal_sdev:   node[:library_description][:library_nominal_sdev]
-        )
+        add_run(rundb, run_id, exp_id, node)
       end
     end
+    
+    def add_run(rundb, run_id, exp_id, node
+      rundb.add(
+        run_id,
+        submission_id: @sub_id,
+        experiment_id: exp_id,
+        sample: [node[:sample_accession]],
+        instrument:             node[:platform_information][:instrument],
+        library_strategy:       node[:library_description][:library_strategy],
+        library_source:         node[:library_description][:library_source],
+        library_selection:      node[:library_description][:library_selection],
+        library_layout:         node[:library_description][:library_layout],
+        library_orientation:    node[:library_description][:library_orientation],
+        library_nominal_length: node[:library_description][:library_nominal_length],
+        library_nominal_sdev:   node[:library_description][:library_nominal_sdev]
+      )
+    end
 
-    def insert_sample_record(node)
+    def insert_sample_record(node, taxondb, sampledb)
       taxon_id = node[:organism_information][:taxon_id]
-      scientific_name = Groonga["Taxons"][taxon_id].scientific_name
-      Groonga["Samples"].add(
+      s_name   = taxondb[taxon_id].scientific_name
+      add_sample(sampledb, taxon_id, s_name, node)
+    end
+    
+    def add_sample(sampledb, taxon_id, s_name, node)
+      sampledb.add(
         node[:accession],
         submission_id:      @sub_id,
         taxon_id:           taxon_id,
-        scientific_name:    scientific_name,
+        scientific_name:    s_name,
         sample_title:       node[:title],
         sample_description: node[:sample_description]
       )
