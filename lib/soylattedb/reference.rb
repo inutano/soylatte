@@ -25,7 +25,7 @@ class SoylatteDB
         ref = pubmed_pmc_id_pair
         list = Parallel.map(publication_json, :in_threads => NUM_OF_PARALLEL) do |node|
           pubmed_id = node["pmid"]
-          [node["sra_id"], [pubmed_id, ref[pubmed_id]]]
+          [ node["sra_id"], { pubmed_id: pubmed_id, pmc_id: ref[pubmed_id] } ]
         end
         Hash[list]
       end
@@ -36,10 +36,11 @@ class SoylatteDB
       end
 
       def pubmed_pmc_id_pair
-        pairs = Hash.new("")
         csv = File.join(PROJ_ROOT, "data", "PMC-ids.csv")
-        cmd = "awk -F ',' 'BEGIN{ OFS=\"\t\" }{ print $8, $7 }'"
-        Hash[`#{cmd} #{csv}`.split("\n").map{|n| n.split("\t") }]
+        pattern = '$4 > 2006 && $10 != "-" && $9 != "-" '
+        cmd = "awk -F ',' 'BEGIN{ OFS=\"\t\" } #{pattern} { print $10, $9 }'"
+        array = `#{cmd} #{csv}`.split("\n").map{|n| n.split("\t") }
+        Hash[array]
       end
 
       ### submission ids ###
@@ -62,9 +63,21 @@ class SoylatteDB
         db.add(
           sub_id,
           study_id:  study_id_list,
-          pubmed_id: pub_ref[sub_id][:pubmed_id],
-          pmc_id:    pub_ref[sub_id][:pmc_id],
+          pubmed_id: get_pub_id(sub_id, pub_ref, :pubmed),
+          pmc_id:    get_pub_id(sub_id, pub_ref, :pmc),
         )
+      end
+      
+      def get_pub_id(sub_id, pub_ref, type)
+        pubs = pub_ref[sub_id]
+        if pubs
+          case type
+          when :pubmed
+            pubs[:pubmed_id]
+          when :pmc
+            pubs[:pmc_id]
+          end
+        end
       end
       
       ### study ids ###
@@ -88,16 +101,16 @@ class SoylatteDB
         db.add(
           study_id,
           run_id:    run_id_list,
-          pubmed_id: sub_id_list.map{|sub_id| pub_ref[sub_id][:pubmed_id] }.flatten,
-          pmc_id:    sub_id_list.map{|sub_id| pub_ref[sub_id][:pmc_id] }.flatten,
+          pubmed_id: sub_id_list.map{|sub_id| get_pub_id(sub_id, pub_ref, :pubmed) }.compact,
+          pmc_id:    sub_id_list.map{|sub_id| get_pub_id(sub_id, pub_ref, :pmc) }.compact,
         )
       end
       
       ### experiments ###
       
-      def load_experiment
+      def load_experiments
         db = Groonga["Experiments"]
-        Parallel.each(exp_run_id_pair, :in_threads => NUM_OF_PARALLEL) do |exp_id, list_of_line|
+        Parallel.each(exp_run_id_list, :in_threads => NUM_OF_PARALLEL) do |exp_id, list_of_line|
           run_id_list = list_of_line.map{|l| l.split("\t")[1] }
           add_experiment(db, exp_id, run_id_list)
         end
