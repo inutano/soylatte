@@ -177,7 +177,7 @@ $(function(){
     function showList(q){
         if(q != "total"){
           q = escape(q)
-          window.location = "http://sra.dbcls.jp/search/search?species=&type=" + q + "&instrument=&search_query=";
+          window.location = "http://sra.dbcls.jp/cgi-bin/studylist.cgi?type=" + q;
         }
     }
 
