@@ -18,11 +18,21 @@ class SoylatteDB
         pubmed_id_pair = Hash.new{|h,k| h[k] = [] }
         pmc_id_pair    = Hash.new{|h,k| h[k] = [] }
         
+        db = Groonga["SubIDs"]
         sub_id_list.each do |sub_id|
-          record = Groonga["SubIDs"][sub_id]
-          record.study_id.each do |study_id|
-            pubmed_id_pair[record.pubmed_id] << study_id
-            pmc_id_pair[record.pmc_id]       << study_id
+          record = db[sub_id]
+          study_id_list = record.study_id
+          
+          record.pubmed_id.each do |pmid|
+            study_id_list.each do |study_id|
+              pubmed_id_pair[pmid] << study_id
+            end
+          end
+          
+          record.pmc_id.each do |pmcid|
+            study_id_list.each do |study_id|
+              pmc_id_pair[pmcid] << study_id
+            end
           end
         end
         [pubmed_id_pair, pmc_id_pair]
@@ -32,7 +42,6 @@ class SoylatteDB
         pub_id_pairs.each_slice(100) do |node|
           pairs = Hash[node]
           pub_id_text_pairs = bulk_parse(type, pairs.keys)
-
           pub_id_text_pairs.each_pair do |pub_id, text|
             study_id_list = pairs[pub_id]
             study_id_list.each do |study_id|
@@ -78,7 +87,7 @@ class SoylatteDB
         end
       end
 
-      def bulk_pmc_parse(pub_id_list)
+      def bulk_pmc_parse(nkgr)
         nkgr.css("article").map do |article|
           p = PMCMetadataParser.new(article.to_xml)
           ref_journal_list = p.ref_journal_list || []
