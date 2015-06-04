@@ -53,6 +53,7 @@ class SoylatteDB
           insert_sample_record(node, taxondb, sampledb)
         end
       end
+    rescue NameError
     end
 
     def insert_study_record(node, studydb, projectdb)
