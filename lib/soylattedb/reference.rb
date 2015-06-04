@@ -9,10 +9,10 @@ class SoylatteDB
       def load(db)
         establish_connection(db)
         pub_ref = sra_publications_pair
-        load_subids(pub_ref)
-        load_studyids(pub_ref)
-        load_experiments
-        load_taxons
+        load_subids(db, pub_ref)
+        load_studyids(db, pub_ref)
+        load_experiments(db)
+        load_taxons(db)
       end
 
       def establish_connection(db)
@@ -45,11 +45,12 @@ class SoylatteDB
 
       ### submission ids ###
       
-      def load_subids(pub_ref)
-        db = Groonga["SubIDs"]
+      def load_subids(db, pub_ref)
         pub_ref = sra_publications_pair
         Parallel.each(submission_id_list, :in_threads => NUM_OF_PARALLEL) do |sub_id, list_of_line|
-          add_submission(db, sub_id, list_of_line.map{|l| l.split("\t")[1] }, pub_ref)
+          gcont = Groonga::Context.new
+          gcont.use(db)
+          add_submission(gcont["SubIDs"], sub_id, list_of_line.map{|l| l.split("\t")[1] }, pub_ref)
         end
       end
       
@@ -82,12 +83,13 @@ class SoylatteDB
       
       ### study ids ###
       
-      def load_studyids(pub_ref)
-        db = Groonga["StudyIDs"]
+      def load_studyids(db, pub_ref)
+        gcont = Groonga::Context.new
+        gcont.use(db)
         Parallel.each(study_id_list, :in_threads => NUM_OF_PARALLEL) do |study_id, list_of_line|
           run_id_list = list_of_line.map{|l| l.split("\t")[1] }
           sub_id_list = list_of_line.map{|l| l.split("\t")[2] }
-          add_study(db, study_id, run_id_list, sub_id_list, pub_ref)
+          add_study(gcont["StudyIDs"], study_id, run_id_list, sub_id_list, pub_ref)
         end
       end
       
@@ -108,11 +110,12 @@ class SoylatteDB
       
       ### experiments ###
       
-      def load_experiments
-        db = Groonga["Experiments"]
+      def load_experiments(db)
         Parallel.each(exp_run_id_list, :in_threads => NUM_OF_PARALLEL) do |exp_id, list_of_line|
+          gcont = Groonga::Context.new
+          gcont.use(db)
           run_id_list = list_of_line.map{|l| l.split("\t")[1] }
-          add_experiment(db, exp_id, run_id_list)
+          add_experiment(gcont["Experiments"], exp_id, run_id_list)
         end
       end
       
@@ -131,11 +134,12 @@ class SoylatteDB
       
       ### taxonomy ###
       
-      def load_taxons
-        db = Groonga["Taxons"]
+      def load_taxons(db)
+        gcont = Groonga::Context.new
+        gcont.use
         Parallel.each(taxon_list, :in_threads => NUM_OF_PARALLEL) do |ln|
           line = ln.split("\t")
-          add_taxon(db, line[0], line[1])
+          add_taxon(gcont["Taxons"], line[0], line[1])
         end
       end
       
