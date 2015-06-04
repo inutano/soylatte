@@ -30,25 +30,27 @@ class SoylatteDB
     end
 
     def load_data(xml)
+      gcont = Groonga::Context.new
+      gcont.use(@db)
       case xml
       when /study/
         node_list  = Study.new(xml).parse
-        studydb    = Groonga["StudyIDs"]
-        projectdb = Groonga["Projects"]
+        studydb    = gcont["StudyIDs"]
+        projectdb = gcont["Projects"]
         node_list.each do |node|
           insert_study_record(node, studydb, projectdb)
         end
       when /experiment/
         node_list    = Experiment.new(xml).parse
-        experimentdb = Groonga["Experiments"]
-        rundb        = Groonga["Runs"]
+        experimentdb = gcont["Experiments"]
+        rundb        = gcont["Runs"]
         node_list.each do |node|
           insert_experiment_record(node, experimentdb, rundb)
         end
       when /sample/
         node_list = Sample.new(xml).parse
-        taxondb   = Groonga["Taxons"]
-        sampledb  = Groonga["Samples"]
+        taxondb   = gcont["Taxons"]
+        sampledb  = gcont["Samples"]
         node_list.each do |node|
           insert_sample_record(node, taxondb, sampledb)
         end
