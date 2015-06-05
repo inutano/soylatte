@@ -56,7 +56,7 @@ class SoylatteDB
       def submission_id_list
         cmd = "awk -F '\t' 'BEGIN{ OFS=\"\t\" } $1 ~ /^.RP/ { print $2, $1 }'"
         accessions = File.join(PROJ_ROOT, "data", "sra_metadata", "SRA_Accessions")
-        `#{cmd} #{accessions}`.split("\n").group_by{|node| node.split("\t")[0] } # group by submission id
+        `#{cmd} #{accessions} | sort -u`.split("\n").group_by{|node| node.split("\t")[0] } # group by submission id
       end
       
       def add_submission(db, sub_id, study_id_list, pub_ref)
