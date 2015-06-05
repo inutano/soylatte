@@ -29,15 +29,15 @@ namespace :soylatte do
     SoylatteDB::Reference.load(db)
   end
   
+  sub_id_list = open(live_accessions).read.split("\n")
+
   task :load_metadata => [db, live_accessions] do |t|
-    sub_id_list = open(live_accessions).read.split("\n")
     sub_id_list.each do |sub_id|
       SoylatteDB::SRA.new(db, sub_id).load
     end
   end
   
   task :load_publication => [db, live_accessions] do |t|
-    sub_id_list = open(live_accessions).read.split("\n")
     SoylatteDB::Publication.load(db, sub_id_list)
   end
   
