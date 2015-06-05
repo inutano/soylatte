@@ -19,8 +19,8 @@ namespace :soylatte do
   live_accessions = File.join(data_dir, "live_accessions.list")
   
   file live_accessions => [data_dir, accessions] do |t|
-    pattern = '$1 ~ /^.RA/ && $3 == "live" && $9 == "public"'
-    sh "awk -F '\t' '#{pattern} { print $1 }' #{accessions} > #{t.name}"
+    pattern = '$1 ~ /^.RP/ && $3 == "live" && $9 == "public"'
+    sh "awk -F '\t' '#{pattern} { print $2 }' #{accessions} > #{t.name}"
   end
 
   task :load_data => [ :load_references, :load_metadata, :load_publication ]
