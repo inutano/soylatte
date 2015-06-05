@@ -48,7 +48,7 @@ class SoylatteDB
       def load_subids(pub_ref)
         db = Groonga["SubIDs"]
         pub_ref = sra_publications_pair
-        Parallel.each(submission_id_list, :in_threads => NUM_OF_PARALLEL) do |sub_id, list_of_line|
+        submission_id_list.each do |sub_id, list_of_line|
           add_submission(db, sub_id, list_of_line.map{|l| l.split("\t")[1] }, pub_ref)
         end
       end
@@ -84,7 +84,7 @@ class SoylatteDB
       
       def load_studyids(pub_ref)
         db = Groonga["StudyIDs"]
-        Parallel.each(study_id_list, :in_threads => NUM_OF_PARALLEL) do |study_id, list_of_line|
+        study_id_list.each do |study_id, list_of_line|
           run_id_list = list_of_line.map{|l| l.split("\t")[1] }
           sub_id_list = list_of_line.map{|l| l.split("\t")[2] }
           add_study(db, study_id, run_id_list, sub_id_list, pub_ref)
@@ -110,7 +110,7 @@ class SoylatteDB
       
       def load_experiments
         db = Groonga["Experiments"]
-        Parallel.each(exp_run_id_list, :in_threads => NUM_OF_PARALLEL) do |exp_id, list_of_line|
+        exp_run_id_list.each do |exp_id, list_of_line|
           run_id_list = list_of_line.map{|l| l.split("\t")[1] }
           add_experiment(db, exp_id, run_id_list)
         end
@@ -133,7 +133,7 @@ class SoylatteDB
       
       def load_taxons
         db = Groonga["Taxons"]
-        Parallel.each(taxon_list, :in_threads => NUM_OF_PARALLEL) do |ln|
+        taxon_list.each do |ln|
           line = ln.split("\t")
           add_taxon(db, line[0], line[1])
         end
