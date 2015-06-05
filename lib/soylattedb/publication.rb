@@ -8,52 +8,45 @@ class SoylatteDB
     class << self
       include PublicationMetadataParser
 
-      def load(db, sub_id_list)
-        pubmed_id_pair, pmc_id_pair = create_pairs(sub_id_list)
-        load_pub(db, :pubmed, pubmed_id_pair)
-        load_pub(db, :pmc, pmc_id_pair)
+      def load(sub_id_list)
+        establish_connection(db)
+        load_pub(:pubmed)
+        load_pub(:pmc)
       end
 
-      def create_pairs(sub_id_list)
-        pubmed_id_pair = Hash.new{|h,k| h[k] = [] }
-        pmc_id_pair    = Hash.new{|h,k| h[k] = [] }
+      def establish_connection(db)
+        Groonga::Database.open(db)
+      end
+      
+      def load_pub(type)
+        projectdb = Groonga["Projects"]
+        studydb   = Groonga["StudyIDs"]
         
-        db = Groonga["SubIDs"]
-        sub_id_list.each do |sub_id|
-          record = db[sub_id]
-          study_id_list = record.study_id
-          
-          record.pubmed_id.each do |pmid|
-            study_id_list.each do |study_id|
-              pubmed_id_pair[pmid] << study_id
+        subset = []
+        studydb.each do |record|
+          if subset.size != 100
+            subset << record
+          else
+            col_sym = "#{type}_id".intern
+            pub_id_list = subset.map{|n| n.send(col_sym) }
+            pub_id_text_pairs = bulk_parse(type, pub_id_list)
+            pub_id_text_pairs.each_pair do |pub_id, text|
+              study_id_list = subset.select{|r| r.send(col_sym) == pub_id }.map{|r| r["_key"] }.flatten
+              study_id_list.each do |study_id|
+                record_text(projectdb, study_id, text)
+              end
             end
-          end
-          
-          record.pmc_id.each do |pmcid|
-            study_id_list.each do |study_id|
-              pmc_id_pair[pmcid] << study_id
-            end
-          end
-        end
-        [pubmed_id_pair, pmc_id_pair]
-      end
-
-      def load_pub(db, type, pub_id_pairs)
-        pub_id_pairs.each_slice(100) do |node|
-          pairs = Hash[node]
-          pub_id_text_pairs = bulk_parse(type, pairs.keys)
-          pub_id_text_pairs.each_pair do |pub_id, text|
-            study_id_list = pairs[pub_id]
-            study_id_list.each do |study_id|
-              record_text(study_id, text)
-            end
+            subset = [] # reset subset array
           end
         end
       end
-
-      def record_text(study_id, text)
-        exist = Groonga["Projects"][study_id][:search_fulltext]
-        Groonga["Projects"][study_id][:search_fulltext] = [exist, text].join("\s")
+      
+      def record_text(projectdb, study_id, text)
+        record = projectdb[study_id]
+        if record
+          exist = record[:search_fulltext]
+          record[:search_fulltext] = [exist, text].join("\s")
+        end
       end
 
       def bulk_parse(type, pub_id_list)
