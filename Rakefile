@@ -16,9 +16,6 @@ namespace :soylatte do
     puts "soylatte:init done."
   end
   
-  desc "create db and load data"
-  task :up => [ :create_db, :load_data ]
-  
   task :fetch do
     Rake::Task["soylatte:fetch"].invoke
   end
@@ -26,13 +23,21 @@ namespace :soylatte do
   task :config do
     Rake::Task["soylatte:config"].invoke
   end
-  
+
+  desc "create db and load data"
+  task :up => [ :create_db, :load_data ]
+
   task :create_db do
     Rake::Task["soylatte:create_db"].invoke
   end
   
   task :load_data do
     Rake::Task["soylatte:load_data"].invoke
+  end
+  
+  desc "Check if recorded data are correct"
+  task :test do
+    Rake::Task["soylatte:validate_db"]
   end
   
   desc "erase all db files."

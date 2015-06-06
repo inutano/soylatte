@@ -48,7 +48,4 @@ namespace :soylatte do
       SoylatteDB::Publication.load(db)
     end
   end
-  
-  task :validate_db => db do |t|
-  end
 end
