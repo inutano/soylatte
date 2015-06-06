@@ -1,6 +1,8 @@
 # :)
 
 require 'parallel'
+require 'stackprof'
+
 require File.join(PROJ_ROOT, 'lib', 'soylattedb')
 
 namespace :soylatte do
@@ -26,19 +28,25 @@ namespace :soylatte do
   task :load_data => [ :load_references, :load_metadata, :load_publication ]
   
   task :load_references => db do |t|
-    SoylatteDB::Reference.load(db)
+    StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-reference.dump') do
+      SoylatteDB::Reference.load(db)
+    end
   end
   
   sub_id_list = open(live_accessions).read.split("\n")
 
   task :load_metadata => [db, live_accessions] do |t|
-    sub_id_list.each do |sub_id|
-      SoylatteDB::SRA.new(db, sub_id).load
+    StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-metadata.dump') do
+      sub_id_list.each do |sub_id|
+        SoylatteDB::SRA.new(db, sub_id).load
+      end
     end
   end
   
   task :load_publication => [db, live_accessions] do |t|
-    SoylatteDB::Publication.load(db)
+    StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-publication.dump') do
+      SoylatteDB::Publication.load(db)
+    end
   end
   
   task :validate_db => db do |t|
