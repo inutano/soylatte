@@ -22,7 +22,7 @@ namespace :soylatte do
     pattern = '$1 ~ /^.RP/ && $3 == "live" && $9 == "public"'
     sh "awk -F '\t' '#{pattern} { print $2 }' #{accessions} | sort -u > #{t.name}"
   end
-
+  
   task :load_data => [ :load_references, :load_metadata, :load_publication ]
   
   task :load_references => db do |t|
@@ -38,7 +38,7 @@ namespace :soylatte do
   end
   
   task :load_publication => [db, live_accessions] do |t|
-    SoylatteDB::Publication.load(db, sub_id_list)
+    SoylatteDB::Publication.load(db)
   end
   
   task :validate_db => db do |t|

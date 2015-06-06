@@ -8,7 +8,7 @@ class SoylatteDB
     class << self
       include PublicationMetadataParser
 
-      def load(sub_id_list)
+      def load(db)
         establish_connection(db)
         load_pub(:pubmed)
         load_pub(:pmc)
@@ -21,14 +21,16 @@ class SoylatteDB
       def load_pub(type)
         projectdb = Groonga["Projects"]
         studydb   = Groonga["StudyIDs"]
+        col_sym = "#{type}_id".intern
         
         subset = []
         studydb.each do |record|
-          if subset.size != 100
-            subset << record
-          else
-            col_sym = "#{type}_id".intern
-            pub_id_list = subset.map{|n| n.send(col_sym) }
+          # eutils accept the request with multiple ids up to 100
+          pub_id_list = subset.map{|r| r.send(col_sym) }.uniq.compact
+          num_of_next_pubs = record.send(col_sym).size
+          
+          # request and parse or stock items
+          if pub_id_list.size + num_of_next_pubs >= 100
             pub_id_text_pairs = bulk_parse(type, pub_id_list)
             pub_id_text_pairs.each_pair do |pub_id, text|
               study_id_list = subset.select{|r| r.send(col_sym) == pub_id }.map{|r| r["_key"] }.flatten
@@ -37,6 +39,9 @@ class SoylatteDB
               end
             end
             subset = [] # reset subset array
+            subset << record
+          else
+            subset << record
           end
         end
       end
@@ -52,7 +57,10 @@ class SoylatteDB
       def bulk_parse(type, pub_id_list)
         id_text = Hash.new("")
         xml_path = eutils_path(type, pub_id_list)
+        
+        sleep 1
         nkgr = Nokogiri::XML(open(xml_path))
+        
         id_text_pair = case type
                        when :pubmed
                          bulk_pubmed_parse(nkgr)
