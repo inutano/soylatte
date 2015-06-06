@@ -1,6 +1,8 @@
 # :)
 
 require 'groonga'
+require File.join(PROJ_ROOT, 'lib', 'repos', 'sra_metadata_toolkit', 'fastqc_utils')
+require File.join(PROJ_ROOT, 'lib', 'repos', 'opPMC', 'publication_metadata_parser')
 
 class Array
   def minimize
@@ -11,6 +13,8 @@ end
 class SoylatteDB
   class Base
     class << self
+      include FastQC
+      
       def projectdb
         Groonga["Projects"]
       end
