@@ -2,8 +2,14 @@
 
 require 'groonga'
 
+class Array
+  def minimize
+    self.flatten.uniq.compact.sort
+  end
+end
+
 class SoylatteDB
-  class Scheme
+  class Base
     class << self
       def projectdb
         Groonga["Projects"]
@@ -17,30 +23,20 @@ class SoylatteDB
         Groonga["Samples"]
       end
       
-      ## methods for db stats ##
+      ### core ###
+      
+      ## category values list ##
       
       def keys(records)
         records.map{|r| r["_key"] }
       end
-      
-      def type
-        study_type_list
-      end
-      
+
       def study_type_list
         list(studydb, :study_type)
       end
       
-      def instruments
-        instrument_list
-      end
-      
       def instrument_list
         list(rundb, :instrument)
-      end
-      
-      def species
-        organism_list
       end
       
       def organism_list
@@ -48,44 +44,10 @@ class SoylatteDB
       end
       
       def list(db, sym)
-        db.map{|r| r.send(sym) }.uniq.compact.sort
+        db.map{|r| r.send(sym) }.minimize
       end
-      
-      def projects_size
-        projectdb.size
-      end
-      
-      def runs_size
-        rundb.size
-      end
-      
-      def samples_size
-        sampledb.size
-      end
-      
+
       ## filtering records ##
-      
-      # methods for backward compatibility
-      
-      # species: scientific name like 'Homo sapiens'
-      def filter_species(species)
-        get_study_id_by(:species, species)
-      end
-      
-      def filter_type(study_type)
-        get_study_id_by(:study_type, study_type)
-      end
-      
-      def filter_instrument(instrument)
-        get_study_id_by(:instrument, instrument)
-      end
-      
-      def get_study_id_by(sym, query)
-        records = filter_records_by(sym, query)
-        keys(records)
-      end
-      
-      # methods for v2
       
       def filter_records_by(sym, query)
         case sym
@@ -113,10 +75,6 @@ class SoylatteDB
         filter(projectdb, [ :study_type ], described_type)
       end
       
-      def filter_type(type)
-        filter_study_type(type)
-      end
-
       def filter_instrument(instrument)
         filter(projectdb, [ :run, :instrument ], instrument)
       end
@@ -133,6 +91,22 @@ class SoylatteDB
         db.select{|r| syms.inject(r, :send) =~ keyword }
       end
       
+      ## Search Core ##
+      
+      def soylatte_faceted_search(options)
+        facets = [ :species, :study_type, :instrument ]
+        matched_records = facets.map{|sym| filter_by(sym, options[sym]) }.inject(:&)
+        search_fulltext(matched_records, options[:keyword])
+      end
+      
+      def search_fulltext(records, keyword)
+        if !keyword or keyword.empty?
+          records
+        else
+          records.select{|r| r.search_fulltext =~ keyword }
+        end
+      end
+
       ## dictionary for simplified study type ##
       
       def described_types
@@ -177,9 +151,54 @@ class SoylatteDB
         described_types.has_key?(type)
       end
       
-      ## faceted search core ##
+
+      ### Methods for backward compatibility ###
       
-      # methods for backword compatibility
+      def type
+        study_type_list
+      end
+      
+      def instruments
+        instrument_list
+      end
+      
+      def species
+        organism_list
+      end
+      
+      def projects_size
+        projectdb.size
+      end
+      
+      def runs_size
+        rundb.size
+      end
+      
+      def samples_size
+        sampledb.size
+      end
+      
+      # species: scientific name like 'Homo sapiens'
+      def filter_species(species)
+        get_study_id_by(:species, species)
+      end
+      
+      def filter_type(study_type)
+        get_study_id_by(:study_type, study_type)
+      end
+      
+      def filter_instrument(instrument)
+        get_study_id_by(:instrument, instrument)
+      end
+      
+      def get_study_id_by(sym, query)
+        records = filter_records_by(sym, query)
+        keys(records)
+      end
+      
+      def filter_type(type)
+        filter_study_type(type)
+      end
       
       def filter_result(species, study_type, instrument)
         options = { species: species, study_type: study_type, instrument: instrument }
@@ -232,13 +251,68 @@ class SoylatteDB
           soylatte_faceted_seearch(options)
         end
       end
-  
+      
+      ## experimental
+      
+      def related_runs(study_record)
+        study_record.run
+      end
+      
+      def run_full_detail(record)
+        {
+          run_id:             record["_key"],
+          experiment_id:      record.experiment_id,
+          instrument:         record.instrument,
+          lib_strategy:       record.library_strategy,
+          lib_source:         record.library_source,
+          lib_selection:      record.library_selection,
+          lib_layout:         record.library_layout,
+          lib_orientation:    record.library_orientation,
+          lib_nominal_length: record.library_nominal_length,
+          lib_nominal_sdev:   record.library_nominal_sdev,
+          read_profile:       read_profile(run_id)
+        }
+      end
+      
+      def related_samples(study_records)
+        related_runs(study_records).map{|r| r.sample }.minimize
+      end
+      
+      def sample_full_detail(record)
+        { 
+          sample_id: record["_key"],
+          sample_description: record.sample_description
+        }
+      end
+      
+      def project_full_details(record)
+        run_records    = related_runs(record)
+        sample_records = related_samples(record)
+        {
+          submission_id: record.submission_id,
+
+          study_id: study_id
+          study_type:            record.study_type,
+          study_title:           record.study_title,
+
+          run_id:                keys(run_records),
+          run: run_records.map{|record| run_full_detail(record) },
+
+          sample_id:             keys(sample_records),
+          sample: sample_records.map{|record| sample_full_detail(record) },
+
+          pubmed_id:             record.pubmed_id,
+          pmc_id:                record.pmc_id
+        }
+      end
+      
       def search_api(query, options)
         if query
           records = search(query, options)
           records.map do |record|
-            run_records = record.run
-            sample_records = run_records.map{|r| r.sample }.uniq.compact
+            run_records = related_runs
+            sample_records = related_samples
+            
             { 
               submission_id:         record.submission_id,
               study_id:              record["_key"],
@@ -388,12 +462,17 @@ class SoylatteDB
         run_records = record.run
         sample_records = run_records.map{|r| r.sample }.minimize
         sample_records.map do |sample_record|
-          {
-            sample_id: sample_record["_key"],
-            run_id_list: keys(run_records),
-            sample_description: sample_record.sample_descritpion,
-          }
+          row = sample_column_values(sample_record)
+          row[run_id_list] = keys(run_records)
+          row
         end
+      end
+      
+      def sample_column_values(record) ##
+        { 
+          sample_id: record["_key"],
+          sample_description: record.sample_description
+        }
       end
       
       def project_report(study_id)
@@ -444,29 +523,7 @@ class SoylatteDB
           ncbi_sra:  File.join(ncbi_base, run_id.slice(0..2), run_id.sub(/...$/,""), run_id)
         }
       end
-      
-      # for v2
-      
-      def soylatte_faceted_search(options)
-        facets = [ :species, :study_type, :instrument ]
-        matched_records = facets.map{|sym| filter_by(sym, options[sym]) }.inject(:&)
-        search_fulltext(matched_records, options[:keyword])
-      end
-      
-      def search_fulltext(records, keyword)
-        if !keyword or keyword.empty?
-          records
-        else
-          records.select{|r| r.search_fulltext =~ keyword }
-        end
-      end
     end
-  end
-end
-
-class Array
-  def minimize
-    self.flatten.uniq.compact.sort
   end
 end
 
