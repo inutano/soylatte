@@ -26,8 +26,8 @@ class SoylatteDB
         subset = []
         studydb.each do |record|
           # eutils accept the request with multiple ids up to 100
-          pub_id_list = subset.map{|r| r.send(col_sym) }.uniq.compact
-          num_of_next_pubs = record.send(col_sym).size
+          pub_id_list = subset.map{|r| r.send(col_sym) }.flatten.uniq.compact
+          num_of_next_pubs = record.send(col_sym).uniq.size
           
           # request and parse or stock items
           if pub_id_list.size + num_of_next_pubs >= 100
@@ -57,7 +57,7 @@ class SoylatteDB
       def bulk_parse(type, pub_id_list)
         id_text = Hash.new("")
         xml_path = eutils_path(type, pub_id_list)
-        
+
         sleep 1
         nkgr = Nokogiri::XML(open(xml_path))
         
