@@ -161,22 +161,13 @@ $(function(){
         query_type = $("#select_type").val();
         query_type = escape(query_type);
         $("#main .trends select").css("color", "#444444");
-        if (e.keyCode == 46 || e.keyCode == 8)
-        { //BackspaceやDeltekeyが入力された場合
-            if (query_type == "") {
-                //検索文字がnullとなった場合ランキングチャートを表示する
-                drawBar(type);
-                drawRanking(type);
-                $("#search_condition ul.type").html("");
-            } else {
-                d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
-                  datas = [{"type": "total", "count": data.total},{"type": query_type, "count":data.type.count}];
-                    drawBar(datas);
-                    drawRanking(datas);
-                    $("#search_condition ul.type").html("<li>" + unescape(query_type) + "</li>");
-                    $("#search_condition ul.search_result").html("<li>" + data.mix.count + "</li>");
-                })
-            }
+
+        if (query_type == "") {
+            //検索文字がnullとなった場合ランキングチャートを表示する
+            drawBar(studys);
+            drawRanking(studys);
+            $("#search_condition ul.type").html("");
+            console.log(type);
         }else if (e.keyCode == 13) {
           showList(query_type);
         }else if(query_type != ""){
