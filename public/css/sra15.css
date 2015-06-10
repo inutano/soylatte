@@ -240,6 +240,17 @@ div#main{
     color: white;
     margin-left: 10px;
 }
+#main .trends select{
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  border: solid 1px #a9a9a9;
+  font-size: 16px;
+  padding: 4px 4px;
+  color: #a9a9a9;
+  background-color: white;
+}
+
 #main .search button:hover{
     background-color: #f39800;
 }
@@ -491,7 +502,20 @@ input{
     width: 1.2rem;
     margin-left: -1.2rem;
 }
-
+.trends #search_condition li:before {
+    content: '';
+    font-family: FontAwesome;
+    display: inline-block;
+    width: 1.2rem;
+    margin-left: -1.2rem;
+}
+.trends #search_condition .search_result li:before{
+    content: '';
+    font-family: FontAwesome;
+    display: inline-block;
+    width: 1.2rem;
+    margin-left: -1.2rem;
+}
 #main .pagination li a{
     font-size: 0.85rem;
     color: #488EC4;

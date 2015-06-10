@@ -5,13 +5,11 @@
   <meta charset="UTF-8">
   <title>DBCLS SRA</title>
   <link rel="stylesheet" href="css/sra15.css">
-  <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
   <script src="js/d3.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
-  <script src="js/ranking_species.js"></script>
-  <script src="js/ranking_study.js"></script>
-  <script src="js/ranking_platform.js"></script>
+
 </head>
 
 <body>
@@ -33,7 +31,7 @@
         <div class="box box3">
           <p>
             <span class="em">DISCOVER</span>
-            <br>Interesting & Available SRA Data
+            <br>Interesting &amp; Available SRA Data
           </p>
         </div>
       </div>
@@ -49,11 +47,10 @@
     </div>
     -->
 
-
     <div id="main">
       <div class="content">
         <!-- Trends section -->
-        <h2>Trends & Search SRA data</h2>
+        <h2>Trends &amp; Search SRA data</h2>
 
         <div class="row">
           <div class="box-r">→ <a href="trends.html"> for more detail</a>
@@ -75,7 +72,24 @@
             <div id="col2_list" class="ranking"></div>
             <div id="col2_bars" class="col_bars"></div>
             <div id="col2_form">
-              <input type="text" size="15" placeholder="&#xF002; Search" />
+              <select id="select_type" name="type">
+                <option value="" disabled selected="" class="disabled">Select your option</option>
+                <option value="Genome">Whole Genome Sequencing</option>
+                <option value="Transcriptome">Transcriptome Analysis</option>
+                <option value="Metagenomics">Metagenomics</option>
+                <option value="Epigenetics">Epigenetics</option>
+                <option value="Resequencing">Resequencing</option>
+                <option value="Other">Other</option>
+                <option value="RNASeq">RNASeq</option>
+                <option value="Genomics">Population Genomics</option>
+                <option value="Gene">Gene Regulation Study</option>
+                <option value="Cancer Genomics">Cancer Genomics</option>
+                <option value="Exome Sequencing">Exome Sequencing</option>
+                <option value="Pooled Clone Sequencing">Pooled Clone Sequencing</option>
+                <option value="Synthetic Genomics">Synthetic Genomics</option>
+                <option value="Forensic or Paleo-genomics">Forensic or Paleo-genomics</option>
+                <option value="">None</option>
+               </select>
             </div>
           </div>
           <div class="box">
@@ -97,14 +111,18 @@
                 <li>You can see result of combined search criteria too.</li>
               </ul>
             </div>
-            <div class="col_bars">
-
+            <h3>Search Conditions</h3>
+            <div id="search_condition">
+              <ul class="species"></ul>
+              <ul class="type"></ul>
+              <ul class="platform"></ul>
+              <ul class="search_result"></ul>
             </div>
           </div>
         </div>
         <div class="row search">
           <h3>Free Keyword</h3>
-          <form action="cgi-bin/search.cgi" method="get" name="search">
+          <form action="http://sra.dbcls.jp/search/search?" method="get" name="search">
             <input type="keyword" name="search_query" placeholder="Free Keyword" size="40">
             <input type="submit" value="Submit Conditions">
           </form>
@@ -296,8 +314,14 @@
     </div>
   </div>
 
-  <script>
+  <script type="text/javascript">
+    var query_species = ""
+    var query_platform = ""
+    var query_type = ""
   </script>
+  <script src="js/ranking_species.js"></script>
+  <script src="js/ranking_platform.js"></script>
+  <script src="js/ranking_study.js"></script>
 </body>
 
 </html>

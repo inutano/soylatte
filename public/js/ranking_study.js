@@ -1,4 +1,5 @@
 $(function(){
+    var type = [];
     var x2 = d3.scale.ordinal();
     var y2 = d3.scale.linear();
     var x2Axis = d3.svg.axis();
@@ -21,86 +22,92 @@ $(function(){
     var bars2b = svg_bar1b.append("g").attr("class","fukidashi").attr("transform", "translate(0,1)");
     var bars3b = svg_bar1b.append("g").attr("class","vals").attr("transform", "translate(0,2)");
     var bars4b = svg_bar1b.append("g").attr("class", "arrows").attr("transform", "translate(0,1)");
+    var listbarb = svg_listb.append("g").attr("class", "ranking_bar").attr("transform","translate(0, 10)");
+    var listtextb = svg_listb.append("g").attr("class", "ranking_text").attr("transform","translate(0, 10)");
 
 
-    d3.csv("data/study_ct.csv", function(error, datab) {
+    d3.json("http://sra.dbcls.jp/sra.type.latest.json", function(error, data) {
         //dataはindexをkeyとした一列の配列に変換される
-        studys = d3.keys(datab[0]);
-        studys = studys.slice(0, 5);
-        study_vals = d3.values(datab[0]);
-        dimensionb = studys.map(function (name, i) {
-            return {name: name, val: study_vals[i]}
+        studys = data.data;
+        studys.forEach(function(d){
+          d.count = +d.count;
         });
-        dimensionb = dimensionb.slice(0, 5);
+        studys = studys.slice(0, 5);
 
-        drawBar(dimensionb);
-        drawRanking(dimensionb);
+        drawBar(studys);
+        drawRanking(studys);
 
     });
 
-    function drawRanking(){
-        listb = svg_listb.selectAll(".lists")
-                .data(dimensionb)
-                .enter()
-                .append("g")
-                .attr("transform","translate(0, 10)")
-                .attr("font-size", 14)
-                .attr("fill","#444444")
-                .attr("class", "lists")
-                .on("click", function(d){showList(d.name)});
+    function drawRanking(datas){
+      listbarb.selectAll("g").data(datas).enter().append("g").append("rect");
+      listtextb.selectAll("g").data(datas).enter().append("g").append("text");
+      listbarb.selectAll("g").data(datas).exit().remove();
+      listtextb.selectAll("g").data(datas).exit().remove();
 
-        //ランキング表の背景画像をまず作る
-        listb.append("rect");
+      //ランキング表の背景画像をまず作る
+      listtextb.selectAll("text").data(datas)
+          .attr("y", function (d, i) {
+              return i * 22 + 4
+          })
+          .attr("x", 25)
+          .text(function (d, i) {
+              if (i < 5) {
+                  name = decodeURI(d.type)
+                  return name
+              };
+          })
+          .attr("fill", "#444444")
+      //背景の矩形のプロパティを取得
+          .each(function (d) {
+              var bbox = this.getBBox();
+              d.width = bbox.width;
+              d.height = bbox.height;
+              d.y = bbox.y;
+              d.x = bbox.x;
+          })
+          .on("click", function (d) {
+              showList(escape(d.type))
+          });
 
-        listb.append("text")
-                .attr("y", function(d,i){return i * 22 + 4})
-                .attr("x", 25)
-                .text(function(d, i){
-                    if(i < 5){return d.name};
-                })
-                .attr("fill", "#444444")
-                //背景の矩形のプロパティを取得
-                .each(function(d){
-                    var bbox = this.getBBox();
-                    d.width = bbox.width;
-                    d.height = bbox.height;
-                    d.y = bbox.y;
-                    d.x = bbox.x;
-                });
-
-        //ランキング表の背景画像のプロパティを変更
-        listb.select("rect")
-                .attr({width: function(d){return 14},
-                    height: function (d) {return d.height;},
-                    fill: function(d,i){return color(i)},
-                    x: function(d){return d.x - 25 },
-                    y: function(d){return d.y}
-                });
-
+      listbarb.selectAll("rect").data(datas)
+              .attr({
+                  width: function (d) {
+                      return 14
+                  },
+                  height: function (d) {
+                      return d.height;
+                  },
+                  fill: function (d, i) {
+                      return color(i)
+                  },
+                  x: function (d) {
+                      return d.x - 25
+                  },
+                  y: function (d) {
+                      return d.y
+                  }
+              });
     }
 
-
-
     function drawBar(datas){
-        var names = datas.map(function(d){return d.name});
-        var values = datas.map(function(d){return +d.val});
+        var names = datas.map(function(d){return d.type});
+        var values = datas.map(function(d){return d.count});
         x2.rangeBands([0,width]).domain(names);
         y2.range([height, 0]).domain([0,d3.max(values)]);
 
         //軸をcall
         axisb.call(x2Axis.scale(x2).tickFormat(""));
 
-
-
         //矩形の描画
         bars1b.selectAll("g").data(datas).enter().append("g").append("rect");
         bars1b.selectAll("g").data(datas).exit().remove();
         bars1b.selectAll("rect").data(datas)
                 .attr("x", function(d,i){return (i * x2.rangeBand())})
-                .attr("y", function(d){return y2(+d.val)})
+                .attr("y", function(d){return y2(d.count)})
                 .attr("width", x2.rangeBand())
                 .attr("height", function (d){
-                    return height - y2(+d.val)
+                    return height - y2(d.count)
                 })
                 .attr("fill", function(d,i){
                     return color(i);
@@ -108,7 +115,7 @@ $(function(){
                 .attr({"stroke-width": 2,"stroke":"#ffffff","cursor":"pointer"})
                 .attr("class", function(d, i){return  "rect_o" + i})
                 .on("click", function(d){
-                   showList(d.name)
+                   showList(d.type)
                 });
 
         //吹き出し部分の矩形描画
@@ -116,13 +123,13 @@ $(function(){
         bars2b.selectAll("g").data(datas).exit().remove();
         bars2b.selectAll("rect").data(datas)
                 .attr("x", function(d,i){return (i * x2.rangeBand() + 2)})
-                .attr("y", function(d){return y2(d.val)})
+                .attr("y", function(d){return y2(d.count)})
                 .attr("fill", function(d,i){return color(i)})
                 .attr({"rx": 3,"ry": 3,"stroke":"#696969","stroke-width":2,"fill-opacity":"0.25","cursor":"pointer"})
                 .attr("width", x2.rangeBand() - 4)
                 .attr("height", 15)
                 .on("click", function(d){
-                   showList(d.name)
+                   showList(d.type)
                 });
 
         //吹き出し内のテキストを描画
@@ -130,12 +137,12 @@ $(function(){
         bars3b.selectAll("g").data(datas).exit().remove();
         bars3b.selectAll("text").data(datas)
                 .attr("x", function(d,i){return (i * x2.rangeBand()+ (x2.rangeBand())/2)})
-                .attr("y", function(d){return y2(d.val)+ 10})
+                .attr("y", function(d){return y2(d.count)+ 10})
                 .attr({"fill": "#696969","font-size":"11px","cursor":"pointer"})
-                .text(function(d){return parseInt(d.val)})
+                .text(function(d){return parseInt(d.count)})
                 .attr("text-anchor","middle")
                 .on("click", function(d){
-                   showList(d.name)
+                   showList(escape(d.type))
                 });
 
         //吹き出しの足を描画
@@ -150,34 +157,44 @@ $(function(){
     }
 
     //transition().duration()を設定するとon("click",,)がエラーになるため、再描画するオブジェクトでないものにイベントをわりあてる
-    $("#col2_form input:text").on("keypress keyup change", function (e) {
-        var query_text = $("#col1_form input:text").val();
+    $("#col2_form select").change(function (e) {
+        query_type = $("#select_type").val();
+        query_type = escape(query_type);
+        $("#main .trends select").css("color", "#444444");
         if (e.keyCode == 46 || e.keyCode == 8)
         { //BackspaceやDeltekeyが入力された場合
-            if (query_text == "") {
+            if (query_type == "") {
                 //検索文字がnullとなった場合ランキングチャートを表示する
-                drawBar(dimensionb);
-                drawRanking(dimensionb)
+                drawBar(type);
+                drawRanking(type);
+                $("#search_condition ul.type").html("");
             } else {
-                d3.json("projects?dimension=organism&query_text=" + query_text, function (error, data) {
-                    //文字が入力されている場合jsonを再取得し検索結果によるグラフを表示する
-                    drawBar(data);
-                    drawRanking(data);
+                d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
+                  datas = [{"type": "total", "count": data.total},{"type": query_type, "count":data.type.count}];
+                    drawBar(datas);
+                    drawRanking(datas);
+                    $("#search_condition ul.type").html("<li>" + unescape(query_type) + "</li>");
+                    $("#search_condition ul.search_result").html("<li>" + data.mix.count + "</li>");
                 })
             }
-        }else if(query_text != ""){
+        }else if (e.keyCode == 13) {
+          showList(query_type);
+        }else if(query_type != ""){
             //通常に文字が入力されたケースの挙動。jsonを新しい条件で再取得。ただし↑など文字はフィルタすべき。
-            d3.json("projects?dimension=organism&query_text=" + query_text, function (error, data) {
-                drawBar(data);
-                drawRanking(data);
+            d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
+              qs = "http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query="
+              datas = [{"type": "total", "count": data.total},{"type": query_type, "count":data.type.count}];
+                drawBar(datas);
+                drawRanking(datas);
+                $("#search_condition ul.type").html("<li>" + unescape(query_type) + "</li>");
+                $("#search_condition ul.search_result").html("<li>" + data.mix.count + "</li>");
             })
         }
     });
 
     function showList(q){
         if(q != "total"){
-          q = escape(q)
-          window.location = "http://sra.dbcls.jp/cgi-bin/studylist.cgi?type=" + q;
+          window.location = "http://sra.dbcls.jp/search/search?species=" + query_species +"&type=" + q + "&instrument=" + query_platform +"&search_query=";
         }
     }
 

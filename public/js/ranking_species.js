@@ -3,6 +3,7 @@ $(function(){
     color = d3.scale.ordinal().range(["#EB6238", "#f6ad49", "#f8c822", "#f5e56b", "#dccb18"]);
     var organisms = [];
     var organism_vals = [];
+    var taxon = [];
     var x1 = d3.scale.ordinal();
     var y1 = d3.scale.linear();
     var x1Axis = d3.svg.axis();
@@ -25,66 +26,53 @@ $(function(){
     var bars2 = svg_bar1.append("g").attr("class", "fukidashi").attr("transform", "translate(0,1)");
     var bars3 = svg_bar1.append("g").attr("class", "vals").attr("transform", "translate(0,2)");
     var bars4 = svg_bar1.append("g").attr("class", "arrows").attr("transform", "translate(0,1)");
+    var listbar = svg_list1.append("g").attr("class", "ranking_bar").attr("transform","translate(0, 10)");
+    var listtext = svg_list1.append("g").attr("class", "ranking_text").attr("transform","translate(0, 10)");
 
-
-    d3.csv("data/organisms_ct.csv", function (error, data) {
-        //dataはindexをkeyとした一列の配列に変換される
-        organisms = d3.keys(data[0]);
-        organisms = organisms.slice(0, 5);
-        organism_vals = d3.values(data[0]);
-        dimension1 = organisms.map(function (name, i) {
-            return {name: name, val: organism_vals[i]}
+    d3.json("http://sra.dbcls.jp/sra.taxon.latest.json", function (error, data) {
+        taxon = data.data;
+        taxon.forEach(function(d){
+          d.count = +d.count
         });
-        dimension1 = dimension1.slice(0, 5);
+        taxon = taxon.slice(0, 5);
 
-
-        drawBar(dimension1); //グラフ部分の描画
-        drawList(dimension1); //リスト部分の描画
+        drawBar(taxon); //グラフ部分の描画
+        drawList(taxon); //リスト部分の描画
 
     });
 
-    function drawList() {
-        //ランキングリストの初期描画
-        list1 = svg_list1.selectAll(".lists")
-                .data(dimension1)
-                .enter()
-                .append("g")
-                .attr("transform", "translate(0, 10)")
-                .attr("font-size", 14)
-                .attr("fill", "#444444")
-                .attr("class", "lists")
-                .on("click", function (d) {
-                    showList(d.name)
-                });
+    function drawList(datas) {
+        listbar.selectAll("g").data(datas).enter().append("g").append("rect");
+        listtext.selectAll("g").data(datas).enter().append("g").append("text");
+        listbar.selectAll("g").data(datas).exit().remove();
+        listtext.selectAll("g").data(datas).exit().remove();
 
-        //ランキング表の背景画像をまず作る
-        list1.append("rect");
-
-        list1.append("text")
-                .attr("y", function (d, i) {
-                    return i * 22 + 4
-                })
-                .attr("x", 25)
-                .text(function (d, i) {
-                    //if(i < 5){return String(i+1)+ ' ' + d.name}
-                    ////順位を表示しなくて良い気がする
-                    if (i < 5) {
-                        return d.name
-                    }
-                    ;
-                })
-                .attr("fill", "#444444")
-            //背景の矩形のプロパティを取得
-                .each(function (d) {
-                    var bbox = this.getBBox();
-                    d.width = bbox.width;
-                    d.height = bbox.height;
-                    d.y = bbox.y;
-                    d.x = bbox.x;
-                });
+        listtext.selectAll("text").data(datas)
+            .attr("y", function (d, i) {
+                return i * 22 + 4
+            })
+            .attr("x", 25)
+            .text(function (d, i) {
+                if (i < 5) {
+                    name = decodeURI(d.taxon)
+                    return name
+                };
+            })
+            .attr("fill", "#444444")
+        //背景の矩形のプロパティを取得
+            .each(function (d) {
+                var bbox = this.getBBox();
+                d.width = bbox.width;
+                d.height = bbox.height;
+                d.y = bbox.y;
+                d.x = bbox.x;
+            })
+            .on("click", function (d) {
+                showList(d.taxon)
+            });
 
         //ランキング表の背景画像のプロパティを変更
-        list1.select("rect")
+        listbar.selectAll("rect").data(datas)
                 .attr({
                     width: function (d) {
                         return 14
@@ -106,10 +94,10 @@ $(function(){
 
     function drawBar(datas) {
         names = datas.map(function (d) {
-            return d.name
+            return d.taxon
         });
         values = datas.map(function (d) {
-            return +d.val
+            return d.count
         });
         x1.rangeBands([0, width]).domain(names);
         y1.range([height, 0]).domain([0, d3.max(values)]);
@@ -126,11 +114,11 @@ $(function(){
                     return (i * x1.rangeBand())
                 })
                 .attr("y", function (d) {
-                    return y1(+d.val)
+                    return y1(d.count)
                 })
                 .attr("width", x1.rangeBand())
                 .attr("height", function (d) {
-                    return height - y1(+d.val)
+                    return height - y1(d.count)
                 })
                 .attr("fill", function (d, i) {
                     return color(i);
@@ -140,7 +128,7 @@ $(function(){
                     return "rect_o" + i
                 })
                 .on("click", function (d) {
-                    showList(d.name)
+                    showList(d.taxon)
                 });
 
         //吹き出し部分の矩形描画
@@ -151,7 +139,7 @@ $(function(){
                     return (i * x1.rangeBand() + 2)
                 })
                 .attr("y", function (d) {
-                    return y1(d.val)
+                    return y1(d.count)
                 })
                 .attr("fill", function (d, i) {
                     return color(i)
@@ -167,7 +155,7 @@ $(function(){
                 .attr("width", x1.rangeBand() - 4)
                 .attr("height", 15)
                 .on("click", function (d) {
-                    showList(d.name)
+                    showList(d.taxon)
                 });
 
         //吹き出し内のテキストを描画
@@ -178,15 +166,15 @@ $(function(){
                     return (i * x1.rangeBand() + (x1.rangeBand()) / 2)
                 })
                 .attr("y", function (d) {
-                    return y1(d.val) + 10
+                    return y1(d.count) + 10
                 })
                 .attr({"fill": "#696969", "font-size": "11px", "cursor": "pointer"})
                 .text(function (d) {
-                    return parseInt(d.val + "projects")
+                    return parseInt(d.count + "projects")
                 })
                 .attr("text-anchor", "middle")
                 .on("click", function (d) {
-                    showList(d.name)
+                    showList(d.taxon)
                 });
 
         //吹き出しの足を描画
@@ -206,32 +194,41 @@ $(function(){
 
     //transition().duration()を設定するとon("click",,)がエラーになるため、再描画するオブジェクトでないものにイベントをわりあてる
     $("#col1_form input:text").on("keypress keyup change", function (e) {
-        var query_text = $("#col1_form input:text").val();
+        query_species = $("#col1_form input:text").val();
+        query_species = escape(query_species);
         if (e.keyCode == 46 || e.keyCode == 8) { //BackspaceやDeltekeyが入力された場合
-            if (query_text == "") {
+            if (query_species == "") {
                 //検索文字がnullとなった場合ランキングチャートを表示する
-                drawBar(dimension1);
-                drawList(dimension1);
+                drawBar(taxon);
+                drawList(taxon);
+                $("#search_condition ul.species").html("");
             } else {
-                d3.json("projects?dimension=organism&query_text=" + query_text, function (error, data) {
+                d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
                     //文字が入力されている場合jsonを再取得し検索結果によるグラフを表示する
-                    drawBar(data);
-                    drawList(data);
+                    datas = [{"taxon": "total", "count": data.total},{"taxon": query_species, "count":data.species.count}];
+                    drawBar(datas);
+                    drawList(datas);
+                    $("#search_condition ul.species").html("<li>" + unescape(query_species) + "</li>");
+                    $("#search_condition ul.search_result").html("<li>" + data.mix.count + "</li>");
                 })
             }
-        } else if (query_text != "") {
+        }else if (e.keyCode == 13) {
+          showList(query_species);
+        }else if (query_species != "") {
             //通常に文字が入力されたケースの挙動。jsonを新しい条件で再取得。ただし↑など文字はフィルタすべき。
-            d3.json("projects?dimension=organism&query_text=" + query_text, function (error, data) {
-                drawBar(data);
-                drawList(data);
+            d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
+              datas = [{"taxon": "total", "count": data.total},{"taxon": query_species, "count":data.species.count}];
+                drawBar(datas);
+                drawList(datas);
+                $("#search_condition ul.species").html("<li>" + unescape(query_species) + "</li>");
+                $("#search_condition ul.search_result").html("<li>" + data.mix.count + "</li>");
             })
         }
     });
 
     function showList(q) {
         if (q != "total") {
-            q = escape(q)
-            window.location = "http://sra.dbcls.jp/search/search?species=" + q +"&type=&instrument=&search_query=";
+            window.location = "http://sra.dbcls.jp/search/search?species=" + q +"&type=" + query_type + "&instrument=" + query_platform +"&search_query=";
         }
     }
 
