@@ -29,13 +29,11 @@
         $("#get_tabledata").on("click", function(){
           $("#pubtable").fadeOut().delay(200).empty().fadeIn();
           url_query = url + "?type=" + val_type + "&platform=" + val_platform + "&taxon_id=" + val_taxon;
-          //getjson(url);
-          console.log(url_query);
+          getjson(url_query);
         });
 
         $("[name=taxon_id]").change(function(){
           val_taxon = $("#taxon_id option:selected").val();
-          console.log("0");
         });
         $("[name=type]").change(function(){
           var raw_type = $("#type_text option:selected").text();
@@ -44,8 +42,8 @@
         $("[name=platform]").change(function(){
           var raw_platform = $("#platform_text option:selected").text();
           val_platform = encodeURI(raw_platform);
-          console.log("2");
         });
+        
         getjson(url);
 
         function getjson(url){

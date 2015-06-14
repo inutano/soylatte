@@ -31,6 +31,7 @@ $(function(){
 
     d3.json("http://sra.dbcls.jp/sra.taxon.latest.json", function (error, data) {
         taxon = data.data;
+        console.log(taxon);
         taxon.forEach(function(d){
           d.count = +d.count
         });
