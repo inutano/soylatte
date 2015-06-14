@@ -167,13 +167,12 @@ $(function(){
             drawBar(studys);
             drawRanking(studys);
             $("#search_condition ul.type").html("");
-            console.log(type);
         }else if (e.keyCode == 13) {
           showList(query_type);
         }else if(query_type != ""){
             //通常に文字が入力されたケースの挙動。jsonを新しい条件で再取得。ただし↑など文字はフィルタすべき。
-            d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
-              qs = "http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query="
+            d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query, function (error, data) {
+              qs = "http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query;
               datas = [{"type": "total", "count": data.total},{"type": query_type, "count":data.type.count}];
                 drawBar(datas);
                 drawRanking(datas);
@@ -185,7 +184,7 @@ $(function(){
 
     function showList(q){
         if(q != "total"){
-          window.location = "http://sra.dbcls.jp/search/search?species=" + query_species +"&type=" + q + "&instrument=" + query_platform +"&search_query=";
+          window.location = "http://sra.dbcls.jp/search?species=" + query_species +"&type=" + q + "&instrument=" + query_platform +"&search_query=" + search_query;
         }
     }
 

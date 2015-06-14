@@ -124,10 +124,8 @@
         </div>
         <div class="row search">
           <h3>Free Keyword</h3>
-          <form action="http://sra.dbcls.jp/search/search?" method="get" name="search">
-            <input type="keyword" name="search_query" placeholder="Free Keyword" size="40">
-            <input type="submit" value="Submit Conditions">
-          </form>
+            <input id="free_keyword" type="text" name="search_query" placeholder="Free Keyword" size="40">
+            <button id="submit_condition">Submit Conditon</button>
         </div>
 
 
@@ -317,9 +315,21 @@
   </div>
 
   <script type="text/javascript">
-    var query_species = ""
-    var query_platform = ""
-    var query_type = ""
+  var query_species = "";
+  var query_platform = "";
+  var query_type = "";
+  var search_query = "";
+  $(document).ready(function(){
+    $("#free_keyword").change(function(){
+      search_query = $("#free_keyword").val();
+      console.log(search_query);
+    });
+    $("#submit_condition").click(function(){
+      window.location = "http://sra.dbcls.jp/search?species=" + query_species +"&type=" + query_type + "&instrument=" + query_platform +"&search_query=" + search_query;
+    });
+  })
+
+
   </script>
   <script src="js/ranking_species.js"></script>
   <script src="js/ranking_platform.js"></script>

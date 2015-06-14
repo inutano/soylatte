@@ -31,7 +31,6 @@ $(function(){
 
     d3.json("http://sra.dbcls.jp/sra.taxon.latest.json", function (error, data) {
         taxon = data.data;
-        console.log(taxon);
         taxon.forEach(function(d){
           d.count = +d.count
         });
@@ -205,7 +204,7 @@ $(function(){
                 $("#search_condition ul.species").html("");
                 $("#search_condition ul.search_result").html("");
             } else {
-                d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
+                d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query, function (error, data) {
                     //文字が入力されている場合jsonを再取得し検索結果によるグラフを表示する
                     datas = [{"taxon": "total", "count": data.total},{"taxon": query_species, "count":data.species.count}];
                     drawBar(datas);
@@ -218,7 +217,7 @@ $(function(){
           showList(query_species);
         }else if (query_species != "") {
             //通常に文字が入力されたケースの挙動。jsonを新しい条件で再取得。ただし↑など文字はフィルタすべき。
-            d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
+            d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query, function (error, data) {
               datas = [{"taxon": "total", "count": data.total},{"taxon": query_species, "count":data.species.count}];
                 drawBar(datas);
                 drawList(datas);
@@ -230,7 +229,7 @@ $(function(){
 
     function showList(q) {
         if (q != "total") {
-            window.location = "http://sra.dbcls.jp/search/search?species=" + q +"&type=" + query_type + "&instrument=" + query_platform +"&search_query=";
+            window.location = "http://sra.dbcls.jp/search?species=" + q +"&type=" + query_type + "&instrument=" + query_platform +"&search_query=" + search_query;
         }
     }
 
