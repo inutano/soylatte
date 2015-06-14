@@ -202,6 +202,7 @@ $(function(){
                 drawBar(taxon);
                 drawList(taxon);
                 $("#search_condition ul.species").html("");
+                $("#search_condition ul.search_result").html("");
             } else {
                 d3.json("http://sra.dbcls.jp/search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=", function (error, data) {
                     //文字が入力されている場合jsonを再取得し検索結果によるグラフを表示する

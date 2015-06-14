@@ -206,21 +206,6 @@ div#main{
     padding: 4px 4px;
     color: #444444;
 }
-#main .search input[type="submit"]{
-  width: 200px;
-  height: 28px;
-  font-size: 16px;
-  -webkit-border-radius:2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
-  border: none;
-  background-color: #f6ad49;
-  color: white;
-  margin-left: 10px;
-}
-#main .search input[type="submit"]:hover{
-  background-color: #f39800;
-}
 #main .search{
     height: 90px;
     margin-bottom: 14px;
@@ -240,17 +225,6 @@ div#main{
     color: white;
     margin-left: 10px;
 }
-#main .trends select{
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
-  border: solid 1px #a9a9a9;
-  font-size: 16px;
-  padding: 4px 4px;
-  color: #a9a9a9;
-  background-color: white;
-}
-
 #main .search button:hover{
     background-color: #f39800;
 }
@@ -502,20 +476,7 @@ input{
     width: 1.2rem;
     margin-left: -1.2rem;
 }
-.trends #search_condition li:before {
-    content: '';
-    font-family: FontAwesome;
-    display: inline-block;
-    width: 1.2rem;
-    margin-left: -1.2rem;
-}
-.trends #search_condition .search_result li:before{
-    content: '';
-    font-family: FontAwesome;
-    display: inline-block;
-    width: 1.2rem;
-    margin-left: -1.2rem;
-}
+
 #main .pagination li a{
     font-size: 0.85rem;
     color: #488EC4;
@@ -550,7 +511,9 @@ input{
     border-spacing: 0px;
     width: 100%;
     height: 100%;
-
+}
+#main table.tablesorter{
+  width: 100%;
 }
 #main table.experiment tr th, table.experiment tr td{
     font-size: 0.85rem;
@@ -901,19 +864,6 @@ a.dropdown-toggle i.fa.fa-download{
 }
 #main.trends .tbl a:hover {
     color: #708090;
-}
-/* 404 NOT FOUND */
-#main.result .span6 {
-  width: 460px;
-  float: left;
-  margin-left: 20px;
-}
-#main .form-horizontal .control-group::after {
-  clear: both;
-}
-#main .form-horizontal .control-group::before,
- .form-horizontal .control-group::after {
-   display: table;
 }
 /* Dismissible Alerts */
 div.news {
@@ -1457,4 +1407,38 @@ tbody.collapse.in {
 }
 .affix {
   position: fixed;
+}
+
+/* YUI3 style overriding */
+#main .yui3-datatable-data a{
+  color: steelblue;
+  font-size: 0.85rem;
+}
+#main .numeric {
+    text-align: right;
+}
+#main td.yui3-datatable-cell{
+  font-size: 0.85rem;
+}
+#main .info.search_condition .box {
+  width: 275px;
+  border-top: none;
+  margin: 8px 16px 16px 0px;
+}
+#main .info.search_condition .box h4{
+  float: left;
+  font-size: 0.85rem;
+  margin-right: 8px;
+}
+#main .search_condition .box select{
+  float: left;
+  width: 180px;
+}
+#main .info.search_condition .box.bt {
+  width: 50px;
+  border-top: none;
+}
+#main .info.search_condition .box.bt button{
+  padding: 4px 16px;
+
 }
