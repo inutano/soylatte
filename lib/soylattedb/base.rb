@@ -36,7 +36,7 @@ class SoylatteDB
       end
 
       def study_type_list
-        list(studydb, :study_type)
+        list(projectdb, :study_type)
       end
       
       def instrument_list
