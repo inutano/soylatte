@@ -33,10 +33,10 @@ namespace :soylatte do
     end
   end
   
-  sub_id_list = open(live_accessions).read.split("\n")
 
   task :load_metadata => [db, live_accessions] do |t|
     StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-metadata.dump') do
+      sub_id_list = open(live_accessions).read.split("\n")
       sub_id_list.each do |sub_id|
         SoylatteDB::SRA.new(db, sub_id).load
       end
