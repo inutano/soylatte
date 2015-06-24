@@ -8,3 +8,4 @@ log
 public
 vendor
 .env
+stackprof
