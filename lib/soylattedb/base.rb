@@ -237,7 +237,7 @@ class SoylatteDB
           "Stat" => {
                       "num" => "#{c}",
                       "per" => "#{r}"
-                    }
+                    },
           "matched"   => "#{c}",
           "unmatched" => "#{projectdb.size - c}"
         }
@@ -295,7 +295,7 @@ class SoylatteDB
         {
           submission_id: record.submission_id,
 
-          study_id: study_id
+          study_id: study_id,
           study_type:            record.study_type,
           study_title:           record.study_title,
 
@@ -364,7 +364,7 @@ class SoylatteDB
           study_id: study_id,
           study_title: record.study_title,
           type:        record.study_type,
-          instrument:  run_records.map{|r| r.instrument }.minimize
+          instrument:  run_records.map{|r| r.instrument }.minimize,
           species:     sample_records.map{|r| r.scientific_name }.minimize,
         }
       end
@@ -400,7 +400,7 @@ class SoylatteDB
       end
   
       def pmc_summary(pmc_id)
-        parser = PMCMetadataParser.new(open(eutils_xml(:pmc, pmc_id))
+        parser = PMCMetadataParser.new(open(eutils_xml(:pmc, pmc_id)))
         body = parser.body.compact
         { 
           pmc_id:    pmc_id,
