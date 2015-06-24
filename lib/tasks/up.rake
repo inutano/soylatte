@@ -1,6 +1,8 @@
 # :)
 
 require 'parallel'
+require 'stackprof'
+
 require File.join(PROJ_ROOT, 'lib', 'soylattedb')
 
 namespace :soylatte do
@@ -19,28 +21,31 @@ namespace :soylatte do
   live_accessions = File.join(data_dir, "live_accessions.list")
   
   file live_accessions => [data_dir, accessions] do |t|
-    pattern = '$1 ~ /^.RA/ && $3 == "live" && $9 == "public"'
-    sh "awk -F '\t' '#{pattern} { print $1 }' #{accessions} > #{t.name}"
+    pattern = '$1 ~ /^.RP/ && $3 == "live" && $9 == "public"'
+    sh "awk -F '\t' '#{pattern} { print $2 }' #{accessions} | sort -u > #{t.name}"
   end
-
+  
   task :load_data => [ :load_references, :load_metadata, :load_publication ]
   
   task :load_references => db do |t|
-    SoylatteDB::Reference.load(db)
+    StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-reference.dump') do
+      SoylatteDB::Reference.load(db)
+    end
   end
   
+
   task :load_metadata => [db, live_accessions] do |t|
-    sub_id_list = open(live_accessions).read.split("\n")
-    Parallel.each(sub_id_list, :in_threads => NUM_OF_PARALLEL) do |sub_id|
-      SoylatteDB::SRA.new(db, sub_id).load
+    StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-metadata.dump') do
+      sub_id_list = open(live_accessions).read.split("\n")
+      sub_id_list.each do |sub_id|
+        SoylatteDB::SRA.new(db, sub_id).load
+      end
     end
   end
   
   task :load_publication => [db, live_accessions] do |t|
-    sub_id_list = open(live_accessions).read.split("\n")
-    SoylatteDB::Publication.load(db, sub_id_list)
-  end
-  
-  task :validate_db => db do |t|
+    StackProf.run(mode: :cpu, raw: true, out: PROJ_ROOT + '/stackprof-cpu-load-publication.dump') do
+      SoylatteDB::Publication.load(db)
+    end
   end
 end
