@@ -10,7 +10,7 @@ Dir["#{PROJ_ROOT}/lib/tasks/**/*.rake"].each do |path|
 end
 
 namespace :soylatte do
-  desc "trigger fetching metadata and configuration"
+  desc "Trigger fetching metadata and configuration"
   task :init => [ :fetch, :config ] do
     puts "Heads up: you need to sync fastqc directory before deploy application."
     puts "soylatte:init done."
@@ -24,7 +24,7 @@ namespace :soylatte do
     Rake::Task["soylatte:config"].invoke
   end
 
-  desc "create db and load data"
+  desc "Create db and load data"
   task :up => [ :create_db, :load_data ]
 
   task :create_db do
@@ -37,10 +37,10 @@ namespace :soylatte do
   
   desc "Check if recorded data are correct"
   task :test do
-    Rake::Task["soylatte:validate_db"]
+    Rake::Task["soylatte:validate_db"].invoke
   end
   
-  desc "erase all db files."
+  desc "Erase all db files."
   task :down do
     puts "Erase all db files? Y/N"
     answer = STDIN.gets.chomp
