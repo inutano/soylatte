@@ -6,6 +6,8 @@ require "open-uri"
 
 require "./lib_db_update"
 
+Encoding.default_external = 'utf-8'
+
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
