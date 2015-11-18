@@ -196,6 +196,7 @@ if __FILE__ == $0
     end
     Process.waitall
     
+    puts "UPDATE PubMed SEARCH FIELD #{Time.now}"
     pmid_hash = {}
     pmcid_hash = {}
     projects.map{|r| r["_key"] }.each do |study_id|
@@ -238,8 +239,14 @@ if __FILE__ == $0
         end
       end
     end
+
+    puts "Updating PubMed entries.. #{Time.now}"
     bulk_description(pmid_hash, projects)
+
+    puts "Updating PMC entries.. #{Time.now}"
     bulk_description(pmcid_hash, projects)
+
+    puts "Database Updated. #{Time.now}"
 
   when "--debug"
     require "ap"
