@@ -1,62 +1,83 @@
 !!!
 !!! 5
 %html
-  %head
+  %head{:lang => "en"}
+    %meta{:charset => "UTF-8"}
     %title DBCLS SRA
-    %meta{:charset => "utf-8"}
-    %link{:rel => :stylesheet, :href => "//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/css/sra15.css", :type => "text/css"}
-    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
-    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
-    %script{ :src => "#{app_root}/js/d3.min.js" }
-    %script{ :src => "#{app_root}/js/ranking_species.js" }
-    %script{ :src => "#{app_root}/js/ranking_study.js" }
-    %script{ :src => "#{app_root}/js/ranking_platform.js" }
-
-    / This page is replaced by static public/index.html file on actual operation,
-    / and used only in rendering test.
+    %link{:href => "css/sra15.css", :rel => "stylesheet"}
+    %link{:href => "http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :rel => "stylesheet"}
+    %script{:src => "https://code.jquery.com/jquery-1.11.2.min.js", :type => "text/javascript"}
+    %script{:src => "js/d3.min.js"}
+    %script{:src => "js/bootstrap.min.js"}
 
   %body
     #container
       #header
         .content
+          / Header section
           .box.box1
             %h1
               DBCLS
               %span.or SRA
           .box.box2
-            %img{:src => "#{app_root}/images/DBCLS_SRA_logo.png"}
+            %img{:src => "images/DBCLS_SRA_logo.png"}
           .box.box3
             %p
-              %span.em
-                DISCOVER
-              %br Interesting & Available SRA Data
+              %span.em DISCOVER
+              %br
+                Interesting &amp; Available SRA Data
+
+      /
+        .news
+          .alert.alert-warning.alert-dismissible{ :role => "alert" }
+            %button.close{ :type => "button", "data-dismiss" => "alert", "aria-label" => "Close"}
+              %span{ "aria-hidden" => "true" }
+                &times;
+            404 Not Found
 
       #main
         .content
-          %h2 Trends & Search SRA data
+          / Trends section
+          %h2 Trends &amp; Search SRA data
           .row
-            .box-r →
-              %a{:href => "../trends.html"} for more detail
+            .box-r
+              →
+              %a{:href => "trends.html"} for more detail
           .row.trends
             .box.tob
               %h3 Species
               #col1_list.ranking
               #col1_bars.col_bars
               #col1_form
-                %input{:type => "text", :size => "15", :placeholder => "&#xF002; Search"}
+                %input{:placeholder => " Search", :size => "15", :type => "text"}/
             .box
               %h3 Study Type
               #col2_list.ranking
               #col2_bars.col_bars
               #col2_form
-                %input{:type => "text", :size => '15', :placeholder => "&#xF002; Search"}
+                %select#select_type{:name => "type"}
+                  %option.disabled{:disabled => true, :selected => true, :value => ""} Select your option
+                  %option{:value => "Genome"} Whole Genome Sequencing
+                  %option{:value => "Transcriptome"} Transcriptome Analysis
+                  %option{:value => "Other"} Other
+                  %option{:value => "Metagenomics"} Metagenomics
+                  %option{:value => "Epigenetics"} Epigenetics
+                  %option{:value => "Resequencing"} Resequencing
+                  %option{:value => "RNASeq"} RNASeq
+                  %option{:value => "Genomics"} Population Genomics
+                  %option{:value => "Gene"} Gene Regulation Study
+                  %option{:value => "Cancer Genomics"} Cancer Genomics
+                  %option{:value => "Exome Sequencing"} Exome Sequencing
+                  %option{:value => "Pooled Clone Sequencing"} Pooled Clone Sequencing
+                  %option{:value => "Synthetic Genomics"} Synthetic Genomics
+                  %option{:value => "Forensic or Paleo-genomics"} Forensic or Paleo-genomics
+                  %option{:value => ""} None
             .box
               %h3 Platform
               #col3_list.ranking
               #col3_bars.col_bars
               #col3_form
-                %input{:type => "text", :size => "15", :placeholder => "&#xF002; Search"}
+                %input{:placeholder => " Search", :size => "15", :type => "text"}/
             .box
               %h3 Usage
               .lists
@@ -64,17 +85,22 @@
                   %li Click bars or bubbles and you can see more details of selected data.
                   %li Input keywords and you can view ratio of feature selection.
                   %li You can see result of combined search criteria too.
-              .col_bars
+              %h3 Search Conditions
+              #search_condition
+                %ul.species
+                %ul.type
+                %ul.platform
+                %ul.search_result
           .row.search
             %h3 Free Keyword
-            %input{:type => "text", :size => "40"}
-            %button{:type => "button"} Submit
-
-          / Publication Section
+            %input#free_keyword{:name => "search_query", :placeholder => "Free Keyword", :size => "40", :type => "text"}
+              %button#submit_condition Submit Conditon
+          / Publication section
           %h2 Publications
           .row
-            .box-r →
-              %a{:href => "sra.dbcls.jp/cgi-bin/publication.cgi"} Full Publication List
+            .box-r
+              →
+              %a{:href => "cgi-bin/publication.cgi"} Full Publication List
           %h3 New Publications
           .row.hot
             #hot-ele-1.hot-ele
@@ -83,9 +109,10 @@
               .boxtitle
                 Other
                 %br
-                Hiseq 2500
+                  Hiseq 2500
               .ttl
-                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP002445"} Genome Reseq for res investigation of STAP cell
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP002445"}
+                  Genome Reseq for res investigation of STAP cell
               .impact-high
                 .pub-yr 2014
                 .pub-journal Nature
@@ -95,19 +122,23 @@
               .boxtitle
                 Transcriptome
                 %br
-                Helicos HeliScope
+                  Helicos HeliScope
               .ttl
-                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"} A promoter level mammalian exp atlas
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"}
+                  A promoter level mammalian exp atlas
               .impact-high
                 .pub-yr 2014
                 .pub-journal Nature
             #hot-ele-3.hot-ele
               .icon
                 %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
-              .boxtitle Transcriptome
-                %br Helicos HeliScope
+              .boxtitle
+                Transcriptome
+                %br
+                  Helicos HeliScope
               .ttl
-                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"} A promoter level mammalian exp atlas
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"}
+                  A promoter level mammalian exp atlas
               .impact-high
                 .pub-yr 2014
                 .pub-journal Nature
@@ -117,20 +148,96 @@
               .boxtitle
                 Transcriptome
                 %br
-                Helicos HeliScope
+                  Helicos HeliScope
               .ttl
-                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"} A promoter level mammalian exp atlas
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"}
+                  A promoter level mammalian exp atlas
               .impact-high
                 .pub-yr 2014
                 .pub-journal Nature
           %h3 Hot Publications
           .row.hot
-      /Footer Section
+            #odd-ele-1.odd-ele{:style => ""}
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png"}
+              .boxtitle
+                Transcriptome
+                %br
+                  Illumina HiSeq 1500
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP038104"}
+                  %span{:style => "text-decoration: line-through;"}
+                    Bidirectional developmental potential in reprogrammed cells with acquired pluripotency
+              .impact-high
+                .pub-yr 2014
+                .pub-journal Nature
+            #odd-ele-2.odd-ele{:style => ""}
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png"}
+              .boxtitle
+                Epigenetics
+                %br
+                  Illumina HiSeq 2000
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP012539"}
+                  PRMT5-mediated histone H4 arginine-3 symmetrical dimethylation ...
+              .impact-middle
+                .pub-yr 2013
+                .pub-journal Nucleic Acids Res
+            #odd-ele-3.odd-ele{:style => ""}
+              .icon
+                %br
+              .boxtitle
+                Other
+                %br
+                  Illumina Genome Analyzer II
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP028632"}
+                  a tool for genome-wide discovery of subgenome-specific base-identity
+                  in polyploids
+              .impact-low
+                .pub-yr 2013
+                .pub-journal BMC Genomics
+            #odd-ele-4.odd-ele{:style => ""}
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/09/Rice_sm.png"}
+              .boxtitle
+                Whole Genome Seq
+                %br
+                  Illumina HiSeq 2000
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=SRP022168"}
+                  Genomewide Variation in an Introgression Line of Rice-Zizania ...
+              .impact-low
+                .pub-yr 2013
+                .pub-journal PLOS One
       #footer
         .content
-          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"}
-            %img{:alt => "Creative Commons License", :style => "border-width:0", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png"}
-          %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
+          / Footer section
+          %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
+            %img{:alt => "Creative Commons License", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png", :style => "border-width:0"}/
+          %span{:property => "dct:title", "xmlns:dct" => "http://purl.org/dc/terms/"} DBCLS SRA
           is licensed under a
-          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
-          Unported License
+          = succeed "." do
+            %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
+              Creative Commons Attribution 3.0
+              Unported License
+
+    %script{:src => "js/ranking_species.js"}
+    %script{:src => "js/ranking_platform.js"}
+    %script{:src => "js/ranking_study.js"}
+
+    :javascript
+      var query_species = "";
+      var query_platform = "";
+      var query_type = "";
+      var search_query = "";
+      $(document).ready(function(){
+        $("#free_keyword").change(function(){
+          search_query = $("#free_keyword").val();
+          console.log(search_query);
+        });
+        $("#submit_condition").click(function(){
+          window.location = "./search?species=" + query_species +"&type=" + query_type + "&instrument=" + query_platform +"&search_query=" + search_query;
+        });
+      })
