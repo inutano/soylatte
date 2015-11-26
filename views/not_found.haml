@@ -39,7 +39,7 @@
       #main.result
         .content
           %h2 DBCLS SRA Metadata Search
-          - show_query = @query.empty? ? "undefined" : @query
+          - show_query = (!@query or @query.empty?) ? "undefined" : @query
           %h3= "404 Not Found: " + show_query
           .row
             .span6
@@ -113,7 +113,7 @@
           %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
           is licensed under a
           %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
-            Unported License
+          Unported License
 
     :javascript
       $(document).ready(function (){

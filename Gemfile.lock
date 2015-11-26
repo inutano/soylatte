@@ -3,11 +3,18 @@ GEM
   specs:
     archive-zip (0.7.0)
       io-like (~> 0.3.0)
-    awesome_print (1.6.1)
+    better_errors (2.1.1)
+      coderay (>= 1.0.0)
+      erubis (>= 2.6.6)
+      rack (>= 0.9.0)
+    binding_of_caller (0.7.2)
+      debug_inspector (>= 0.0.1)
+    byebug (8.2.0)
+    coderay (1.1.0)
+    debug_inspector (0.0.2)
     diff-lcs (1.2.5)
+    erubis (2.7.0)
     gqtp (1.0.6)
-    groonga (1.0.0)
-      rroonga
     groonga-client (0.1.6)
       gqtp (>= 1.0.4)
       groonga-command (>= 1.0.8)
@@ -17,15 +24,31 @@ GEM
       tilt
     io-like (0.3.0)
     json (1.8.3)
+    method_source (0.8.2)
     mini_portile (0.6.2)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
+    parallel (1.6.1)
     pkg-config (1.1.6)
+    pry (0.10.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    pry-byebug (3.3.0)
+      byebug (~> 8.0)
+      pry (~> 0.10)
+    pry-doc (0.8.0)
+      pry (~> 0.9)
+      yard (~> 0.8)
+    pry-stack_explorer (0.4.9.2)
+      binding_of_caller (>= 0.7)
+      pry (>= 0.9.11)
     rack (1.6.1)
     rack-protection (1.5.3)
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
+    rake (10.4.2)
     rroonga (5.0.3)
       archive-zip
       groonga-client (>= 0.0.3)
@@ -49,7 +72,10 @@ GEM
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
+    slop (3.6.0)
+    stackprof (0.2.7)
     tilt (2.0.1)
+    yard (0.8.7.6)
 
 PLATFORMS
   ruby
@@ -71,6 +97,7 @@ DEPENDENCIES
   rspec
   sass
   sinatra
+  stackprof
 
 BUNDLED WITH
    1.10.3
