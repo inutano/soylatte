@@ -5,12 +5,12 @@
     %title Filtering Result
     %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
     %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
     %script{ :src => "http://d3js.org/d3.v3.min.js" }
     %script{ :src => "#{app_root}/js/bootstrap.min.js" }
-  
+
   %body
     .container
       .navbar.navbar-fixed-top
@@ -45,7 +45,7 @@
           DBCLS SRA Metadata Search
           %small
             project: Soylatte
-    
+
       %section
         .row
           - post_option = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
@@ -80,7 +80,7 @@
             %p.lead Sequencing Platform
             %p= (!@instrument or @instrument.empty?) ? "All" : @instrument
             .donut
-        
+
       :javascript
         var radius = 120;
 
@@ -94,16 +94,16 @@
         var pie = d3.layout.pie()
             .sort(null)
             .value(function(d){ return d.count })
-        
+
         d3.json("#{app_root}/donuts?#{@request_option}", function(error, data) {
           color.domain(d3.keys(data[0]).filter(function(key){ return key !== "Stat"; }));
-            
+
           data.forEach(function(d){
             d.status = color.domain().map(function(name){
               return {name: name, count: +d[name]};
             });
           });
-          
+
           var svg = d3.select("body").selectAll(".donut")
               .data(data)
               .append("svg")
@@ -111,14 +111,14 @@
               .attr("height", radius * 2)
             .append("g")
               .attr("transform", "translate(" + radius + "," + radius + ")");
-        
+
           svg.selectAll(".arc")
               .data(function(d){ return pie(d.status); })
             .enter().append("path")
               .attr("class", "arc")
               .attr("d", arc)
               .style("fill", function(d) { return color(d.data.name); });
-          
+
           svg.append("text")
             .attr("dy", ".05em")
             .style("text-anchor", "middle")
@@ -129,12 +129,12 @@
             .style("text-anchor", "middle")
             .text(function(d) { return d.Stat.per + "%"; });
         });
-      
+
       %footer
         powered by
         %a{ :href => "http://dbcls.rois.ac.jp/en" }
           DBCLS
         , project licensed under CC-BY 2.1 JP. /
-        Font Awesome by Dave Gandy - 
+        Font Awesome by Dave Gandy -
         %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
           http://fortawesome.github.com/Font-Awesome
