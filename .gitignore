@@ -1,11 +1,7 @@
 .bundle
 .ruby-version
+vendor
 db
 data
 fastqc
-lib/repos
 log
-public
-vendor
-.env
-stackprof

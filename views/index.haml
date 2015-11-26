@@ -1,104 +1,136 @@
-!!! XML
 !!!
+!!! 5
 %html
   %head
-    %title tallsize hot soylatte :)
-    %meta{:charset => "utf-8", :content => "text/html", "http-equiv" => "content"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/css/font-awesome.min.css", :type => "text/css"}
-    %link{:rel => :stylesheet, :href => "#{app_root}/style.css", :type => "text/css"}
-    %script{ :src => "http://code.jquery.com/jquery-1.8.2.min.js" }
+    %title DBCLS SRA
+    %meta{:charset => "utf-8"}
+    %link{:rel => :stylesheet, :href => "//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/sra15.css", :type => "text/css"}
+    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
     %script{ :src => "#{app_root}/js/bootstrap.min.js" }
-          
-  %body
-    .container
-      .navbar.navbar-fixed-top
-        .navbar-inner
-          .container
-            %a.btn.btn-navbar{ "data-toggle" => "collapse", "data-target" => ".nav-collapse" }
-              %span.icon-bar
-              %span.icon-bar
-              %span.icon-bar
-            %a.brand
-              DBCLS SRA metadata search (beta)
-            .nav-collapse
-              %ul.nav
-                %li
-                  %a{:href => "#{app_root}"} Home
-                %li
-                  %a{:href => "http://g86.dbcls.jp/chateautogo" } Blog
-                %li
-                  %a{:href => "http://github.com/inutano/sra_metadata_toolkit", "data-toggle" => "tooltip", "title" => "github repo"}
-                    %i.icon-github
-                %li
-                  %a{:href => "http://twitter.com/inutano", "data-toggle" => "tooltip", "title" => "Twitter" }
-                    %i.icon-twitter
-                :javascript
-                  $("a").tooltip({
-                    'selector': '',
-                    'placement': 'bottom'
-                  });
-      
-      .page-header
-        %h1
-          DBCLS SRA Metadata Search
-          %small
-            project: Soylatte
-      
-      %section
-        .row
-          .span6
-            %p.lead Setting search filter
-            %form.form-horizontal{ :name => "filters", :action => "#{app_root}/filter", :method => "POST" }
-              .control-group  
-                %label.control-label{ "for" => "species" } Sample Organism
-                .controls
-                  %input.input-large.search-query#typeSpecies{ :type => "text", :name => "species", :placeholder => "Type scientific name" }
-                  :javascript
-                    var organismList = #{@species};
-                    $('#typeSpecies').typeahead({source: organismList});
-              .control-group
-                %label.control-label{ "for" => "study_type" } Study Type
-                .controls
-                  %select{ :id => "study_type", :name => "study_type", :width => 66 }
-                    %option{ :value => "" } -
-                    %option{ :value => "Genome" }
-                      Genome
-                    %option{ :value => "Transcriptome" }
-                      Transcriptome
-                    %option{ :value => "Epigenome" }
-                      Epigenome
-                    %option{ :value => "Metagenome" }
-                      Metagenome
-                    %option{ :value => "Cancer Genomics" }
-                      Cancer Genomics
-                    %option{ :value => "Other" }
-                      Other
-              .control-group    
-                %label.control-label{ "for" => "instrument" } Sequencing Instrument
-                .controls
-                  %select{ :id => "instrument", :name => "instrument", :width => 66 }
-                    %option{ :value => "" } -
-                    - @instruments.each do |instrument|
-                      %option{ :value => instrument }= instrument
-              .control-group
-                .controls
-                  %button.btn{ :type => "submit" }
-                    submit condition
-          
-          .span6
-            %p.lead Fulltext search
-            %form.search{ :name => "search", :action => "#{app_root}/search", :method => "POST" }
-              %label search without filtering
-              %input.input-large.search-query{ :type => "text", :name => "search_query", :placeholder => "Type search query" }
-              %button.btn{ :type => "submit" }
-                search
+    %script{ :src => "#{app_root}/js/d3.min.js" }
+    %script{ :src => "#{app_root}/js/ranking_species.js" }
+    %script{ :src => "#{app_root}/js/ranking_study.js" }
+    %script{ :src => "#{app_root}/js/ranking_platform.js" }
 
-      %footer
-        powered by
-        %a{ :href => "http://dbcls.rois.ac.jp/en" }
-          DBCLS
-        , project licensed under CC-BY 2.1 JP. /
-        Font Awesome by Dave Gandy - 
-        %a{ :href => "http://fortawesome.github.com/Font-Awesome" }
-          http://fortawesome.github.com/Font-Awesome
+    / This page is replaced by static public/index.html file on actual operation,
+    / and used only in rendering test.
+
+  %body
+    #container
+      #header
+        .content
+          .box.box1
+            %h1
+              DBCLS
+              %span.or SRA
+          .box.box2
+            %img{:src => "#{app_root}/images/DBCLS_SRA_logo.png"}
+          .box.box3
+            %p
+              %span.em
+                DISCOVER
+              %br Interesting & Available SRA Data
+
+      #main
+        .content
+          %h2 Trends & Search SRA data
+          .row
+            .box-r →
+              %a{:href => "../trends.html"} for more detail
+          .row.trends
+            .box.tob
+              %h3 Species
+              #col1_list.ranking
+              #col1_bars.col_bars
+              #col1_form
+                %input{:type => "text", :size => "15", :placeholder => "&#xF002; Search"}
+            .box
+              %h3 Study Type
+              #col2_list.ranking
+              #col2_bars.col_bars
+              #col2_form
+                %input{:type => "text", :size => '15', :placeholder => "&#xF002; Search"}
+            .box
+              %h3 Platform
+              #col3_list.ranking
+              #col3_bars.col_bars
+              #col3_form
+                %input{:type => "text", :size => "15", :placeholder => "&#xF002; Search"}
+            .box
+              %h3 Usage
+              .lists
+                %ul
+                  %li Click bars or bubbles and you can see more details of selected data.
+                  %li Input keywords and you can view ratio of feature selection.
+                  %li You can see result of combined search criteria too.
+              .col_bars
+          .row.search
+            %h3 Free Keyword
+            %input{:type => "text", :size => "40"}
+            %button{:type => "button"} Submit
+
+          / Publication Section
+          %h2 Publications
+          .row
+            .box-r →
+              %a{:href => "sra.dbcls.jp/cgi-bin/publication.cgi"} Full Publication List
+          %h3 New Publications
+          .row.hot
+            #hot-ele-1.hot-ele
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
+              .boxtitle
+                Other
+                %br
+                Hiseq 2500
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP002445"} Genome Reseq for res investigation of STAP cell
+              .impact-high
+                .pub-yr 2014
+                .pub-journal Nature
+            #hot-ele-2.hot-ele
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
+              .boxtitle
+                Transcriptome
+                %br
+                Helicos HeliScope
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"} A promoter level mammalian exp atlas
+              .impact-high
+                .pub-yr 2014
+                .pub-journal Nature
+            #hot-ele-3.hot-ele
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
+              .boxtitle Transcriptome
+                %br Helicos HeliScope
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"} A promoter level mammalian exp atlas
+              .impact-high
+                .pub-yr 2014
+                .pub-journal Nature
+            #hot-ele-4.hot-ele
+              .icon
+                %img{:src => "http://g86.dbcls.jp/~togoriv/wp-content/uploads/2011/08/mouse_sm.png", :width => "50px"}
+              .boxtitle
+                Transcriptome
+                %br
+                Helicos HeliScope
+              .ttl
+                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=DRP001032"} A promoter level mammalian exp atlas
+              .impact-high
+                .pub-yr 2014
+                .pub-journal Nature
+          %h3 Hot Publications
+          .row.hot
+      /Footer Section
+      #footer
+        .content
+          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"}
+            %img{:alt => "Creative Commons License", :style => "border-width:0", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png"}
+          %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
+          is licensed under a
+          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
+            Unported License
