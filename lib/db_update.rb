@@ -74,7 +74,7 @@ if __FILE__ == $0
       
       # progress
       if i % (total_sample_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_sample_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
@@ -125,7 +125,7 @@ if __FILE__ == $0
       
       # progress
       if i % (total_run_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_run_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
@@ -159,7 +159,7 @@ if __FILE__ == $0
       
       # progress
       if i % (total_study_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_study_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
@@ -191,7 +191,7 @@ if __FILE__ == $0
       
       # progress
       if i % (total_text_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_text_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
