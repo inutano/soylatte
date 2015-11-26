@@ -29,7 +29,7 @@ $(function(){
     var listbar = svg_list1.append("g").attr("class", "ranking_bar").attr("transform","translate(0, 10)");
     var listtext = svg_list1.append("g").attr("class", "ranking_text").attr("transform","translate(0, 10)");
 
-    d3.json("http://sra.dbcls.jp/sra.taxon.latest.json", function (error, data) {
+    d3.json("../sra.taxon.latest.json", function (error, data) {
         taxon = data.data;
         taxon.forEach(function(d){
           d.count = +d.count

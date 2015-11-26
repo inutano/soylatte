@@ -26,7 +26,7 @@ $(function(){
     var listtextc = svg_listc.append("g").attr("class", "ranking_text").attr("transform","translate(0, 10)");
 
 
-    d3.json("http://sra.dbcls.jp/sra.platform.latest.json", function(error, data) {
+    d3.json("../sra.platform.latest.json", function(error, data) {
         //dataはindexをkeyとした一列の配列に変換される
         platform = data.data;
         platform.forEach(function(d){
