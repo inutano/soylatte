@@ -43,9 +43,9 @@ class DBupdate
         table.short_text("study_type")
         table.reference("run", "Runs", type: :vector)
         table.short_text("submission_id", type: :vector)
-        table.uint16("pubmed_id", type: :vector)
+        table.short_text("pubmed_id", type: :vector)
         table.short_text("pmc_id", type: :vector)
-        table.text("search_fulltext")
+        table.long_text("search_fulltext")
       end
             
       schema.create_table("Index_text",
@@ -79,35 +79,39 @@ class DBupdate
     config = YAML.load_file(config_path)
     
     @@acc_hash = {} # any id => submissionid
-    acc_raw = `awk -F '\t' '$1 != "Accession" { print $1 "\t" $2 }' #{config["sra_accessions"]}`
-    acc_raw.split("\n").each do |line|
-      id_acc = line.split("\t")
-      @@acc_hash[id_acc[0]] = id_acc[1]
+    open(config["sra_accessions"]) do |file|
+      while lt = file.gets
+        l = lt.split("\t")
+        @@acc_hash[l[0]] = l[1]
+      end
     end
     
     @@run_hash = {} # runid => [ [expid, sampleid, studyid], .. ]
     @@study_hash = {} # studyid => runid
-    run_raw = `awk -F '\t' '$1 != "Run" { print $1 "\t" $3 "\t" $4 "\t" $5 }' #{config["sra_run_members"]}`
-    run_raw.split("\n").each do |line|
-      id_acc = line.split("\t")
-      @@run_hash[id_acc[0]] ||= []
-      @@run_hash[id_acc[0]] << [id_acc[1], id_acc[2], id_acc[3]]
-      @@study_hash[id_acc[3]] ||= []
-      @@study_hash[id_acc[3]] << id_acc[0]
+    open(config["sra_run_members"]) do |file|
+      while lt = file.gets
+        l = lt.split("\t")
+        @@run_hash[l[0]] ||= []
+        @@run_hash[l[0]] << [l[2], l[3], l[4]]
+        @@study_hash[l[4]] ||= []
+        @@study_hash[l[4]] << l[0]
+      end
     end
     
     @@taxon_hash = {}
-    taxon_raw = `awk -F ',' '{ print $1 "\t" $2 }' #{config["taxon_table"]}`
-    taxon_raw.split("\n").each do |line|
-      id_name = line.split("\t")
-      @@taxon_hash[id_name[0]] = id_name[1]
+    open(config["taxon_table"]) do |file|
+      while lt = file.gets
+        l = lt.split(",")
+        @@taxon_hash[l[0]] = l[1]
+      end
     end
     
-    @@pmc_hash = {}
-    pmc_ids_raw = `awk -F ',' '{ print $10 "\t" $9 }' #{config["PMC-ids"]}`
-    pmc_ids_raw.split("\n").each do |line|
-      pmid_pmcid = line.split("\t")
-      @@pmc_hash[pmid_pmcid[0]] = pmid_pmcid[1]
+    @@pmc_hash = {} # pmid - pmcid
+    open(config["PMC-ids"]) do |file|
+      while lt = file.gets
+        l = lt.split(",")
+        @@pmc_hash[l[9]] = l[8]
+      end
     end
     
     publication = config["publication"]
@@ -127,145 +131,127 @@ class DBupdate
   
   def get_xml_path(id, type)
     acc = @@acc_hash[id]
-    acc_head = acc.slice(0..5)
-    File.join(@@xml_base, acc_head, acc, acc + ".#{type}.xml")
+    path = File.join(@@xml_base, acc.sub(/...$/,""), acc, acc + ".#{type}.xml")
+    path if File.exist?(path) && !(File.size(path) > 1_000_000)
   end
   
   def sample_insert
+    # initialize insert hash
+    insert = Hash.new("")
+    
+    # set submission id
     submission_id = @@acc_hash[@id]
+    insert[:submission_id]      = submission_id
+    
+    # retrieve xml
     xml = get_xml_path(@id, "sample")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Sample.new(@id, xml)
-    sample_title = parser.title
-    sample_description = parser.sample_description
-    taxon_id = parser.taxon_id
+    if xml
+      parser = SRAMetadataParser::Sample.new(@id, xml)
+
+      # get scientific name
+      taxon_id = parser.taxon_id
+      scientific_name = @@taxon_hash[taxon_id]
     
-    scientific_name = @@taxon_hash[taxon_id]
-    
-    { submission_id: submission_id,
-      sample_title: sample_title,
-      sample_description: clean_text(sample_description),
-      taxon_id: taxon_id,
-      scientific_name: scientific_name }
-  rescue NameError, Errno::ENOENT
-    { submission_id: submission_id }
+      # set values
+      insert[:sample_title]       = parser.title
+      insert[:sample_description] = clean_text(parser.sample_description)
+      insert[:taxon_id]           = taxon_id
+      insert[:scientific_name]    = scientific_name
+    end
+    insert
+  rescue NameError
+    insert
   end
   
   def run_insert
-    sample = @@run_hash[@id].map{|a| a[1] }.uniq
-    submission_id = @@acc_hash[@id]
+    # initialize insert hash
+    insert = Hash.new("")
+    
     experiment_id = @@run_hash[@id].map{|a| a[0] }.uniq.first
-    
+    insert[:experiment_id] = experiment_id
+    insert[:submission_id] = @@acc_hash[@id]
+    insert[:sample]        = @@run_hash[@id].map{|a| a[1] }.uniq
+
     xml = get_xml_path(experiment_id, "experiment")
-    parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
-    raise NameError if File.size(xml) > 1_000_000
-    
-    { experiment_id: experiment_id,
-      instrument: parser.instrument_model,
-      library_strategy: parser.library_strategy,
-      library_source: parser.library_source,
-      library_selection: parser.library_selection,
-      library_layout: parser.library_layout,
-      library_orientation: parser.library_orientation,
-      library_nominal_length: parser.library_nominal_length,
-      library_nominal_sdev: parser.library_nominal_sdev,
-      submission_id: submission_id,
-      sample: sample }
-  rescue NameError, Errno::ENOENT
-    { experiment_id: experiment_id,
-      submission_id: submission_id,
-      sample: sample }
+    if xml
+      parser = SRAMetadataParser::Experiment.new(experiment_id, xml)
+      insert[:instrument]             = parser.instrument_model
+      insert[:library_strategy]       = parser.library_strategy
+      insert[:library_source]         = parser.library_source
+      insert[:library_selection]      = parser.library_selection
+      insert[:library_layout]         = parser.library_layout
+      insert[:library_orientation]    = parser.library_orientation
+      insert[:library_nominal_length] = parser.library_nominal_length
+      insert[:library_nominal_sdev]   = parser.library_nominal_sdev
+    end
+    insert
+  rescue NameError
+    insert
   end
   
   def project_insert
-    run = @@study_hash[@id]
-
+    # initialize insert hash
+    insert = Hash.new("")
+    
+    # set id variables
     submission_id = @@acc_hash[@id]
     pub_info = @@json.select{|row| submission_id == row["sra_id"] }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
     
+    # set values
+    insert[:run]           = @@study_hash[@id]
+    insert[:submission_id] = submission_id
+    insert[:pubmed_id]     = pubmed_id
+    insert[:pmc_id]        = pmc_id
+    
+    # parse xml
     xml = get_xml_path(@id, "study")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Study.new(@id, xml)
-    study_title = parser.study_title
-    study_type = parser.study_type
-
-    { study_title: clean_text(study_title),
-      study_type: study_type,
-      run: run,
-      submission_id: submission_id,
-      pubmed_id: pubmed_id,
-      pmc_id: pmc_id }
-  rescue NameError, Errno::ENOENT
-    { run: run,
-      submission_id: submission_id,
-      pubmed_id: pubmed_id,
-      pmc_id: pmc_id }
+    if xml
+      parser = SRAMetadataParser::Study.new(@id, xml)
+      insert[:study_title]   = clean_text(parser.study_title)
+      insert[:study_type]    = parser.study_type
+    end
+    insert
+  rescue NameError
+    insert
   end
   
   def experiment_description
+    desc_array = []
     xml = get_xml_path(@id, "experiment")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Experiment.new(@id, xml)
-
-    array = [ parser.title,
-              parser.design_description,
-              parser.library_construction_protocol ]
-    array.map{|d| clean_text(d) }.join("\s")
-  rescue NameError, Errno::ENOENT
-    nil
+    if xml
+      parser = SRAMetadataParser::Experiment.new(@id, xml)
+      desc_array << parser.title
+      desc_array << parser.design_description
+      desc_array << parser.library_construction_protocol
+    end
+    clean_text(desc_array.join("\s"))
+  rescue NameError
+    []
   end
   
   def project_description
+    desc_array = []
     xml = get_xml_path(@id, "study")
-    raise NameError if File.size(xml) > 1_000_000
-    parser = SRAMetadataParser::Study.new(@id, xml)
-    
-    array = [ parser.center_name, 
-              parser.center_project_name,
-              parser.study_abstract,
-              parser.study_description ]
-    array.map{|d| clean_text(d) }.join("\s")
-  rescue NameError, Errno::ENOENT
-    nil
-  end
-   
-  def pubmed_description
-    if @id
-      puts @@eutil_base + "db=pubmed&id=#{@id}"
-      sleep 1
-      xml = open(@@eutil_base + "db=pubmed&id=#{@id}").read
-      parser = PubMedMetadataParser.new(xml)
-      
-      array = [ @id.to_s,
-                parser.journal_title,
-                parser.article_title,
-                parser.abstract,
-                parser.affiliation,
-                parser.authors.map{|n| n.values.compact },
-                parser.chemicals.map{|n| n[:name_of_substance] },
-                parser.mesh_terms.map{|n| n.values.compact } ]
-      array.flatten.compact.map{|d| clean_text(d) }.join("\s")
+    if xml
+      parser = SRAMetadataParser::Study.new(@id, xml)
+      desc_array << parser.center_name
+      desc_array << parser.center_project_name
+      desc_array << parser.study_abstract
+      desc_array << parser.study_description
     end
+    clean_text(desc_array.join("\s"))
+  rescue NameError
+    []
   end
   
   def bulk_retrieve
     idlist = @id.join(",")
     if idlist =~ /PMC/
-      bulk_parse(idlist, :pmc)
+      bulkpmc_parse(bulk_xml(idlist, :pmc))
     else
-      bulk_parse(idlist, :pubmed)
-    end
-  end
-  
-  def bulk_parse(idlist, sym)
-    xml = bulk_xml(idlist, sym)
-    case sym
-    when :pmc
-      bulkpmc_parse(xml)
-    when :pubmed
-      bulkpubmed_parse(xml)
+      bulkpubmed_parse(bulk_xml(idlist, :pubmed))
     end
   end
   
@@ -274,95 +260,54 @@ class DBupdate
   end
   
   def bulkpmc_parse(xml)
-    pmcid_text = Nokogiri::XML(xml).css("article").map{|n| n.to_xml }.map do |xml|
-      p = PMCMetadataParser.new(xml)
-      if p.is_available?
-        # article body
-        body = p.body.compact.map do |section|
-          if section.has_key?(:subsec)
-            [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
-          else
-            section.values
-          end
-        end
-        # metadata
-        ref_journal_list = p.ref_journal_list
-        title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
-        cited_by = p.cited_by
-        title_cited_by = cited_by.map{|n| n.values } if cited_by
-        # merge
-        array = [body, title_ref_journal_list, title_cited_by]
-        [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+    pmcid_text = Hash.new("")
+    Nokogiri::XML(xml).css("article").each do |article|
+      p = PMCMetadataParser.new(article.to_xml)
+      ref_journal_list = p.ref_journal_list || []
+      cited_by         = p.cited_by || []
+      
+      text = []
+      text << ref_journal_list.map{|n| n.values }
+      text << cited_by.map{|n| n.values }
+      text << pmc_body_text(p)
+      
+      # set key/pmcid, value/text
+      pmcid_text["PMC" + p.pmcid] = clean_text(text.join("\s"))
+    end
+    pmcid_text
+  rescue Errno::ENETUNREACH
+    sleep 180
+    retry
+  end
+  
+  def pmc_body_text(pmc_parser)
+    pmc_parser.body.compact.map do |section|
+      if section.has_key?(:subsec)
+        [section[:sec_title], section[:subsec].map{|subsec| subsec.values }]
+      else
+        section.values
       end
     end
-    array_to_hash(pmcid_text)
   end
   
   def bulkpubmed_parse(xml)
-    pmid_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
-      p = PubMedMetadataParser.new(xml)
-      array = [ p.journal_title,
-                p.article_title,
-                p.abstract,
-                p.affiliation,
-                p.authors.map{|n| n.values.compact },
-                p.chemicals.map{|n| n[:name_of_substance] },
-                p.mesh_terms.map{|n| n.values.compact } ]
-      [ p.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s") ]
+    pmid_text = Hash.new("")
+    Nokogiri::XML(xml).css("PubmedArticle").each do |article|
+      p = PubMedMetadataParser.new(article.to_xml)
+      text = []
+      text << p.journal_title
+      text << p.article_title
+      text << p.abstract
+      text << p.affiliation
+      text << p.authors.map{|n| n.values.compact }
+      text << p.chemicals.map{|n| n[:name_of_substance] }
+      text << p.mesh_terms.map{|n| n.values.compact }
+      pmid_text[p.pmid] = clean_text(text.join("\s"))
     end
-    array_to_hash(pmid_text)
-  end
-  
-  def array_to_hash(array)
-    h = {}
-    array.each do |k_v|
-      key = k_v.first
-      value = k_v.last
-      h[key] = value
-    end
-    h
-  end
-  
-  # test implementation; not tested
-  def bulk_pubmed_description
-    xml = open(@@eutil_base + "db=pubmed&id=" + @id.join(",")).read
-    id_text = Nokogiri::XML(xml).css("PubmedArticle").map{|n| n.to_xml }.map do |xml|
-      parser = PubMedMetadataParser.new(xml)
-      array = [ parser.journal_title,
-                parser.article_title,
-                parser.abstract,
-                parser.affiliation,
-                parser.authors.map{|n| n.values.compact },
-                parser.chemicals.map{|n| n[:name_of_substance] },
-                parser.mesh_terms.map{|n| n.values.compact } ]
-      [parser.pmid, array.flatten.compact.map{|d| clean_text(d) }.join("\s")]
-    end
-    Hash[id_text.flatten] ## NO LONGER WORK WITH < RUBY 2.0
-  end
-  
-  def pmc_description
-    puts @@eutil_base + "db=pmc&id=#{@id}"
-    sleep 1
-    xml = open(@@eutil_base + "db=pmc&id=#{@id}").read
-    parser = PMCMetadataParser.new(xml)
-    if parser.is_available?
-      body = parser.body.compact.map do |section|
-        if section.has_key?(:subsec)
-          [section[:sec_title], section[:subsec].map{|subsec| subsec.values } ]
-        else
-          section.values
-        end
-      end
-      
-      ref_journal_list = parser.ref_journal_list
-      title_ref_journal_list = ref_journal_list.map{|n| n.values } if ref_journal_list
-    
-      cited_by = parser.cited_by
-      title_cited_by = cited_by.map{|n| n.values } if cited_by
-    
-      array = [ @id, body, title_ref_journal_list, title_cited_by ]
-      array.flatten.compact.map{|d| clean_text(d) }.join("\s")
-    end
+    pmid_text
+  rescue Errno::ENETUNREACH
+    sleep 180
+    retry
   end
 end
 

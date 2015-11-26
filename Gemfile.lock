@@ -55,12 +55,19 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  awesome_print
-  groonga
+  better_errors
+  binding_of_caller
   haml
   nokogiri
+  parallel
+  pry
+  pry-byebug
+  pry-doc
+  pry-stack_explorer
   rack-protection
   rack-test
+  rake
+  rroonga
   rspec
   sass
   sinatra
