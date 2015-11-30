@@ -216,13 +216,12 @@
         .content
           / Footer section
           %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
-            %img{:alt => "Creative Commons License", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png", :style => "border-width:0"}/
-          %span{:property => "dct:title", "xmlns:dct" => "http://purl.org/dc/terms/"} DBCLS SRA
+            %img{:alt => "Creative Commons License", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png", :style => "border-width:0"}
+          %span{:property => "dct:title", "xmlns:dct" => "http://purl.org/dc/terms/"}
+            DBCLS SRA
           is licensed under a
-          = succeed "." do
-            %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
-              Creative Commons Attribution 3.0
-              Unported License
+          %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
+            Creative Commons Attribution 3.0 Unported License
 
     %script{:src => "js/ranking_species.js"}
     %script{:src => "js/ranking_platform.js"}
