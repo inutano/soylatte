@@ -171,8 +171,8 @@ $(function(){
           showList(query_type);
         }else if(query_type != ""){
             //通常に文字が入力されたケースの挙動。jsonを新しい条件で再取得。ただし↑など文字はフィルタすべき。
-            d3.json("./search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query, function (error, data) {
-              qs = "./search/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query;
+            d3.json("/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query, function (error, data) {
+              qs = "/data/filter?species=" + query_species + "&type=" + query_type +"&instrument=" + query_platform +"&search_query=" + search_query;
               datas = [{"type": "total", "count": data.total},{"type": query_type, "count":data.type.count}];
                 drawBar(datas);
                 drawRanking(datas);
