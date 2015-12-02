@@ -2,17 +2,14 @@
 !!! 5
 %html
   %head
-    %title= @report[:summary][:study_title]
+    %title
     %meta{:charset => "utf-8"}
     %link{:rel => :stylesheet, :href => "//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/sra15.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
-    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
-    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
 
   %body
     #container
-      -#header section
       #header.sub
         .content
           .box.box1
@@ -38,7 +35,7 @@
       #main.detail
         .content
           %h2 Sequence Read Detail
-          %h3= @report[:read_id]
+          %h3#readId
           %table.project-summary
             %thead
               %tr
@@ -49,162 +46,162 @@
                 %th %GC
             %tbody
               %tr
-                %td= @report[:file_type]
-                %td= @report[:encoding]
-                %td= @report[:total_sequences]
-                %td= @report[:sequence_length]
-                %td= @report[:percent_gc]
+                %td#fileType
+                %td#encoding
+                %td#totalSequences
+                %td#sequenceLength
+                %td#percentGC
 
           %h2 Sequence Quality Statistics
-          - base = "#{app_root}/fastqc/img/#{@report[:read_id]}/"
           %ul.thumbnails
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#pbq"}
-                    %img{:src => base + "per_base_quality"}
-                    %h4 Per base sequence quality
-                .modal.fade#pbq
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Per base sequence quality
-                        %img{ :src => base + "per_base_quality" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#pbq"}
+                  %img.perBaseQuality
+                  %h4 Per base sequence quality
+              .modal.fade#pbq
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Per base sequence quality
+                      %img.perBaseQuality
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#psq"}
-                    %img{:src => base + "per_sequence_quality"}
-                    %h4 Per sequence quality scores
-                .modal.fade#psq
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Per sequence quality scores
-                        %img{ :src => base + "per_sequence_quality" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#psq"}
+                  %img.perSequenceQuality
+                  %h4 Per sequence quality scores
+              .modal.fade#psq
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Per sequence quality scores
+                      %img.perSequenceQuality
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#pbsc"}
-                    %img{:src => base + "per_base_sequence_content"}
-                    %h4 Per base sequence content
-                .modal.fade#pbsc
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Per base sequence content
-                        %img{ :src => base + "per_base_sequence_content" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#pbsc"}
+                  %img.perBaseSequenceContent
+                  %h4 Per base sequence content
+              .modal.fade#pbsc
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Per base sequence content
+                      %img.perBaseSequenceContent
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#psgc"}
-                    %img{:src => base + "per_sequence_gc_content"}
-                    %h4 Per sequence GC content
-                .modal.fade#psgc
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Per sequence GC conetnt
-                        %img{ :src => base + "per_sequence_gc_content" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#psgc"}
+                  %img.perSequenceGCContent
+                  %h4 Per sequence GC content
+              .modal.fade#psgc
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Per sequence GC conetnt
+                      %img.perSequenceGCContent
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#pbnc"}
-                    %img{:src => base + "per_base_n_content"}
-                    %h4 Per base N content
-                .modal.fade#pbnc
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Per base N content
-                        %img{ :src => base + "per_base_n_content" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#pbnc"}
+                  %img.perBaseNContent
+                  %h4 Per base N content
+              .modal.fade#pbnc
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Per base N content
+                      %img.perBaseNContent
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#sld"}
-                    %img{:src => base + "sequence_length_distribution"}
-                    %h4 Sequence Length Distribution
-                .modal.fade#sld
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Sequence Length Distribution
-                        %img{ :src => base + "sequence_length_distribution" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#sld"}
+                  %img.sequenceLengthDistribution
+                  %h4 Sequence Length Distribution
+              .modal.fade#sld
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Sequence Length Distribution
+                      %img.sequenceLengthDistribution
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#dl"}
-                    %img{:src => base + "duplication_levels"}
-                    %h4 Sequence Duplication Levels
-                .modal.fade#dl
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Sequence Duplication Levels
-                        %img{ :src => base + "duplication_levels" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#dl"}
+                  %img.duplicationLevels
+                  %h4 Sequence Duplication Levels
+              .modal.fade#dl
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Sequence Duplication Levels
+                      %img.duplicationLevels
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-              %li.span3
-                .img-wrapper.thumbnail
-                  %a{"data-toggle" => "modal", "data-target" => "#kp"}
-                    %img{:src => base + "kmer_profiles"}
-                    %h4 Kmer Profiles
-                .modal.fade#kp
-                  .modal-dialog
-                    .modal-content
-                      .modal-body
-                        %h4 Kmer Profiles
-                        %img{ :src => base + "kmer_profiles" }
-                      .modal-footer
-                        %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
+            %li.span3
+              .img-wrapper.thumbnail
+                %a{"data-toggle" => "modal", "data-target" => "#kp"}
+                  %img.kmerProfiles
+                  %h4 Kmer Profiles
+              .modal.fade#kp
+                .modal-dialog
+                  .modal-content
+                    .modal-body
+                      %h4 Kmer Profiles
+                      %img.kmerProfiles
+                    .modal-footer
+                      %i.close.fa.fa-times-circle-o{"data-dismiss" => "modal"}
 
-          - if !@report[:kmer_content].empty?
-            %h4 Kmer Content
-            %table.table.table-hover
-              %thead
-                %tr
-                  %th Sequence
-                  %th Count
-                  %th Obs/Exp Overall
-                  %th Obs/Exp Max
-                  %th Max Obs/Exp Position
-              %tbody
-                - @report[:kmer_content].each do |row|
+          - if @report
+            - if !@report[:kmer_content].empty?
+              %h4 Kmer Content
+              %table.table.table-hover
+                %thead
                   %tr
-                    %td= row[0]
-                    %td= row[1]
-                    %td= row[2]
-                    %td= row[3]
-                    %td= row[4]
+                    %th Sequence
+                    %th Count
+                    %th Obs/Exp Overall
+                    %th Obs/Exp Max
+                    %th Max Obs/Exp Position
+                %tbody
+                  - @report[:kmer_content].each do |row|
+                    %tr
+                      %td= row[0]
+                      %td= row[1]
+                      %td= row[2]
+                      %td= row[3]
+                      %td= row[4]
 
-          - if !@report[:overrepresented_sequences].empty?
-            %h4 Overrepresented Sequences
-            %table.table.table-hover
-              %thead
-                %tr
-                  %th Sequence
-                  %th Count
-                  %th Percentage
-                  %th Possible Source
-              %tbody
-                - @report[:overrepresented_sequences].each do |row|
+            - if !@report[:overrepresented_sequences].empty?
+              %h4 Overrepresented Sequences
+              %table.table.table-hover
+                %thead
                   %tr
-                    %td= row[0]
-                    %td= row[1]
-                    %td= row[2]
-                    %td= row[3]
+                    %th Sequence
+                    %th Count
+                    %th Percentage
+                    %th Possible Source
+                %tbody
+                  - @report[:overrepresented_sequences].each do |row|
+                    %tr
+                      %td= row[0]
+                      %td= row[1]
+                      %td= row[2]
+                      %td= row[3]
 
         .content
           %h2 Linkout/Resources
@@ -212,9 +209,11 @@
             %ul.fa-ul
               %li
                 %i.fa-li.fa.fa-external-link-square
-                %a{ :href => "http://trace.ddbj.nig.ac.jp/DRASearch/run?acc=" + runid }
+                %a.linkoutDDBJ
                   DRASearch - DDBJ/DRA
-                %a{ :href => "http://www.ebi.ac.uk/ena/data/view/" + runid }
+              %li
+                %i.fa-li.fa.fa-external-link-square
+                %a.linkoutEBI
                   ENA Browser - EBI/ENA
 
       -# Scroll Back button
@@ -231,7 +230,14 @@
           is licensed under a
           %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
           Unported License
-            
+
+    /
+      Bootstrap Core Javascript
+      =========================
+    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/fastqc.js" }
+
     :javascript
       $(document).ready(function () {
         $(window).scroll(function () {

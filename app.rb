@@ -177,10 +177,10 @@ class SoyLatte < Sinatra::Base
     end
   end
 
-  get %r{/view/((S|E|D)RR\d{6}(|_1|_2))$} do |id, db, read|
-    m = Database.instance
-    @report = m.run_report(id)
-    redirect "not_found", 404 if !@report
+  get %r{/view/((S|E|D)RR\d{6,7}(|_1|_2))$} do |id, db, read|
+    #m = Database.instance
+    #@report = m.run_report(id)
+    #redirect "not_found", 404 if !@report
     haml :run
   end
 
@@ -194,7 +194,14 @@ class SoyLatte < Sinatra::Base
 
   get "/data/fastqc" do
     runid = params[:runid]
-    content_type "application/json"    open("http://chip-atlas.org/data/fastqc_dir.json?runid=#{runid}").read
+    content_type "application/json"
+    open("http://chip-atlas.org/data/fastqc_dir.json?runid=#{runid}").read
+  end
+
+  get "/data/fastqc_data" do
+    url = params[:url]
+    redirect "not_found", 404 if url !~ /chip-atlas\.org/
+    open(url + "/fastqc_data.txt").read
   end
 
   not_found do
