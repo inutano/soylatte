@@ -193,9 +193,19 @@ class SoyLatte < Sinatra::Base
   end
 
   get "/data/fastqc" do
-    runid = params[:runid]
-    content_type "application/json"
-    open("http://chip-atlas.org/data/fastqc_dir.json?runid=#{runid}").read
+    read_id = params[:runid]
+    run_id = read_id.gsub(/_.$/,"")
+    list = open("http://chip-atlas.org/data/fastqc_dir.json?runid=#{run_id}").read
+    if params[:mode] == "availablity"
+      if JSON.load(list).select{|url| url =~ /#{read_id}_fastqc/ }.empty?
+        status 404
+      else
+        "available"
+      end
+    else
+      content_type "application/json"
+      list
+    end
   end
 
   get "/data/fastqc_data" do

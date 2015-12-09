@@ -8,11 +8,6 @@
     %link{:rel => :stylesheet, :href => "#{app_root}/css/sra15.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap-theme.min.css", :type => "text/css"}
-    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
-    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
-    %script{ :src => "#{app_root}/js/d3.min.js" }
-    %script{ :src => "#{app_root}/js/jquery.tablesorter.min.js" }
-    %script{ :src => "#{app_root}/js/jquery.tablesorter.widgets.min.js" }
 
   %body
     #container
@@ -184,7 +179,7 @@
                   - if !row[:read_profile]
                     %tr
                       %td
-                        %a{ :href => "#{app_root}/view/#{runid}" }= runid
+                        %a.run= runid
                       %td
                         - row[:sample_id].each do |id|
                           %a{ :href => "##{id}" }= id
@@ -220,7 +215,7 @@
                     - row[:read_profile].each do |read|
                       %tr
                         %td
-                          %a{ :href => "#{app_root}/view/#{read[:read_id]}" }= read[:read_id]
+                          %a.run= read[:read_id]
                         %td
                           - row[:sample_id].each do |id|
                             %a{ :href => "##{id}" }= id
@@ -329,6 +324,14 @@
           is licensed under a
           %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
           Unported License
+
+    // script goes here
+    %script{ :src => "https://code.jquery.com/jquery-1.11.2.min.js" }
+    %script{ :src => "#{app_root}/js/bootstrap.min.js" }
+    %script{ :src => "#{app_root}/js/d3.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.min.js" }
+    %script{ :src => "#{app_root}/js/jquery.tablesorter.widgets.min.js" }
+    %script{ :src => "#{app_root}/js/project.js" }
 
     :javascript
       $(document).ready(function () {
