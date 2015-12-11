@@ -264,7 +264,6 @@ if __FILE__ == $0
     puts "Database Updated. #{Time.now}"
 
   when "--debug"
-    require "ap"
     Groonga::Database.open(db_path)
     
     samples = Groonga["Samples"]
@@ -308,8 +307,8 @@ if __FILE__ == $0
           subid:   r.submission_id }
       end
     end
-    ap study_summary(samples, "DRS000001")
-    ap study_summary(runs, "DRR000001")
-    ap study_summary(projects, "DRP000001")
+    puts study_summary(samples, "DRS000001")
+    puts study_summary(runs, "DRR000001")
+    puts study_summary(projects, "DRP000001")
   end
 end

@@ -16,12 +16,12 @@ class SoyLatte < Sinatra::Base
   configure do
     set :config, YAML.load_file("./config.yaml")
   end
-  
+
   helpers do
     def app_root
       "#{env["rack.url_scheme"]}://#{env["HTTP_HOST"]}#{env["SCRIPT_NAME"]}"
     end
-    
+
     def encode_url(opt = {})
       species = opt[:species]
       study_type = opt[:study_type]
@@ -31,7 +31,7 @@ class SoyLatte < Sinatra::Base
       URI.encode(options)
     end
   end
-  
+
   before do
     query = params[:search_query]
     if query
@@ -39,18 +39,18 @@ class SoyLatte < Sinatra::Base
       open(logfile,"a"){|f| f.puts("#{Time.now}\t#{query}") }
     end
   end
-  
+
   get "/:source.css" do
     sass params[:source].intern
   end
-  
+
   get "/" do
     m = Database.instance
     @instruments = m.instruments
     @species = JSON.dump(m.species)
     haml :index
   end
-  
+
   post "/filter" do
     encoded = encode_url(
       species: params[:species],
@@ -59,12 +59,12 @@ class SoyLatte < Sinatra::Base
     )
     redirect to("#{app_root}/filter?#{encoded}")
   end
-  
+
   get "/filter" do
     @species = params[:species] || ""
     @type = params[:type] || ""
     @instrument = params[:instrument] || ""
-    
+
     m = Database.instance
     if !m.type_described?(@type) && @type != ""
       simple_type = m.type_simple(@type)
@@ -76,13 +76,13 @@ class SoyLatte < Sinatra::Base
       )
       redirect to("#{app_root}/filter?#{encoded}")
     end
-    
+
     @result = m.filter_result(@species, @type, @instrument)
     options = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
     @request_option = URI.encode(options)
     haml :filter
   end
-  
+
   get "/donuts" do
     species = params[:species]
     type = params[:type]
@@ -91,14 +91,14 @@ class SoyLatte < Sinatra::Base
     m = Database.instance
     JSON.dump(m.donuts_profile(species, type, instrument))
   end
-  
+
   get "/data/filter" do
     m = Database.instance
     result = m.filter_result(params[:species], params[:type], params[:instrument])
     content_type = "application/json"
     JSON.dump(result)
   end
-  
+
   post "/search" do
     encoded = encode_url(
       species: params[:species],
@@ -113,10 +113,10 @@ class SoyLatte < Sinatra::Base
     @species = params[:species] || ""
     @type = params[:type] || ""
     @instrument = params[:instrument] || ""
-    
+
     m = Database.instance
     @query = params[:search_query] || ""
-    
+
     if @query =~ /^(S|E|D)R(A|P|X|R|S)\d{6}$/
       study_id = m.convert_to_study_id(@query)
       redirect to("#{app_root}/view/#{study_id}")
@@ -139,7 +139,7 @@ class SoyLatte < Sinatra::Base
       haml :search
     end
   end
-  
+
   get "/data/search" do
     m = Database.instance
     query = params[:query]
@@ -154,13 +154,13 @@ class SoyLatte < Sinatra::Base
       JSON.dump(result)
     end
   end
-  
+
   get %r{/view/((S|E|D)RP\d{6})} do |id, db|
     m = Database.instance
     @report = m.project_report(id)
     haml :project
   end
-  
+
   get %r{/data/((S|E|D)R(P|R)\d{6})} do |id, db, idtype|
     dtype = params[:dtype]
     retmode = params[:retmode]
@@ -176,14 +176,14 @@ class SoyLatte < Sinatra::Base
       result
     end
   end
-  
-  get %r{/view/((S|E|D)RR\d{6}(|_1|_2))$} do |id, db, read|
-    m = Database.instance
-    @report = m.run_report(id)
-    redirect "not_found", 404 if !@report
+
+  get %r{/view/((S|E|D)RR\d{6,7}(|_1|_2))$} do |id, db, read|
+    #m = Database.instance
+    #@report = m.run_report(id)
+    #redirect "not_found", 404 if !@report
     haml :run
   end
-  
+
   get %r{/fastqc/img/((S|E|D)RR\d{6}(|_1|_2))/(\w+)$} do |fname, db, read, img_fname|
     qc_path = settings.config["fqc_path"]
     pfx = fname.slice(0,6)
@@ -191,7 +191,29 @@ class SoyLatte < Sinatra::Base
     img_path = File.join(qc_path, pfx, id, "#{fname}_fastqc/Images/#{img_fname}.png")
     send_file img_path
   end
-  
+
+  get "/data/fastqc" do
+    read_id = params[:runid]
+    run_id = read_id.gsub(/_.$/,"")
+    list = open("http://chip-atlas.org/data/fastqc_dir.json?runid=#{run_id}").read
+    if params[:mode] == "availablity"
+      if JSON.load(list).select{|url| url =~ /#{read_id}_fastqc/ }.empty?
+        status 404
+      else
+        "available"
+      end
+    else
+      content_type "application/json"
+      list
+    end
+  end
+
+  get "/data/fastqc_data" do
+    url = params[:url]
+    redirect "not_found", 404 if url !~ /chip-atlas\.org/
+    open(url + "/fastqc_data.txt").read
+  end
+
   not_found do
     m = Database.instance
     @instruments = m.instruments
