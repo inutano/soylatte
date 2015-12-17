@@ -1,0 +1,142 @@
+!!!
+%html
+  %head{:lang => "en"}
+    %meta{:charset => "UTF-8"}
+    %title Trends in SRA data - DBCLS SRA
+    %link{:href => "css/sra15.css", :rel => "stylesheet"}
+    %link{:href => "http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :rel => "stylesheet"}
+    %link{:href => "https://fonts.googleapis.com/css?family=Roboto:400,300", :rel => "stylesheet", :type => "text/css"}
+
+  %body
+    #container
+      #header.sub
+        .content
+          / Header section
+          .box.box1
+            %img{:height => "115", :src => "images/DBCLS_SRA_logo.png"}
+          .box.box2
+            %h1
+              DBCLS
+              %span.or SRA
+          .box.box3
+            %ul
+              %li
+                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                  %i.fa.fa-github-square
+              %li
+                %a{:href => "http://twitter.com/inutano"}
+                  %i.fa.fa-twitter
+              %li
+                %a{:href => "http://trattoriainutano.tumblr.com"} blog
+              %li
+                %a{:href => "/#"} Home
+      #main.trends
+        .content
+          %h2 Trends in SRA data
+          #type
+            %h3 By study types
+            .row
+              #tableType.table
+                %table.tbl{:style => "width: 340px; float: right;"}
+                  %tbody
+              #graphType.graph
+          %br{:style => "clear: both;"}
+            %br
+              #platform
+                %h3 By sequencing platforms
+                .row
+                  #tablePlatform.table
+                    %table.tbl{:style => "width: 340px; float: right;"}
+                      %tbody
+                  #graphPlatform.graph
+              %br{:style => "clear: both;"}
+                %h2#fpl Full Publication List
+                .row
+                  .info.search_condition
+                    .box
+                      %h4 Species:
+                      %select#taxon_id{:name => "taxon_id"}
+                        %option
+                        %option{:value => "9606"} Homo sapiens
+                        %option{:value => "3702"} Arabidopsis thaliana
+                        %option{:value => "7227"} Drosophila melanogaster
+                        %option{:value => "6239"} Caenorhabditis elegans
+                        %option{:value => "562"} Escherichia coli
+                        %option{:value => "10090"} Mus musculus
+                        %option{:value => "408172"} marine metagenome
+                        %option{:value => "4530"} Oryza sativa
+                        %option{:value => "4577"} Zea mays
+                        %option{:value => "4932"} Saccharomyces cerevisiae
+                        %option{:value => "000"} others
+                    .box
+                      %h4 Study Type:
+                      %select#type_text{:name => "type"}
+                        %option
+                        %option Whole Genome Sequencing
+                        %option Transcriptome Analysis
+                        %option Metagenomics
+                        %option Epigenetics
+                        %option Resequencing
+                        %option Other
+                        %option RNASeq
+                        %option Population Genomics
+                        %option Gene Regulation Study
+                        %option Cancer Genomics
+                        %option Exome Sequencing
+                        %option Pooled Clone Sequencing
+                        %option Synthetic Genomics
+                        %option Forensic or Paleo-genomics
+                    .box
+                      %h4 Platform:
+                      %select#platform_text{:name => "platform"}
+                        %option
+                        %option Illumina Genome Analyzer IIx
+                        %option Illumina Genome Analyzer II
+                        %option Illumina Genome Analyzer
+                        %option Illumina HiSeq 2000
+                        %option Illumina MiSeq
+                        %option 454 GS FLX Titanium
+                        %option 454 GS FLX
+                        %option 454 Titanium
+                        %option 454 GS 20
+                        %option 454 GS Junior
+                        %option 454 GS
+                        %option GS FLX
+                        %option GS 20
+                        %option Solexa 1G Genome Analyzer
+                        %option AB SOLiD 4 System
+                        %option AB SOLiD System 2.0
+                        %option AB SOLiD System 3.0
+                        %option AB SOLiD System
+                        %option Helicos HeliScope
+                        %option PacBio RS
+                        %option Ion Torrent PGM
+                        %option Complete Genomics
+                        %option unspecified
+                        %option UNKNOWN
+                        %option NULL
+                    .box.bt
+                      %button#get_tabledata search
+                .list
+                  / Table
+                  #pubtable.yui3-skin-sam.dt-example       #footer
+        .content
+          / Footer section
+          %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
+            %img{:alt => "Creative Commons License", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png", :style => "border-width:0"}/
+          %span{:property => "dct:title", "xmlns:dct" => "http://purl.org/dc/terms/"}
+            DBCLS SRA is licensed under a
+            %a{:href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license"}
+              Creative Commons Attribution 3.0
+            Unported License
+
+    %script{:src => "https://code.jquery.com/jquery-1.11.2.min.js", :type => "text/javascript"}
+    %script{:src => "https://www.google.com/jsapi", :type => "text/javascript"}
+    %script{:src => "http://yui.yahooapis.com/3.18.1/build/yui/yui-min.js"}
+    %script{:src => "js/highstock.js"}
+    %script{:src => "js/exporting.js", :type => "text/javascript"}
+    %script{:src => "js/trends.type.js", :type => "text/javascript"}
+    %script{:src => "js/trends.platform.js", :type => "text/javascript"}
+    %script{:src => "js/table.trend.type.js", :type => "text/javascript"}
+    %script{:src => "js/table.trend.platform.js", :type => "text/javascript"}
+    %script{:src => "js/trends.main.js"}

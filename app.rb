@@ -51,6 +51,10 @@ class SoyLatte < Sinatra::Base
     haml :index
   end
 
+  get "/trends" do
+    haml :trends
+  end
+
   post "/filter" do
     encoded = encode_url(
       species: params[:species],
