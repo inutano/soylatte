@@ -7,6 +7,7 @@
     %link{:rel => :stylesheet, :href => "//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/sra15.css", :type => "text/css"}
     %link{:rel => :stylesheet, :href => "#{app_root}/css/bootstrap.min.css", :type => "text/css"}
+    %link{:rel => :stylesheet, :href => "#{app_root}/css/run.css", :type => "text/css"}
 
   %body
     #container
@@ -57,6 +58,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#pbq"}
+                  .load-image
                   %img.perBaseQuality
                   %h4 Per base sequence quality
               .modal.fade#pbq
@@ -71,6 +73,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#psq"}
+                  .load-image
                   %img.perSequenceQuality
                   %h4 Per sequence quality scores
               .modal.fade#psq
@@ -85,6 +88,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#pbsc"}
+                  .load-image
                   %img.perBaseSequenceContent
                   %h4 Per base sequence content
               .modal.fade#pbsc
@@ -99,6 +103,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#psgc"}
+                  .load-image
                   %img.perSequenceGCContent
                   %h4 Per sequence GC content
               .modal.fade#psgc
@@ -113,6 +118,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#pbnc"}
+                  .load-image
                   %img.perBaseNContent
                   %h4 Per base N content
               .modal.fade#pbnc
@@ -127,6 +133,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#sld"}
+                  .load-image
                   %img.sequenceLengthDistribution
                   %h4 Sequence Length Distribution
               .modal.fade#sld
@@ -141,6 +148,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#dl"}
+                  .load-image
                   %img.duplicationLevels
                   %h4 Sequence Duplication Levels
               .modal.fade#dl
@@ -155,6 +163,7 @@
             %li.span3
               .img-wrapper.thumbnail
                 %a{"data-toggle" => "modal", "data-target" => "#kp"}
+                  .load-image
                   %img.kmerProfiles
                   %h4 Kmer Profiles
               .modal.fade#kp

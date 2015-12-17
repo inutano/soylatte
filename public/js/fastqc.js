@@ -115,5 +115,12 @@ function putImages(images_url){
   });
 }
 
-function startLoading(){}
-function removeLoading(){}
+function startLoading(){
+  if($("#loading").size() == 0){
+    $(".load-image").append("<div id='loading'></div>");
+  }
+}
+
+function removeLoading(){
+  $("#loading").remove();
+}
