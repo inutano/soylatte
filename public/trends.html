@@ -20,7 +20,7 @@
     <script src="http://yui.yahooapis.com/3.18.1/build/yui/yui-min.js"></script>
     <script type="text/javascript">
       $(document).ready(function(){
-        var url = 'publication2.php',
+        var url = 'cgi-bin/publication2.php',
         url_query,
         val_taxon = "",
         val_type = "",
@@ -43,7 +43,7 @@
           var raw_platform = $("#platform_text option:selected").text();
           val_platform = encodeURI(raw_platform);
         });
-        
+
         getjson(url);
 
         function getjson(url){
