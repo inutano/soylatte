@@ -55,47 +55,6 @@ class SoyLatte < Sinatra::Base
     haml :trends
   end
 
-  post "/filter" do
-    encoded = encode_url(
-      species: params[:species],
-      study_type: params[:study_type],
-      instrument: params[:instrument]
-    )
-    redirect to("#{app_root}/filter?#{encoded}")
-  end
-
-  get "/filter" do
-    @species = params[:species] || ""
-    @type = params[:type] || ""
-    @instrument = params[:instrument] || ""
-
-    m = Database.instance
-    if !m.type_described?(@type) && @type != ""
-      simple_type = m.type_simple(@type)
-      redirect "not_found", 404 if !simple_type
-      encoded = encode_url(
-        species: @species,
-        study_type: simple_type,
-        instrument: @instrument,
-      )
-      redirect to("#{app_root}/filter?#{encoded}")
-    end
-
-    @result = m.filter_result(@species, @type, @instrument)
-    options = "species=#{@species}&type=#{@type}&instrument=#{@instrument}"
-    @request_option = URI.encode(options)
-    haml :filter
-  end
-
-  get "/donuts" do
-    species = params[:species]
-    type = params[:type]
-    instrument = params[:instrument]
-    content_type = "application/json"
-    m = Database.instance
-    JSON.dump(m.donuts_profile(species, type, instrument))
-  end
-
   get "/data/filter" do
     m = Database.instance
     result = m.filter_result(params[:species], params[:type], params[:instrument])
