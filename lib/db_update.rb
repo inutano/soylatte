@@ -6,12 +6,15 @@ require "open-uri"
 
 require "./lib_db_update"
 
+Encoding.default_external = 'utf-8'
+
 if __FILE__ == $0
   Groonga::Context.default_options = { encoding: :utf8 }
 
   config_path = "../config.yaml"
   config = YAML.load_file(config_path)
-  db_path = ARGV[1] || config["db_path"]
+  #db_path = ARGV[1] || config["db_path"]
+  db_path = config["db_path"]
   
   case ARGV.first
   when "--up"
@@ -25,7 +28,9 @@ if __FILE__ == $0
     
     accessions = config["sra_accessions"]
     run_members = config["sra_run_members"]
-    studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
+    #studyids = `awk -F '\t' '$1 ~ /^.RP/ && $3 == "live" && $9 == "public" { print $1 }' #{accessions}`.split("\n")
+    pattern = "$1 ~ /^SRP0#{ARGV.last}/ && $3 == \"live\" && $9 == \"public\""
+    studyids = `cat #{accessions} | awk -F '\t' '#{pattern} { print $1 }'`.split("\n")
     
     projects = Groonga["Projects"]
     not_recorded = studyids.select do |studyid|
@@ -34,7 +39,7 @@ if __FILE__ == $0
     
     puts "UPDATE SAMPLE #{Time.now}"
     study_sample_hash = {}
-    study_sample_raw = `awk -F '\t' '{ print $5 "\t" $4 }' #{run_members}`
+    study_sample_raw = `cat #{run_members} | awk -F '\t' '{ print $5 "\t" $4 }'`
     study_sample_raw.split("\n").each do |line|
       st_sa = line.split("\t")
       study_sample_hash[st_sa[0]] ||= []
@@ -72,14 +77,14 @@ if __FILE__ == $0
       
       # progress
       if i % (total_sample_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_sample_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
     
     puts "UPDATE RUN #{Time.now}"
     study_run_hash = {}
-    study_run_raw = `awk -F '\t' '{ print $5 "\t" $1 }' #{run_members}`
+    study_run_raw = `cat #{run_members} | awk -F '\t' '{ print $5 "\t" $1 }'`
     study_run_raw.split("\n").each do |line|
       st_ru = line.split("\t")
       study_run_hash[st_ru[0]] ||= []
@@ -123,7 +128,7 @@ if __FILE__ == $0
       
       # progress
       if i % (total_run_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_run_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
@@ -157,7 +162,7 @@ if __FILE__ == $0
       
       # progress
       if i % (total_study_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_study_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
@@ -174,13 +179,23 @@ if __FILE__ == $0
       end
 
       pid = fork do
-        insert = []
-        record = projects[study_id]
-        record[:search_fulltext] = [ 
-          record.study_title,
-          record.run.map{|r| r.sample }.flatten.map{|r| r ? r.sample_description : "" }.uniq,
-          record.run.map{|r| r.experiment_id }.uniq.map{|id| id ? DBupdate.new(id).experiment_description : "" }.uniq,
-          DBupdate.new(study_id).project_description ].join("\s")
+        record   = projects[study_id]
+        existing = record[:search_fulltext]
+        title    = record.study_title
+        
+        if !existing or !existing.include?(title)
+          sample = record.run.map{|r| r.sample }.flatten.uniq
+          sample_desc = sample.map{|r| r ? r.sample_description : "" }.uniq
+          
+          experiment = record.run.map{|r| r.experiment_id }.uniq
+          exp_desc = experiment.map{|id| id ? DBupdate.new(id).experiment_description : "" }.uniq
+          
+          project_desc = DBupdate.new(study_id).project_description
+          
+          insert = [ title, sample_desc, exp_desc, project_desc ].join("\s")
+
+          record[:search_fulltext] = insert
+        end
       end
       
       # create thread to monitor pid
@@ -189,11 +204,12 @@ if __FILE__ == $0
       
       # progress
       if i % (total_text_number / 10) == 0
-        puts "+10 #{Time.now}"
+        puts "#{i / (total_text_number / 10)}0% #{Time.now}"
       end
     end
     Process.waitall
     
+    puts "UPDATE PubMed SEARCH FIELD #{Time.now}"
     pmid_hash = {}
     pmcid_hash = {}
     projects.map{|r| r["_key"] }.each do |study_id|
@@ -231,13 +247,21 @@ if __FILE__ == $0
           studyids.each do |studyid|
             record = projects[studyid]
             exists = record[:search_fulltext]
-            record[:search_fulltext] = [exists, text].join("\s")
+            if !exists or !exists.include?(text.slice(0,50))
+              record[:search_fulltext] = [exists, text].join("\s")
+            end
           end
         end
       end
     end
+
+    puts "Updating PubMed entries.. #{Time.now}"
     bulk_description(pmid_hash, projects)
+
+    puts "Updating PMC entries.. #{Time.now}"
     bulk_description(pmcid_hash, projects)
+
+    puts "Database Updated. #{Time.now}"
 
   when "--debug"
     Groonga::Database.open(db_path)
