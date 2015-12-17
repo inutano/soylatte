@@ -27,7 +27,7 @@
               %br
                 Interesting &amp; Available SRA Data
 
-      /
+      - if @not_found
         .news
           .alert.alert-warning.alert-dismissible{ :role => "alert" }
             %button.close{ :type => "button", "data-dismiss" => "alert", "aria-label" => "Close"}

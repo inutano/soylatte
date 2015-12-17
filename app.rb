@@ -218,6 +218,7 @@ class SoyLatte < Sinatra::Base
     m = Database.instance
     @instruments = m.instruments
     @species = JSON.dump(m.species)
-    haml :not_found
+    @not_found = true
+    haml :index
   end
 end
