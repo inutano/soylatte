@@ -115,12 +115,20 @@ function putImages(images_url){
   });
 }
 
-function startLoading(){
-  if($("#loading").size() == 0){
-    $(".load-image").append("<div id='loading'></div>");
+function startLoading(msg){
+  if (typeof msg === "undefined") {
+    var msg = "";
+  }
+  var dispMsg = "<div class='loadingMsg'>" + msg + "</div>";
+  if ($(".loading").size() == 0) {
+    $.each($(".load-image"), function(){
+      $(this).append("<div class='loading'>" + dispMsg + "</div>");
+    });
   }
 }
 
 function removeLoading(){
-  $("#loading").remove();
+  $.each($(".loading"), function(){
+    $(this).remove();
+  });
 }
