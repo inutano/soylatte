@@ -96,12 +96,19 @@
             %h3 Free Keyword
             %input#free_keyword{:name => "search_query", :placeholder => "Free Keyword", :size => "40", :type => "text"}
               %button#submit_condition Submit Conditon
+
+          .row
+            .box-r
+              →
+              %a{:href => "cgi-bin/taxon2study.cgi"} Advanced Taxonomy Search (β)
+
           / Publication section
           %h2 Publications
           .row
             .box-r
               →
               %a{:href => "cgi-bin/publication.cgi"} Full Publication List
+
           %h3 New Publications
           .row.hot
             #hot-ele-1.hot-ele
