@@ -15,6 +15,8 @@ class SoyLatte < Sinatra::Base
 
   configure do
     set :config, YAML.load_file("./config.yaml")
+    set :instruments, Database.instance.instruments
+    set :species, JSON.dump(Database.instance.species)
   end
 
   helpers do
@@ -45,9 +47,8 @@ class SoyLatte < Sinatra::Base
   end
 
   get "/" do
-    m = Database.instance
-    @instruments = m.instruments
-    @species = JSON.dump(m.species)
+    @instruments = settings.instruments
+    @species = settings.species
     haml :index
   end
 
