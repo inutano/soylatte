@@ -23,13 +23,13 @@
           .box.box3
             %ul
               %li
-                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                %a{:href => "https://github.com/inutano/sra_metadata_toolkit"}
                   %i.fa.fa-github-square
               %li
-                %a{:href => "http://twitter.com/inutano"}
+                %a{:href => "https://twitter.com/inutano"}
                   %i.fa.fa-twitter
               %li
-                %a{:href => "http://trattoriainutano.tumblr.co"} blog
+                %a{:href => "https://trattoriainutano.tumblr.com"} blog
               %li
                 %a{:href => "#{app_root}"} Home
 
@@ -62,8 +62,8 @@
                   %p= paper[:abstract]
                 .row
                   .table_option
-                    - pm_base = "http://www.ncbi.nlm.nih.gov/pubmed/"
-                    - pmc_base = "http://www.ncbi.nlm.nih.gov/pmc/articles/"
+                    - pm_base = "https://www.ncbi.nlm.nih.gov/pubmed/"
+                    - pmc_base = "https://www.ncbi.nlm.nih.gov/pmc/articles/"
                     %a{:href => pm_base + paper[:pubmed_id] }
                       %button
                         %i.fa.fa-file-o
@@ -135,7 +135,7 @@
                     %ul.cited-by
                     - pmc[:cited_by].each do |citedby|
                       %li
-                        %a{ :href => "http://www.ncbi.nlm.nih.gov/pmc/articles/#{citedby[:pmcid]}" }= citedby[:title]
+                        %a{ :href => "https://www.ncbi.nlm.nih.gov/pmc/articles/#{citedby[:pmcid]}" }= citedby[:title]
 
           -# Sequencing Profile block
           .row
@@ -303,11 +303,11 @@
               - studyid = @report[:summary][:study_id]
               %li
                 %i.fa-li.fa.fa-external-link-square
-                %a{:href => "http://trace.ddbj.nig.ac.jp/DRASearch/study?acc=" + studyid }
+                %a{:href => "https://trace.ddbj.nig.ac.jp/DRASearch/study?acc=" + studyid }
                   DRASearch - DDBJ/DRA
               %li
                 %i.fa-li.fa.fa-external-link-square
-                %a{:href => "http://www.ebi.ac.uk/ena/data/view/" + studyid }
+                %a{:href => "https://www.ebi.ac.uk/ena/data/view/" + studyid }
                   ENA Browser - EBI/ENA
 
       -# Scroll Back button
@@ -318,11 +318,11 @@
       /Footer Section
       #footer
         .content
-          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"}
+          %a{:rel => "license", :href => "https://creativecommons.org/licenses/by/3.0/"}
             %img{:alt => "Creative Commons License", :style => "border-width:0", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png"}
-          %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
+          %span{"xmlns:dct" => "https://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
           is licensed under a
-          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
+          %a{:rel => "license", :href => "https://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
           Unported License
 
     // script goes here

@@ -14,15 +14,15 @@ require FileLoc + "/fastqc_result_parser"
 class Database
   include Singleton
   attr_reader :grndb
-  
+
   config_path = File.join(FileLoc, "/../config.yaml")
   @@config = YAML.load_file(config_path)
   @@db_path = @@config["db_path"]
-  
+
   def initialize
     connect_db
   end
-  
+
   def connect_db
     if !@grndb || @grndb.closed?
       @grndb = Groonga::Database.open(@@db_path)
@@ -31,7 +31,7 @@ class Database
       @samples = self.samples
     end
   end
-  
+
   def projects
     @projects ||= Groonga["Projects"]
   end
@@ -43,7 +43,7 @@ class Database
   def samples
     @samples ||= Groonga["Samples"]
   end
-  
+
   def type
     @projects.map{|r| r.study_type }.uniq.compact.sort
   end
@@ -51,11 +51,11 @@ class Database
   def instruments
     @runs.map{|r| r.instrument }.uniq.compact.sort
   end
-  
+
   def species
     @samples.map{|r| r.scientific_name }.uniq.compact
   end
-    
+
   def projects_size
     @projects.size
   end
@@ -75,7 +75,7 @@ class Database
       @projects.select{|r| r.run.sample.scientific_name =~ species }.map{|r| r["_key"] }
     end
   end
-  
+
   def filter_type(type) # type: Genome, etc.
     if !type or type.empty?
       @projects.map{|r| r["_key"] }
@@ -86,7 +86,7 @@ class Database
       study_records.flatten.uniq
     end
   end
-  
+
   def described_types
     { "Genome" => ["Whole Genome Sequencing","Resequencing","Population Genomics","Exome Sequencing"],
       "Transcriptome" => ["Transcriptome Analysis","RNASeq"],
@@ -95,11 +95,11 @@ class Database
       "Cancer Genomics" => ["Cancer Genomics"],
       "Other" => ["Other","Pooled Clone Sequencing","Forensic or Paleo-genomics","Synthetic Genomics"] }
   end
-  
+
   def type_described?(type)
     described_types.has_key?(type)
   end
-  
+
   def type_simple(type)
     # convert described types to simple categories by reversing described_types hash
     rev = {}
@@ -110,7 +110,7 @@ class Database
     end
     rev[type]
   end
-  
+
   def filter_instrument(instrument)
     if !instrument or instrument.empty?
       @projects.map{|r| r["_key"] }
@@ -118,31 +118,31 @@ class Database
       @projects.select{|r| r.run.instrument =~ instrument }.map{|r| r["_key"] }
     end
   end
-  
+
   def filter_result(species, type, instrument)
     filter_species = self.filter_species(species)
     filter_type = self.filter_type(type)
     filter_instrument = self.filter_instrument(instrument)
     mix = filter_species & filter_type & filter_instrument
-    
+
     total = self.projects_size
     num_species = filter_species.size
     num_type = filter_type.size
     num_instrument = filter_instrument.size
     num_mix = mix.size
-    
+
     ratio_species = ((num_species / total.to_f) * 100).round(2)
     ratio_type = ((num_type / total.to_f) * 100).round(2)
     ratio_instrument = ((num_instrument / total.to_f) * 100).round(2)
     ratio_mix = ((num_mix / total.to_f) * 100).round(2)
-    
+
     { total: total,
       mix: { count: num_mix, ratio: ratio_mix },
       species: { count: num_species, ratio: ratio_species },
       type: { count: num_type, ratio: ratio_type },
       instrument: { count: num_instrument, ratio: ratio_instrument} }
   end
-  
+
   def donuts_profile(species, type, instrument)
     h = self.filter_result(species, type, instrument)
     total = h[:total]
@@ -152,19 +152,19 @@ class Database
     cond_m = { "Stat" => { "num" => hmc.to_s, "per" => hm[:ratio].to_s },
                "matched" => hmc.to_s,
                "unmatched" => (total - hmc).to_s }
-    
+
     hs = h[:species]
     hsc = hs[:count]
     cond_s = { "Stat" => { "num" => hsc.to_s, "per" => hs[:ratio].to_s },
                "matched" => hsc.to_s,
                "unmatched" => (total - hsc).to_s }
-    
+
     ht = h[:type]
     htc = ht[:count]
     cond_t = { "Stat" => { "num" => htc.to_s, "per" => ht[:ratio].to_s },
                "matched" => htc.to_s,
                "unmatched" => (total - htc).to_s }
-    
+
     hi = h[:instrument]
     hic = hi[:count]
     cond_i = { "Stat" => { "num" => hic.to_s, "per" => hi[:ratio].to_s },
@@ -173,7 +173,7 @@ class Database
 
     [cond_m, cond_s, cond_t, cond_i]
   end
-  
+
   def filtered_records(condition)
     # return array of study id meets the condition
     filter_species = self.filter_species(condition[:species])
@@ -181,7 +181,7 @@ class Database
     filter_instrument = self.filter_instrument(condition[:instrument])
     filter_species & filter_type & filter_instrument
   end
-  
+
   def search(query, condition)
     filtered = self.filtered_records(condition)
     if query
@@ -196,7 +196,7 @@ class Database
       end
     end
   end
-  
+
   def search_api(query, condition)
     result = self.search(query, condition)
     if result
@@ -215,7 +215,7 @@ class Database
       end
     end
   end
-  
+
   def convert_to_study_record(id)
     case id.slice(2,1)
     when "P"
@@ -230,7 +230,7 @@ class Database
       @projects.select{|r| r.run.key =~ id }
     end
   end
-  
+
   def convert_to_study_id(id)
     if id =~ /^.RP/
       id
@@ -241,23 +241,23 @@ class Database
       end
     end
   end
-  
+
   def summary(study_id)
     p_record = @projects[study_id]
     r_record = p_record.run
     s_record = r_record.map{|r| r.sample }
-    
+
     { study_id: study_id,
       study_title: p_record.study_title,
       type: p_record.study_type,
       species: s_record.map{|r| r.map{|s| s.scientific_name } }.flatten.uniq,
       instrument: r_record.map{|r| r.instrument }.uniq }
   end
-  
+
   def paper(study_id)
     p_record = @projects[study_id]
     pmid_array = p_record.pubmed_id
-    eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
+    eutil_base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
     pmid_array.map do |pmid|
       arg = "&db=pubmed&id=#{pmid}"
       pm_parser = PubMedMetadataParser.new(open(eutil_base + arg).read)
@@ -272,10 +272,10 @@ class Database
         pmc: self.pmc(pmcid) }
     end
   end
-  
+
   def pmc(pmcid)
     if pmcid
-      eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
+      eutil_base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
       arg = "&db=pmc&id=#{pmcid}"
       pmc_parser = PMCMetadataParser.new(open(eutil_base + arg).read)
       body = pmc_parser.body.compact
@@ -288,7 +288,7 @@ class Database
         cited_by: pmc_parser.cited_by }
     end
   end
-  
+
   def run_table(study_id)
     p_record = @projects[study_id]
     r_record = p_record.run
@@ -310,7 +310,7 @@ class Database
         read_profile: self.read_profile(run["_key"]) }
     end
   end
-  
+
   def read_profile(run_id)
     path = File.join(@@config["fqc_path"], run_id.slice(0..5), run_id)
     Dir.entries(path).select{|f| f =~ /#{run_id}/ }.map do |read|
@@ -323,7 +323,7 @@ class Database
   rescue Errno::ENOENT
     nil
   end
-  
+
   def sample_table(study_id)
     p_record = @projects[study_id]
     s_record = p_record.run.map{|r| r.sample.map{|s| s["_key"] }}
@@ -333,14 +333,14 @@ class Database
         run_id_list: @runs.select{|r| r.sample =~ sid }.map{|r| r["_key"] } }
     end
   end
-  
+
   def project_report(study_id)
     { summary: self.summary(study_id),
       paper: self.paper(study_id),
       run_table: self.run_table(study_id),
       sample_table: self.sample_table(study_id) }
   end
-  
+
   def run_report(read_id)
     run_id = read_id.slice(0..8)
     head = run_id.slice(0..5)
@@ -358,7 +358,7 @@ class Database
         kmer_content: parser.kmer_content }
     end
   end
-  
+
   def download_link(subid, expid, runid)
     ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
     ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
@@ -368,7 +368,7 @@ class Database
       ena_fastq: File.join(ebi_base, runid.slice(0..5), runid),
       ncbi_sra: File.join(ncbi_base, runid.slice(0..2), runid.slice(0..5), runid) }
   end
-  
+
   def export_run(id)
     run_table = self.run_table(id)
     result = run_table.map do |row|
@@ -388,7 +388,7 @@ class Database
                study_type: row[:study_type],
                experiment_id: expid,
                download: self.download_link(subid, expid, runid) }
-      
+
       reads = row[:read_profile]
       if reads
         reads.map do |read|
@@ -450,7 +450,7 @@ class Database
                "Download NCBI/SRA" ]
     ([header] + result).map{|row| row.join("\t") }.join("\n")
   end
-  
+
   def export_sample_tsv(id)
     table = self.sample_table(id)
     array = table.map do |row|
@@ -461,7 +461,7 @@ class Database
     header = [ "Sample ID", "Sample Description", "Run ID"]
     ([header] + array).map{|row| row.join("\t") }.join("\n")
   end
-  
+
   def data_retrieve(id, option)
     idtype = id.slice(2,1)
     dtype = option[:dtype]
@@ -497,7 +497,7 @@ if __FILE__ == $0
   ap db.samples_size
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
-  
+
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
     ap db.summary("DRP000001")

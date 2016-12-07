@@ -17,18 +17,18 @@ class SoylatteDB
       def establish_connection(db)
         Groonga::Database.open(db)
       end
-      
+
       def load_pub(type)
         projectdb = Groonga["Projects"]
         studydb   = Groonga["StudyIDs"]
         col_sym = "#{type}_id".intern
-        
+
         subset = []
         studydb.each do |record|
           # eutils accept the request with multiple ids up to 100
           pub_id_list = subset.map{|r| r.send(col_sym) }.flatten.uniq.compact
           num_of_next_pubs = record.send(col_sym).uniq.size
-          
+
           # request and parse or stock items
           if pub_id_list.size + num_of_next_pubs >= 100
             pub_id_text_pairs = bulk_parse(type, pub_id_list)
@@ -45,7 +45,7 @@ class SoylatteDB
           end
         end
       end
-      
+
       def record_text(projectdb, study_id, text)
         record = projectdb[study_id]
         if record
@@ -60,7 +60,7 @@ class SoylatteDB
 
         sleep 1
         nkgr = Nokogiri::XML(open(xml_path))
-        
+
         id_text_pair = case type
                        when :pubmed
                          bulk_pubmed_parse(nkgr)
@@ -114,7 +114,7 @@ class SoylatteDB
       end
 
       def eutils_path(type, id_list)
-        base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
+        base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
         base + "db=#{type}&id=#{id_list.join(",")}"
       end
 

@@ -25,13 +25,13 @@
           .box.box3
             %ul
               %li
-                %a{:href => "http://github.com/inutano/sra_metadata_toolkit"}
+                %a{:href => "https://github.com/inutano/sra_metadata_toolkit"}
                   %i.fa.fa-github-square
               %li
-                %a{:href => "http://twitter.com/inutano"}
+                %a{:href => "https://twitter.com/inutano"}
                   %i.fa.fa-twitter
               %li
-                %a{:href => "http://trattoriainutano.tumblr.co"} blog
+                %a{:href => "https://trattoriainutano.tumblr.com"} blog
               %li
                 %a{:href => "#{app_root}"} Home
 
@@ -80,7 +80,7 @@
                     %td= record.run.size.to_s
                     %td
                       - record.pubmed_id.map do |pmid|
-                        %a{ :href => "http://www.ncbi.nlm.nih.gov/pubmed/#{pmid}" }= pmid
+                        %a{ :href => "https://www.ncbi.nlm.nih.gov/pubmed/#{pmid}" }= pmid
                 - else
                   %tr
                     %td
@@ -101,11 +101,11 @@
       /Footer Section
       #footer
         .content
-          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"}
+          %a{:rel => "license", :href => "https://creativecommons.org/licenses/by/3.0/"}
             %img{:alt => "Creative Commons License", :style => "border-width:0", :src => "https://i.creativecommons.org/l/by/3.0/80x15.png"}
-          %span{"xmlns:dct" => "http://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
+          %span{"xmlns:dct" => "https://purl.org/dc/terms/", :property => "dct:title"} DBCLS SRA
           is licensed under a
-          %a{:rel => "license", :href => "http://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
+          %a{:rel => "license", :href => "https://creativecommons.org/licenses/by/3.0/"} Creative Commons Attribution 3.0
           Unported License
 
     :javascript

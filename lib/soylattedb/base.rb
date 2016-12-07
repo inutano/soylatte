@@ -14,23 +14,23 @@ class SoylatteDB
   class Base
     class << self
       include FastQC
-      
+
       def projectdb
         Groonga["Projects"]
       end
-      
+
       def rundb
         Groonga["Runs"]
       end
-      
+
       def sampledb
         Groonga["Samples"]
       end
-      
+
       ### core ###
-      
+
       ## category values list ##
-      
+
       def keys(records)
         records.map{|r| r["_key"] }
       end
@@ -38,21 +38,21 @@ class SoylatteDB
       def study_type_list
         list(projectdb, :study_type)
       end
-      
+
       def instrument_list
         list(rundb, :instrument)
       end
-      
+
       def organism_list
         list(sampledb, :scientific_name)
       end
-      
+
       def list(db, sym)
         db.map{|r| r.send(sym) }.minimize
       end
 
       ## filtering records ##
-      
+
       def filter_records_by(sym, query)
         case sym
         when :species
@@ -63,7 +63,7 @@ class SoylatteDB
           filter_instrument(query)
         end
       end
-      
+
       def filter_species(species)
         filter(projectdb, [ :run, :sample, :scientific_name ], species)
       end
@@ -74,15 +74,15 @@ class SoylatteDB
         end
         filtered_sets.flatten.uniq
       end
-      
+
       def filter_described_type(described_type)
         filter(projectdb, [ :study_type ], described_type)
       end
-      
+
       def filter_instrument(instrument)
         filter(projectdb, [ :run, :instrument ], instrument)
       end
-      
+
       def filter(db, syms, keyword)
         if !keyword or keyword.empty?
           db
@@ -90,19 +90,19 @@ class SoylatteDB
           select(db, syms, keyword)
         end
       end
-      
+
       def select(db, syms, keyword)
         db.select{|r| syms.inject(r, :send) =~ keyword }
       end
-      
+
       ## Search Core ##
-      
+
       def soylatte_faceted_search(options)
         facets = [ :species, :study_type, :instrument ]
         matched_records = facets.map{|sym| filter_by(sym, options[sym]) }.inject(:&)
         search_fulltext(matched_records, options[:keyword])
       end
-      
+
       def search_fulltext(records, keyword)
         if !keyword or keyword.empty?
           records
@@ -112,9 +112,9 @@ class SoylatteDB
       end
 
       ## dictionary for simplified study type ##
-      
+
       def described_types
-        { "Genome"          => [ 
+        { "Genome"          => [
                                  "Whole Genome Sequencing",
                                  "Resequencing",
                                  "Population Genomics",
@@ -142,71 +142,71 @@ class SoylatteDB
                                ]
         }
       end
-      
+
       def type_simple(type)
         study_type_simplified(type)
       end
-      
+
       def study_type_simplified(type)
         described_types.select{|k,v| v.include?(type) }.keys[0]
       end
-      
+
       def type_described?(type)
         described_types.has_key?(type)
       end
-      
+
 
       ### Methods for backward compatibility ###
-      
+
       def type
         study_type_list
       end
-      
+
       def instruments
         instrument_list
       end
-      
+
       def species
         organism_list
       end
-      
+
       def projects_size
         projectdb.size
       end
-      
+
       def runs_size
         rundb.size
       end
-      
+
       def samples_size
         sampledb.size
       end
-      
+
       # species: scientific name like 'Homo sapiens'
       def filter_species(species)
         get_study_id_by(:species, species)
       end
-      
+
       def filter_type(study_type)
         get_study_id_by(:study_type, study_type)
       end
-      
+
       def filter_instrument(instrument)
         get_study_id_by(:instrument, instrument)
       end
-      
+
       def get_study_id_by(sym, query)
         records = filter_records_by(sym, query)
         keys(records)
       end
-      
+
       def filter_type(type)
         filter_study_type(type)
       end
-      
+
       def filter_result(species, study_type, instrument)
         options = { species: species, study_type: study_type, instrument: instrument }
-        { 
+        {
           total:      projectdb.size,
           mix:        count_and_ratio(soylatte_faceted_search(options)),
           species:    count_and_ratio(filter_by(:species, species)),
@@ -214,10 +214,10 @@ class SoylatteDB
           instrument: count_and_ratio(filter_by(:instrument, instrument))
         }
       end
-  
+
       def count_and_ratio(records)
         rs = records.size
-        { 
+        {
           count: rs,
           ratio: ((rs / projectdb.size.to_f) * 100).round(2)
         }
@@ -229,11 +229,11 @@ class SoylatteDB
           donuts_stat(counts_and_ratios[sym])
         end
       end
-      
+
       def donuts_stat(c_r)
         c = c_r[:count]
         r = c_r[:ratio]
-        { 
+        {
           "Stat" => {
                       "num" => "#{c}",
                       "per" => "#{r}"
@@ -247,7 +247,7 @@ class SoylatteDB
         options[:study_type] = options[:type]
         keys(soylatte_faceted_search(options))
       end
-      
+
       def search(keyword, options)
         if keyword
           options[:study_type] = options[:type]
@@ -255,13 +255,13 @@ class SoylatteDB
           soylatte_faceted_seearch(options)
         end
       end
-      
+
       ## experimental
-      
+
       def related_runs(study_record)
         study_record.run
       end
-      
+
       def run_full_detail(record)
         {
           run_id:             record["_key"],
@@ -277,18 +277,18 @@ class SoylatteDB
           read_profile:       read_profile(run_id)
         }
       end
-      
+
       def related_samples(study_records)
         related_runs(study_records).map{|r| r.sample }.minimize
       end
-      
+
       def sample_full_detail(record)
-        { 
+        {
           sample_id: record["_key"],
           sample_description: record.sample_description
         }
       end
-      
+
       def project_full_details(record)
         run_records    = related_runs(record)
         sample_records = related_samples(record)
@@ -309,15 +309,15 @@ class SoylatteDB
           pmc_id:                record.pmc_id
         }
       end
-      
+
       def search_api(query, options)
         if query
           records = search(query, options)
           records.map do |record|
             run_records = related_runs
             sample_records = related_samples
-            
-            { 
+
+            {
               submission_id:         record.submission_id,
               study_id:              record["_key"],
               study_type:            record.study_type,
@@ -348,19 +348,19 @@ class SoylatteDB
           projectdb.select{|r| r.run.key =~ id }
         end
       end
-      
+
       def convert_to_study_id(id)
         records = convert_to_study_record(id)
         if records && records.size >= 1
           records.minimize.first["_key"]
         end
       end
-        
+
       def summary(study_id)
         record = projectdb[study_id]
         run_records = record.run
         sample_records = run_records.map{|r| r.sample }.minimize
-        { 
+        {
           study_id: study_id,
           study_title: record.study_title,
           type:        record.study_type,
@@ -368,11 +368,11 @@ class SoylatteDB
           species:     sample_records.map{|r| r.scientific_name }.minimize,
         }
       end
-  
+
       def paper(study_id)
         paper_summary(study_id)
       end
-      
+
       def paper_summary(study_id)
         pubmed_id_list = projectdb[study_id].pubmed_id
         pubmed_id_list.map do |pubmed_id|
@@ -380,14 +380,14 @@ class SoylatteDB
           sum[:pmc] = pmc_summary(sum[:pmc_id])
         end
       end
-      
+
       def pmc(pmc_id)
         pmc_summary(pmc_id)
       end
-      
+
       def pubmed_summary(pubmed_id)
         parser = PubMedMetadataParser.new(open(eutils_xml(:pubmed, pubmed_id)))
-        { 
+        {
           pubmed_id:   pubmed_id,
           pmc_id:      parser.pmcid,
           journal:     parser.journal_title,
@@ -398,11 +398,11 @@ class SoylatteDB
           date:        parser.date_created.values.join("/"),
         }
       end
-  
+
       def pmc_summary(pmc_id)
         parser = PMCMetadataParser.new(open(eutils_xml(:pmc, pmc_id)))
         body = parser.body.compact
-        { 
+        {
           pmc_id:    pmc_id,
           methods:   body.select{|s| s[:sec_title] =~ /methods/i },
           results:   body.select{|s| s[:sec_title] =~ /results/i },
@@ -410,19 +410,19 @@ class SoylatteDB
           cited_by:  parser.cited_by
         }
       end
-  
+
       def eutils_xml(db_type, id)
-        base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
+        base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml"
         base + "&db=#{db_type}&id=#{id}"
       end
-  
+
       def run_table(study_id)
         record = projectdb[study_id]
         run_records = record.run
         run_records.map do |run_record|
           run_id = run_record["_key"]
           sample_records = run_record.sample
-          { 
+          {
             run_id:             run_id,
             experiment_id:      run_record.experiment_id,
             submission_id:      run_record.submission_id,
@@ -441,7 +441,7 @@ class SoylatteDB
           }
         end
       end
-      
+
       def read_profile(run_id)
         dpath = File.join(fastqc_dir, run_id.sub(/...$/,""), run_id)
         Dir.entries(dpath).select{|f| f =~ /#{run_id}/ }.map do |read|
@@ -456,11 +456,11 @@ class SoylatteDB
       rescue Errno::ENOENT
         nil
       end
-      
+
       def fastqc_dir
         File.join(PROJ_ROOT, 'db', 'fastqc')
       end
-  
+
       def sample_table(study_id)
         record = projectdb[study_id]
         run_records = record.run
@@ -471,14 +471,14 @@ class SoylatteDB
           row
         end
       end
-      
+
       def sample_column_values(record) ##
-        { 
+        {
           sample_id: record["_key"],
           sample_description: record.sample_description
         }
       end
-      
+
       def project_report(study_id)
         {
           summary: summary(study_id),
@@ -487,23 +487,23 @@ class SoylatteDB
           sample_table: sample_table(study_id)
         }
       end
-      
+
       def run_report(read_id)
         fpath = fastqc_fpath(read_id)
         if File.exist?(fpath)
           parse_fastqc(read_id, fpath)
         end
       end
-      
+
       def fastqc_fpath(read_id)
         run_id = read_id.sub(/_(1|2)$/,"")
         prefix = run_id.sub(/...$/,"")
         File.join(fastqc_dir, prefix, run_id, read_id + "_fastqc", "fastqc_data.txt")
       end
-  
+
       def parse_fastqc(read_id, fpath)
         parser = FastQCParser.new(fpath)
-        { 
+        {
           read_id:                   read_id,
           file_type:                 parser.file_type,
           encoding:                  parser.encoding,
@@ -515,12 +515,12 @@ class SoylatteDB
           kmer_content:              parser.kmer_content
         }
       end
-      
+
       def download_link(sub_id, exp_id, run_id)
         ddbj_base = "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra"
         ebi_base = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq"
         ncbi_base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra"
-        { 
+        {
           dra_fastq: File.join(ddbj_base, "fastq", sub_id.sub(/...$/,""), sub_id, exp_id),
           dra_sra:   File.join(ddbj_base, "sralite/ByExp/litesra", exp_id.slice(0..2), exp_id.sub(/...$/,""), exp_id),
           ena_fastq: File.join(ebi_base, run_id.sub(/...$/,""), run_id),
@@ -534,9 +534,9 @@ end
 
 =begin
   def export_run(study_id)
-    
+
   end
-  
+
   def export_run(id)
     run_table = self.run_table(id)
     result = run_table.map do |row|
@@ -556,7 +556,7 @@ end
                study_type: row[:study_type],
                experiment_id: expid,
                download: self.download_link(subid, expid, runid) }
-      
+
       reads = row[:read_profile]
       if reads
         reads.map do |read|
@@ -618,7 +618,7 @@ end
                "Download NCBI/SRA" ]
     ([header] + result).map{|row| row.join("\t") }.join("\n")
   end
-  
+
   def export_sample_tsv(id)
     table = self.sample_table(id)
     array = table.map do |row|
@@ -629,7 +629,7 @@ end
     header = [ "Sample ID", "Sample Description", "Run ID"]
     ([header] + array).map{|row| row.join("\t") }.join("\n")
   end
-  
+
   def data_retrieve(id, option)
     idtype = id.slice(2,1)
     dtype = option[:dtype]
@@ -665,7 +665,7 @@ if __FILE__ == $0
   ap db.samples_size
   ap "filter: Homo sapiens, Transcriptome, Illumina Genome Analyzer"
   ap db.filter_result("Homo sapiens", "Transcriptome", "Illumina Genome Analyzer")
-  
+
   query = ARGV.first
   if query =~ /(S|E|D)RP\d{6}/
     ap db.summary("DRP000001")

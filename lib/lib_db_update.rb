@@ -14,7 +14,7 @@ require DirPath + "/pmc_metadata_parser"
 class DBupdate
   def self.create_db(db_path)
     Groonga::Database.create(:path => db_path)
-    
+
     Groonga::Schema.define do |schema|
       schema.create_table("Samples", :type => :hash) do |table|
         table.short_text("sample_title")
@@ -23,7 +23,7 @@ class DBupdate
         table.short_text("scientific_name")
         table.short_text("submission_id")
       end
-      
+
       schema.create_table("Runs", type: :hash) do |table|
         table.short_text("experiment_id")
         table.short_text("library_strategy")
@@ -37,7 +37,7 @@ class DBupdate
         table.short_text("submission_id")
         table.reference("sample", "Samples", type: :vector)
       end
-      
+
       schema.create_table("Projects", type: :hash) do |table|
         table.short_text("study_title")
         table.short_text("study_type")
@@ -47,7 +47,7 @@ class DBupdate
         table.short_text("pmc_id", type: :vector)
         table.long_text("search_fulltext")
       end
-            
+
       schema.create_table("Index_text",
         type: :patricia_trie,
         key_normalize: true,
@@ -64,7 +64,7 @@ class DBupdate
         table.index("Projects.pmc_id")
         table.index("Projects.search_fulltext")
       end
-      
+
       schema.change_table("Samples") do |table|
         table.index("Runs.sample")
       end
@@ -77,7 +77,7 @@ class DBupdate
 
   def self.load_file(config_path)
     config = YAML.load_file(config_path)
-    
+
     @@acc_hash = {} # any id => submissionid
     open(config["sra_accessions"]) do |file|
       while lt = file.gets
@@ -85,7 +85,7 @@ class DBupdate
         @@acc_hash[l[0]] = l[1]
       end
     end
-    
+
     @@run_hash = {} # runid => [ [expid, sampleid, studyid], .. ]
     @@study_hash = {} # studyid => runid
     open(config["sra_run_members"]) do |file|
@@ -97,7 +97,7 @@ class DBupdate
         @@study_hash[l[4]] << l[0]
       end
     end
-    
+
     @@taxon_hash = {}
     open(config["taxon_table"]) do |file|
       while lt = file.gets
@@ -105,7 +105,7 @@ class DBupdate
         @@taxon_hash[l[0]] = l[1]
       end
     end
-    
+
     @@pmc_hash = {} # pmid - pmcid
     open(config["PMC-ids"]) do |file|
       while lt = file.gets
@@ -113,36 +113,36 @@ class DBupdate
         @@pmc_hash[l[9]] = l[8]
       end
     end
-    
+
     publication = config["publication"]
     @@json = open(publication){|f| JSON.load(f) }["ResultSet"]["Result"]
-    
+
     @@xml_base = config["sra_xml_base"]
-    @@eutil_base = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
+    @@eutil_base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmode=xml&"
   end
-  
+
   def initialize(id)
     @id = id
   end
-  
+
   def clean_text(text)
     text.delete("\t\n").gsub(/\s+/,"\s").chomp
   end
-  
+
   def get_xml_path(id, type)
     acc = @@acc_hash[id]
     path = File.join(@@xml_base, acc.sub(/...$/,""), acc, acc + ".#{type}.xml")
     path if File.exist?(path) && !(File.size(path) > 1_000_000)
   end
-  
+
   def sample_insert
     # initialize insert hash
     insert = Hash.new("")
-    
+
     # set submission id
     submission_id = @@acc_hash[@id]
     insert[:submission_id]      = submission_id
-    
+
     # retrieve xml
     xml = get_xml_path(@id, "sample")
     if xml
@@ -151,7 +151,7 @@ class DBupdate
       # get scientific name
       taxon_id = parser.taxon_id
       scientific_name = @@taxon_hash[taxon_id]
-    
+
       # set values
       insert[:sample_title]       = parser.title
       insert[:sample_description] = clean_text(parser.sample_description)
@@ -162,11 +162,11 @@ class DBupdate
   rescue NameError
     insert
   end
-  
+
   def run_insert
     # initialize insert hash
     insert = Hash.new("")
-    
+
     experiment_id = @@run_hash[@id].map{|a| a[0] }.uniq.first
     insert[:experiment_id] = experiment_id
     insert[:submission_id] = @@acc_hash[@id]
@@ -188,23 +188,23 @@ class DBupdate
   rescue NameError
     insert
   end
-  
+
   def project_insert
     # initialize insert hash
     insert = Hash.new("")
-    
+
     # set id variables
     submission_id = @@acc_hash[@id]
     pub_info = @@json.select{|row| submission_id == row["sra_id"] }
     pubmed_id = pub_info.map{|row| row["pmid"] }
     pmc_id = pubmed_id.map{|pmid| @@pmc_hash[pmid] }.uniq.compact
-    
+
     # set values
     insert[:run]           = @@study_hash[@id]
     insert[:submission_id] = submission_id
     insert[:pubmed_id]     = pubmed_id
     insert[:pmc_id]        = pmc_id
-    
+
     # parse xml
     xml = get_xml_path(@id, "study")
     if xml
@@ -216,7 +216,7 @@ class DBupdate
   rescue NameError
     insert
   end
-  
+
   def experiment_description
     desc_array = []
     xml = get_xml_path(@id, "experiment")
@@ -230,7 +230,7 @@ class DBupdate
   rescue NameError
     []
   end
-  
+
   def project_description
     desc_array = []
     xml = get_xml_path(@id, "study")
@@ -245,7 +245,7 @@ class DBupdate
   rescue NameError
     []
   end
-  
+
   def bulk_retrieve
     idlist = @id.join(",")
     if idlist =~ /PMC/
@@ -254,23 +254,23 @@ class DBupdate
       bulkpubmed_parse(bulk_xml(idlist, :pubmed))
     end
   end
-  
+
   def bulk_xml(idlist, sym)
     open(@@eutil_base + "db=" + sym.to_s + "&id=" + idlist).read
   end
-  
+
   def bulkpmc_parse(xml)
     pmcid_text = Hash.new("")
     Nokogiri::XML(xml).css("article").each do |article|
       p = PMCMetadataParser.new(article.to_xml)
       ref_journal_list = p.ref_journal_list || []
       cited_by         = p.cited_by || []
-      
+
       text = []
       text << ref_journal_list.map{|n| n.values }
       text << cited_by.map{|n| n.values }
       text << pmc_body_text(p)
-      
+
       # set key/pmcid, value/text
       pmcid_text["PMC" + p.pmcid] = clean_text(text.join("\s"))
     end
@@ -279,7 +279,7 @@ class DBupdate
     sleep 180
     retry
   end
-  
+
   def pmc_body_text(pmc_parser)
     pmc_parser.body.compact.map do |section|
       if section.has_key?(:subsec)
@@ -289,7 +289,7 @@ class DBupdate
       end
     end
   end
-  
+
   def bulkpubmed_parse(xml)
     pmid_text = Hash.new("")
     Nokogiri::XML(xml).css("PubmedArticle").each do |article|
